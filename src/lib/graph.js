@@ -6,11 +6,12 @@ const {
   mxKeyHandler, mxDivResizer, mxToolbar,
   mxObjectCodec, mxConstants, mxDragSource,
   mxRubberband, mxPerimeter, mxEdgeStyle,
-} = mxgraph()
+  mxConnectionHandler,
+  } = mxgraph()
 
 class JsonCodec extends mxObjectCodec {
   constructor() {
-    super(() => {})
+    super(() => { })
   }
 
   encode(value) {
@@ -39,7 +40,7 @@ class JsonCodec extends mxObjectCodec {
           parent: cell.parent,
           value: cell.value,
           type: cell.style,
-          edges: (cell.edges ||[]).map(({ id, value, parent, source, target }) => {
+          edges: (cell.edges || []).map(({ id, value, parent, source, target }) => {
             return {
               id,
               value,
@@ -72,10 +73,10 @@ export default class GraphX {
     this.jsonCodec = new JsonCodec()
     this.vertices = {}
     this.edges = {}
+    this.toolbar = {}
 
     if (toolbar) {
-      this.toolbar = new mxToolbar(toolbar)
-      this.initToolbar()
+      this.initToolbar(toolbar)
     }
 
     this.setup(graph)
@@ -83,11 +84,11 @@ export default class GraphX {
     this.keys()
     this.events(graph)
 
-    // this.labelDisplayOveride()
     this.styling()
+    this.connectionHandler()
   }
 
-  setup (container) {
+  setup(graphContainer) {
     this.graph.setPanning(true)
     this.graph.zoomFactor = 1.1
 
@@ -98,7 +99,7 @@ export default class GraphX {
 
     if (mxClient.IS_QUIRKS) {
       document.body.style.overflow = 'hidden'
-      new mxDivResizer(container)
+      new mxDivResizer(graphContainer)
     }
 
     if (mxClient.IS_NS) {
@@ -111,40 +112,40 @@ export default class GraphX {
     }
   }
 
-  initToolbar () {    
+  initToolbar(toolbarContainer) {
+    this.toolbar = new mxToolbar(toolbarContainer)
     this.graph.dropEnabled = true
 
     // Matches DnD inside the this.editor.
     mxDragSource.prototype.getDropTarget = (graph, x, y) => {
       let cell = graph.getCellAt(x, y)
-      
-      if (!graph.isValidDropTarget(cell))
-      {
+
+      if (!graph.isValidDropTarget(cell)) {
         cell = null
       }
 
       return cell
     }
 
-      const addVertex = (icon, w, h, style) => {
-        const vertex = new mxCell(null, new mxGeometry(0, 0, w, h), style)
-        vertex.setVertex(true)
+    const addVertex = (icon, w, h, style) => {
+      const vertex = new mxCell(null, new mxGeometry(0, 0, w, h), style)
+      vertex.setVertex(true)
 
-        this.addToolbarItem(this.graph, this.toolbar, vertex, icon)
-      }
+      this.addToolbarItem(this.graph, this.toolbar, vertex, icon)
+    }
 
-      addVertex('icons/swimlane.gif', 120, 160, 'shape=swimlane')
-      addVertex('icons/rectangle.gif', 100, 40, 'shape=task')
-      addVertex('icons/rounded.gif', 100, 40, 'shape=rounded')
-      addVertex('icons/ellipse.gif', 40, 40, 'shape=ellipse')
-      addVertex('icons/rhombus.gif', 40, 40, 'shape=rhombus')
-      addVertex('icons/triangle.gif', 40, 40, 'shape=triangle')
-      addVertex('icons/cylinder.gif', 40, 40, 'shape=cylinder')
-      addVertex('icons/actor.gif', 30, 40, 'shape=actor')
-      this.toolbar.addLine()
+    addVertex('icons/swimlane.gif', 120, 160, 'shape=swimlane')
+    addVertex('icons/rectangle.gif', 100, 40, 'shape=task')
+    addVertex('icons/rounded.gif', 100, 40, 'shape=rounded')
+    addVertex('icons/ellipse.gif', 60, 60, 'shape=ellipse')
+    addVertex('icons/rhombus.gif', 60, 60, 'shape=rhombus')
+    addVertex('icons/triangle.gif', 60, 60, 'shape=triangle')
+    addVertex('icons/cylinder.gif', 60, 60, 'shape=cylinder')
+    addVertex('icons/actor.gif', 30, 40, 'shape=actor')
+    this.toolbar.addLine()
   }
 
-  keys () {
+  keys() {
     // Register control and meta key if Mac
     this.keyhandler.getFunction = (evt) => {
       if (evt != null) {
@@ -169,7 +170,7 @@ export default class GraphX {
         this.graph.removeCells()
       }
     }
-    
+
     // Backspace
     this.keyhandler.normalKeys[8] = deleteCells
     // Delete
@@ -197,7 +198,7 @@ export default class GraphX {
     }
   }
 
-  events (container) {
+  events(container) {
     // Zoom event
     mxEvent.addMouseWheelListener((evt, up) => {
       if (mxEvent.isConsumed(evt)) {
@@ -233,30 +234,6 @@ export default class GraphX {
     }, container)
   }
 
-  labelDisplayOveride() { // Overrides method to provide a cell label in the display
-    this.graph.convertValueToString = (cell) => {
-      if (mxUtils.isNode(cell.value)) {
-        if (cell.value.nodeName.toLowerCase() === 'object') {
-          const name = cell.getAttribute('name', '')
-          return name
-        }
-      }
-      return ''
-    }
-
-    const cellLabelChanged = this.graph.cellLabelChanged
-    this.graph.cellLabelChanged = (cell, newValue) => {
-      if (mxUtils.isNode(cell.value)) {
-        // Clones the value for correct undo/redo
-        const elt = cell.value.cloneNode(true)
-        elt.setAttribute('name', newValue)
-        newValue = elt
-      }
-
-      cellLabelChanged.apply(this, arguments)
-    }
-  }
-
   styling() {
     // Creates the default style for vertices
     let style = []
@@ -284,7 +261,19 @@ export default class GraphX {
     this.graph.getStylesheet().putDefaultEdgeStyle(style)
   }
 
-  addToolbarItem (graph, toolbar, prototype, image) {
+  connectionHandler() {
+    mxConstants.DEFAULT_HOTSPOT = 0.7
+
+    new mxConnectionHandler(this.graph, (source, target, style) => {
+      const edge = new mxCell('', new mxGeometry())
+      edge.setEdge(true)
+      edge.setStyle(style)
+      edge.geometry.relative = true
+      return edge
+    })
+  }
+
+  addToolbarItem(graph, toolbar, prototype, image) {
     const funct = (graph, evt, cell) => {
       graph.stopEditing(false)
 
@@ -306,8 +295,8 @@ export default class GraphX {
 
     return JSON.stringify(
       jsonModel,
-      ( key, value) => {
-        if(idKeys.includes(key) && value !== null) { 
+      (key, value) => {
+        if (idKeys.includes(key) && value !== null) {
           return value.id
         }
         return value
@@ -318,12 +307,12 @@ export default class GraphX {
 
   render(dataModel) {
     this.dataModel = dataModel
-    
+
     this.graph.getModel().beginUpdate() // Adds cells to the model in a single step
     const root = this.graph.getDefaultParent()
     try {
       this.dataModel
-        .sort((a, b)  => (a.ext.graphics.parent > b.ext.graphics.parent) ? 1 : -1)
+        .sort((a, b) => (a.ext.graphics.parent > b.ext.graphics.parent) ? 1 : -1)
         .map(({ ext = {}, ...config }) => {
           const node = ext.graphics
           if (node) {
@@ -335,7 +324,7 @@ export default class GraphX {
             }
 
             this.vertices[node.id].config = config || {}
-            
+
             if (node.edges) {
               node.edges.forEach(edge => {
                 if (!this.edges[edge.id]) {
@@ -351,7 +340,6 @@ export default class GraphX {
         this.graph.insertEdge(parent, id, value, this.vertices[source].node, this.vertices[target].node)
       })
     } finally {
-      // new mxStackLayout(this.graph, true, 50, 20, 100, true).execute(parent)
       this.graph.getModel().endUpdate() // Updates the display
 
       // Register UNDO and REDO
