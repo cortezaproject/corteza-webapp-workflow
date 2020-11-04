@@ -39,7 +39,7 @@ class JsonCodec extends mxObjectCodec {
           parent: cell.parent,
           value: cell.value,
           type: cell.style,
-          edges: cell.edges.map(({ id, value, parent, source, target }) => {
+          edges: (cell.edges ||[]).map(({ id, value, parent, source, target }) => {
             return {
               id,
               value,
