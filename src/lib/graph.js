@@ -145,33 +145,52 @@ export default class GraphX {
   }
 
   keys () {
+    // Register control and meta key if Mac
+    this.keyhandler.getFunction = (evt) => {
+      if (evt != null) {
+        // If CTRL or META key is pressed
+        if (evt.ctrlKey || (mxClient.IS_MAC && evt.metaKey)) {
+          // If SHIFT key is pressed
+          if (evt.shiftKey) {
+            return this.keyhandler.controlShiftKeys[evt.keyCode]
+          }
+          return this.keyhandler.controlKeys[evt.keyCode]
+        }
+
+        // If only normal keys are pressed
+        return this.keyhandler.normalKeys[evt.keyCode]
+      }
+
+      return null
+    }
+
     // Delete
-    this.keyhandler.bindKey(46, () => {
+    this.keyhandler.normalKeys[46] = () => {
       if (this.graph.isEnabled()) {
         this.graph.removeCells()
       }
-    })
+    }
 
     // Ctrl + A
-    this.keyhandler.bindControlKey(65, () => {
+    this.keyhandler.controlKeys[65] = () => {
       if (this.graph.isEnabled()) {
         this.graph.selectAll()
       }
-    })
+    }
 
     // Ctrl + Z
-    this.keyhandler.bindControlKey(90, () => {
+    this.keyhandler.controlKeys[90] = () => {
       if (this.graph.isEnabled()) {
         this.undoManager.undo()
       }
-    })
+    }
 
     // Ctrl + Shift + Z
-    this.keyhandler.bindControlShiftKey(90, () => {
+    this.keyhandler.controlShiftKeys[90] = () => {
       if (this.graph.isEnabled()) {
         this.undoManager.redo()
       }
-    })
+    }
   }
 
   events (container) {
