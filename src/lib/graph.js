@@ -164,12 +164,16 @@ export default class GraphX {
       return null
     }
 
-    // Delete
-    this.keyhandler.normalKeys[46] = () => {
+    const deleteCells = () => {
       if (this.graph.isEnabled()) {
         this.graph.removeCells()
       }
     }
+    
+    // Backspace
+    this.keyhandler.normalKeys[8] = deleteCells
+    // Delete
+    this.keyhandler.normalKeys[46] = deleteCells
 
     // Ctrl + A
     this.keyhandler.controlKeys[65] = () => {
