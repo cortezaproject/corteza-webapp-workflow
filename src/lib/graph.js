@@ -1,65 +1,15 @@
 import mxgraph from 'mxgraph'
+import { decodeGraph, decodeToolbar } from './codec'
+import toolbarConfig from '../assets/config/toolbar.json'
 
 const {
   mxClient, mxGraph, mxEvent, mxUtils,
   mxCell, mxGeometry, mxUndoManager,
   mxKeyHandler, mxDivResizer, mxToolbar,
-  mxObjectCodec, mxConstants, mxDragSource,
+  mxConstants, mxDragSource,
   mxRubberband, mxPerimeter, mxEdgeStyle,
   mxConnectionHandler,
-  } = mxgraph()
-
-class JsonCodec extends mxObjectCodec {
-  constructor() {
-    super(() => { })
-  }
-
-  encode(value) {
-    const xmlDoc = mxUtils.createXmlDocument()
-    const newObject = xmlDoc.createElement("Object")
-
-    for (let prop in value) {
-      newObject.setAttribute(prop, value[prop])
-    }
-    return newObject
-  }
-
-  decode(model, vertices) {
-    return Object.values(model.cells)
-      .filter(cell => {
-        return !!cell.vertex
-      }).map(cell => {
-        cell = {
-          id: cell.id,
-          xywh: [
-            cell.geometry.x || 0,
-            cell.geometry.y || 0,
-            cell.geometry.width || 0,
-            cell.geometry.height || 0,
-          ],
-          parent: cell.parent,
-          value: cell.value,
-          type: cell.style,
-          edges: (cell.edges || []).map(({ id, value, parent, source, target }) => {
-            return {
-              id,
-              value,
-              parent,
-              source,
-              target
-            }
-          })
-        }
-
-        return {
-          ...((vertices[cell.id] || {}).config || {}),
-          ext: {
-            graphics: cell
-          }
-        }
-      })
-  }
-}
+} = mxgraph()
 
 export default class GraphX {
   constructor(graph, toolbar = '') {
@@ -70,7 +20,6 @@ export default class GraphX {
     this.graph = new mxGraph(graph)
     this.keyhandler = new mxKeyHandler(this.graph)
     this.undoManager = new mxUndoManager()
-    this.jsonCodec = new JsonCodec()
     this.vertices = {}
     this.edges = {}
     this.toolbar = {}
@@ -127,22 +76,20 @@ export default class GraphX {
       return cell
     }
 
-    const addVertex = (icon, w, h, style) => {
-      const vertex = new mxCell(null, new mxGeometry(0, 0, w, h), style)
-      vertex.setVertex(true)
+    const addTool = ({ title, icon, width, height, style }) => {
+      const tool = new mxCell(null, new mxGeometry(0, 0, width, height), style)
+      tool.setVertex(true)
 
-      this.addToolbarItem(this.graph, this.toolbar, vertex, icon)
+      this.addToolbarItem(title, this.graph, this.toolbar, tool, icon)
     }
 
-    addVertex('icons/swimlane.gif', 120, 160, 'shape=swimlane')
-    addVertex('icons/rectangle.gif', 100, 40, 'shape=task')
-    addVertex('icons/rounded.gif', 100, 40, 'shape=rounded')
-    addVertex('icons/ellipse.gif', 60, 60, 'shape=ellipse')
-    addVertex('icons/rhombus.gif', 60, 60, 'shape=rhombus')
-    addVertex('icons/triangle.gif', 60, 60, 'shape=triangle')
-    addVertex('icons/cylinder.gif', 60, 60, 'shape=cylinder')
-    addVertex('icons/actor.gif', 30, 40, 'shape=actor')
-    this.toolbar.addLine()
+    decodeToolbar(toolbarConfig).forEach(tool => {
+      if (tool.line) {
+        this.toolbar.addLine()
+      } else {
+        addTool(tool)
+      }
+    })
   }
 
   keys() {
@@ -262,7 +209,7 @@ export default class GraphX {
   }
 
   connectionHandler() {
-    mxConstants.DEFAULT_HOTSPOT = 0.7
+    mxConstants.DEFAULT_HOTSPOT = 0.3
 
     new mxConnectionHandler(this.graph, (source, target, style) => {
       const edge = new mxCell('', new mxGeometry())
@@ -273,7 +220,7 @@ export default class GraphX {
     })
   }
 
-  addToolbarItem(graph, toolbar, prototype, image) {
+  addToolbarItem(title, graph, toolbar, prototype, icon) {
     const funct = (graph, evt, cell) => {
       graph.stopEditing(false)
 
@@ -285,13 +232,13 @@ export default class GraphX {
       graph.setSelectionCells(graph.importCells([vertex], 0, 0, cell))
     }
 
-    const img = toolbar.addMode(null, image, funct)
+    const img = toolbar.addMode(title, icon, funct)
     mxUtils.makeDraggable(img, graph, funct)
   }
 
   getJsonModel() {
     const idKeys = ['parent', 'source', 'target']
-    const jsonModel = this.jsonCodec.decode(this.graph.getModel(), this.vertices)
+    const jsonModel = decodeGraph(this.graph.getModel(), this.vertices)
 
     return JSON.stringify(
       jsonModel,
