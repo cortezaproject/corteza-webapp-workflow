@@ -25,7 +25,7 @@
             "type": "rhombus"
         },
         {
-            "line": true
+            "type": "break"
         }
     ]
 }

@@ -86,6 +86,8 @@ export default class GraphX {
     decodeToolbar(toolbarConfig).forEach(tool => {
       if (tool.line) {
         this.toolbar.addLine()
+      } else if (tool.break) {
+        this.toolbar.addBreak()
       } else {
         addTool(tool)
       }

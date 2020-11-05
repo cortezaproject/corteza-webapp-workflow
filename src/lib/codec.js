@@ -35,10 +35,14 @@ export function decodeGraph (model, vertices) {
 }
 
 export function decodeToolbar (config) {
-  return config.toolbarConfig.map(({ line = false, title, width, height, type }) => {
-    if (line) {
+  return config.toolbarConfig.map(({ title, width, height, type }) => {
+    if (type === 'line') {
       return {
-        line
+        line: true
+      }
+    } else if (type === 'break') {
+      return {
+        break: true
       }
     } else {
       return {
