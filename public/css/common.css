@@ -104,11 +104,10 @@ img.mxToolbarMode {
 	border-width: 0px;
 }
 img.mxToolbarModeSelected {
-	margin: 0px;
-	margin-right: 2px;
-	margin-bottom: 2px;
-	border-width: 2px;
-	border-style: inset;
+	margin: 2px;
+	margin-right: 4px;
+	margin-bottom: 4px;
+	border-width: 0px;
 }
 div.mxTooltip {
 	-webkit-box-shadow: 3px 3px 12px #C0C0C0;
