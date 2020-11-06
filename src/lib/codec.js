@@ -35,7 +35,7 @@ export function decodeGraph (model, vertices) {
 }
 
 export function decodeToolbar (config) {
-  return config.toolbarConfig.map(({ title, width, height, type }) => {
+  return config.toolbarConfig.map(({ title, width, height, type, icon = '', style = '' }) => {
     if (type === 'line') {
       return {
         line: true
@@ -47,10 +47,10 @@ export function decodeToolbar (config) {
     } else {
       return {
         title,
-        icon: `icons/${type}.gif`,
+        icon: icon ? icon : `icons/${type}.svg`,
         width,
         height,
-        style: `shape=${type}`
+        style: style ? style : `shape=${type}`
       }
     }
   })

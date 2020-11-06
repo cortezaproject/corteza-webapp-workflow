@@ -208,6 +208,16 @@ export default class GraphX {
     style[mxConstants.STYLE_FONTCOLOR] = 'black'
     style[mxConstants.STYLE_FONTSIZE] = '10'
     this.graph.getStylesheet().putDefaultEdgeStyle(style)
+
+    // Symbol (custom shape) styling
+    style = []
+    style[mxConstants.STYLE_SHAPE] = mxConstants.SHAPE_IMAGE
+    style[mxConstants.STYLE_PERIMETER] = mxPerimeter.RectanglePerimeter
+    style[mxConstants.STYLE_FONTSIZE] = '12'
+    style[mxConstants.STYLE_ALIGN] = mxConstants.ALIGN_CENTER
+    style[mxConstants.STYLE_VERTICAL_ALIGN] = mxConstants.ALIGN_TOP
+    style[mxConstants.STYLE_VERTICAL_LABEL_POSITION] = mxConstants.ALIGN_BOTTOM
+    this.graph.getStylesheet().putCellStyle('symbol', style)
   }
 
   connectionHandler() {
