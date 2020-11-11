@@ -10,7 +10,8 @@
   "dependencies": {
     "bootstrap-vue": "^2.17.3",
     "mxgraph": "^4.2.0",
-    "vue": "^2.6.11"
+    "vue": "^2.6.11",
+    "vue-router": "^3.4.9"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "~4.5.0",

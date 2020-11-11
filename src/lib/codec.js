@@ -1,4 +1,5 @@
 export function decodeGraph (model, vertices) {
+  console.log(model.cells)
   return Object.values(model.cells)
     .filter(cell => {
       return !!cell.vertex
