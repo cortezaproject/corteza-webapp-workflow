@@ -99,15 +99,9 @@ div.mxToolbarComboContainer {
 }
 img.mxToolbarMode {
 	margin: 2px;
-	margin-right: 4px;
-	margin-bottom: 4px;
-	border-width: 0px;
 }
 img.mxToolbarModeSelected {
 	margin: 2px;
-	margin-right: 4px;
-	margin-bottom: 4px;
-	border-width: 0px;
 }
 div.mxTooltip {
 	-webkit-box-shadow: 3px 3px 12px #C0C0C0;

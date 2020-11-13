@@ -1,13 +1,33 @@
 <template>
   <div class="h-100 d-flex flex-row px-1 py-2">
-    <b-card header="Tools" style="max-width: 100px" body-class="p-1">
-      <div id="toolbar" ref="toolbar" />
-      <b-button variant="link" @click="$emit('save', getJsonModel())"> To JSON </b-button>
+    <b-card
+      header="Tools"
+      style="max-width: 200px"
+      body-class="p-1"
+      header-class="text-center"
+    >
+      <div
+        id="toolbar"
+        ref="toolbar"
+        class="mt-3"
+      />
+      <hr>
+      <div
+        class="d-flex align-items-center"
+      >
+        <b-button
+          variant="link"
+          class="w-100"
+          @click="$emit('save', getJsonModel())"
+        >
+          To JSON
+        </b-button>
+      </div>
     </b-card>
-    <b-card-body
+    <div
       id="graph"
       ref="graph"
-      class="card h-100 flex-grow-1 ml-1 p-0"
+      class="h-100 flex-grow-1 ml-1 p-0"
     />
     <b-sidebar
       v-model="sidebar.show"
@@ -44,13 +64,6 @@ const {
   mxConnectionHandler,
 } = mxgraph()
 
-let graphObject = undefined
-let keyhandler = undefined
-let undoManager = undefined
-let vertices = {}
-let edges = {}
-let toolbar = {}
-
 export default {
   name: "WorkflowEditor",
 
@@ -63,6 +76,13 @@ export default {
 
   data () {
     return {
+      graph: undefined,
+      keyhandler: undefined,
+      undoManager: undefined,
+      vertices: {},
+      edges: {},
+      toolbar: undefined,
+
       sidebar: {
         selectedCell: undefined,
         show: false,
@@ -77,9 +97,9 @@ export default {
       }
 
       mxEvent.disableContextMenu(this.$refs.graph)
-      graphObject = new mxGraph(this.$refs.graph)
-      keyhandler = new mxKeyHandler(graphObject)
-      undoManager = new mxUndoManager()
+      this.graph = new mxGraph(this.$refs.graph)
+      this.keyhandler = new mxKeyHandler(this.graph)
+      this.undoManager = new mxUndoManager()
 
       this.initToolbar()
       this.setup()
@@ -90,7 +110,7 @@ export default {
       this.styling()
       this.connectionHandler()
 
-      graphObject.container.style.background = `url("${require('../assets/grid.gif')}")`
+      this.graph.container.style.background = `url("${require('../assets/grid.gif')}")`
 
       this.render(JSON.parse(localStorage.getItem('graph')))
     } catch (e) {
@@ -100,32 +120,32 @@ export default {
 
   methods: {
     setup() {
-      graphObject.setPanning(true)
-      graphObject.zoomFactor = 1.1
+      this.graph.setPanning(true)
+      this.graph.zoomFactor = 1.1
 
-      graphObject.setConnectable(true)
-      graphObject.setAllowDanglingEdges(false)
-      new mxRubberband(graphObject) // Enables rubberband selection
-      graphObject.view.setTranslate(20, 20)
+      this.graph.setConnectable(true)
+      this.graph.setAllowDanglingEdges(false)
+      new mxRubberband(this.graph) // Enables rubberband selection
+      this.graph.view.setTranslate(20, 20)
 
       if (mxClient.IS_QUIRKS) {
         document.body.style.overflow = "hidden"
-        new mxDivResizer(graphObject.container)
+        new mxDivResizer(this.graph.container)
       }
 
       if (mxClient.IS_NS) {
-        mxEvent.addListener(graphObject.container, "mousedown", () => {
-          if (!graphObject.isEditing()) {
-            graphObject.container.setAttribute("tabindex", "-1")
-            graphObject.container.focus()
+        mxEvent.addListener(this.graph.container, "mousedown", () => {
+          if (!this.graph.isEditing()) {
+            this.graph.container.setAttribute("tabindex", "-1")
+            this.graph.container.focus()
           }
         })
       }
     },
 
     initToolbar() {
-      toolbar = new mxToolbar(this.$refs.toolbar)
-      graphObject.dropEnabled = true
+      this.toolbar = new mxToolbar(this.$refs.toolbar)
+      this.graph.dropEnabled = true
 
       // Matches DnD inside the this.editor.
       mxDragSource.prototype.getDropTarget = (graph, x, y) => {
@@ -146,14 +166,14 @@ export default {
         )
         tool.setVertex(true)
 
-        this.addToolbarItem(title, graphObject, toolbar, tool, icon)
+        this.addToolbarItem(title, this.graph, this.toolbar, tool, icon)
       }
 
       decodeToolbar(toolbarConfig).forEach((tool) => {
         if (tool.line) {
-          toolbar.addLine()
+          this.toolbar.addLine()
         } else if (tool.break) {
-          toolbar.addBreak()
+          this.toolbar.addBreak()
         } else {
           addTool(tool)
         }
@@ -162,60 +182,60 @@ export default {
 
     keys() {
       // Register control and meta key if Mac
-      keyhandler.getFunction = (evt) => {
+      this.keyhandler.getFunction = (evt) => {
         if (evt != null) {
           // If CTRL or META key is pressed
           if (evt.ctrlKey || (mxClient.IS_MAC && evt.metaKey)) {
             // If SHIFT key is pressed
             if (evt.shiftKey) {
-              return keyhandler.controlShiftKeys[evt.keyCode]
+              return this.keyhandler.controlShiftKeys[evt.keyCode]
             }
-            return keyhandler.controlKeys[evt.keyCode]
+            return this.keyhandler.controlKeys[evt.keyCode]
           }
 
           // If only normal keys are pressed
-          return keyhandler.normalKeys[evt.keyCode]
+          return this.keyhandler.normalKeys[evt.keyCode]
         }
 
         return null
       }
 
       const deleteCells = () => {
-        if (graphObject.isEnabled()) {
-          graphObject.removeCells()
+        if (this.graph.isEnabled()) {
+          this.graph.removeCells()
         }
       }
 
       // Backspace
-      keyhandler.normalKeys[8] = deleteCells
+      this.keyhandler.normalKeys[8] = deleteCells
       // Delete
-      keyhandler.normalKeys[46] = deleteCells
+      this.keyhandler.normalKeys[46] = deleteCells
 
       // Ctrl + A
-      keyhandler.controlKeys[65] = () => {
-        if (graphObject.isEnabled()) {
-          graphObject.selectAll()
+      this.keyhandler.controlKeys[65] = () => {
+        if (this.graph.isEnabled()) {
+          this.graph.selectAll()
         }
       }
 
       // Ctrl + Z
-      keyhandler.controlKeys[90] = () => {
-        if (graphObject.isEnabled()) {
-          undoManager.undo()
+      this.keyhandler.controlKeys[90] = () => {
+        if (this.graph.isEnabled()) {
+          this.undoManager.undo()
         }
       }
 
       // Ctrl + Shift + Z
-      keyhandler.controlShiftKeys[90] = () => {
-        if (graphObject.isEnabled()) {
-          undoManager.redo()
+      this.keyhandler.controlShiftKeys[90] = () => {
+        if (this.graph.isEnabled()) {
+          this.undoManager.redo()
         }
       }
     },
 
     events() {
       // Click event
-      graphObject.addListener(mxEvent.CLICK, (sender, evt) => {
+      this.graph.addListener(mxEvent.CLICK, (sender, evt) => {
         const cell = evt.getProperty("cell") // cell may be null
         if (cell != null) {
           console.log(cell)
@@ -238,32 +258,32 @@ export default {
           return
         }
 
-        let gridEnabled = graphObject.gridEnabled
+        let gridEnabled = this.graph.gridEnabled
 
-        graphObject.gridEnabled = false
+        this.graph.gridEnabled = false
 
-        let p1 = graphObject.getPointForEvent(evt, false)
+        let p1 = this.graph.getPointForEvent(evt, false)
 
         if (up) {
-          graphObject.zoomIn()
+          this.graph.zoomIn()
         } else {
-          graphObject.zoomOut()
+          this.graph.zoomOut()
         }
 
-        let p2 = graphObject.getPointForEvent(evt, false)
+        let p2 = this.graph.getPointForEvent(evt, false)
         let deltaX = p2.x - p1.x
         let deltaY = p2.y - p1.y
-        let { translate } = graphObject.view
+        let { translate } = this.graph.view
 
-        graphObject.view.setTranslate(
+        this.graph.view.setTranslate(
           translate.x + deltaX,
           translate.y + deltaY
         )
 
-        graphObject.gridEnabled = gridEnabled
+        this.graph.gridEnabled = gridEnabled
 
         mxEvent.consume(evt)
-      }, graphObject.container)
+      }, this.graph.container)
     },
 
     styling() {
@@ -271,27 +291,29 @@ export default {
       let style = []
       style[mxConstants.STYLE_SHAPE] = mxConstants.SHAPE_RECTANGLE
       style[mxConstants.STYLE_PERIMETER] = mxPerimeter.RectanglePerimeter
-      style[mxConstants.STYLE_STROKECOLOR] = "gray"
+      style[mxConstants.STYLE_STROKECOLOR] = "#568ba2"
+      style[mxConstants.STYLE_STROKEWIDTH] = 3
+
+      
       style[mxConstants.STYLE_ROUNDED] = true
-      style[mxConstants.STYLE_FILLCOLOR] = "#EEEEEE"
-      style[mxConstants.STYLE_GRADIENTCOLOR] = "white"
+      style[mxConstants.STYLE_FILLCOLOR] = "white"
       style[mxConstants.STYLE_FONTCOLOR] = "black"
       style[mxConstants.STYLE_ALIGN] = mxConstants.ALIGN_CENTER
       style[mxConstants.STYLE_VERTICAL_ALIGN] = mxConstants.ALIGN_MIDDLE
       style[mxConstants.STYLE_FONTSIZE] = "12"
       style[mxConstants.STYLE_FONTSTYLE] = 1
       style[mxConstants.OUTLINE_HIGHLIGHT_COLOR] = "#EEEEEE"
-      graphObject.getStylesheet().putDefaultVertexStyle(style)
+      this.graph.getStylesheet().putDefaultVertexStyle(style)
 
       // Creates the default style for edges
-      style = graphObject.getStylesheet().getDefaultEdgeStyle()
-      style[mxConstants.STYLE_STROKECOLOR] = "#0C0C0C"
+      style = this.graph.getStylesheet().getDefaultEdgeStyle()
+      style[mxConstants.STYLE_STROKECOLOR] = "grey"
       style[mxConstants.STYLE_LABEL_BACKGROUNDCOLOR] = "white"
       style[mxConstants.STYLE_EDGE] = mxEdgeStyle.ElbowConnector
       style[mxConstants.STYLE_ROUNDED] = true
       style[mxConstants.STYLE_FONTCOLOR] = "black"
       style[mxConstants.STYLE_FONTSIZE] = "10"
-      graphObject.getStylesheet().putDefaultEdgeStyle(style)
+      this.graph.getStylesheet().putDefaultEdgeStyle(style)
 
       // Symbol (custom shape) styling
       style = []
@@ -302,13 +324,13 @@ export default {
       style[mxConstants.STYLE_VERTICAL_ALIGN] = mxConstants.ALIGN_TOP
       style[mxConstants.STYLE_VERTICAL_LABEL_POSITION] = mxConstants.ALIGN_BOTTOM
       style[mxConstants.STYLE_RESIZABLE] = "0"
-      graphObject.getStylesheet().putCellStyle("symbol", style)
+      this.graph.getStylesheet().putCellStyle("symbol", style)
     },
 
     connectionHandler() {
       mxConstants.DEFAULT_HOTSPOT = 0.4
 
-      new mxConnectionHandler(graphObject, (source, target, style) => {
+      new mxConnectionHandler(this.graph, (source, target, style) => {
         const edge = new mxCell('', new mxGeometry())
         edge.setEdge(true)
         edge.setStyle(style)
@@ -335,7 +357,7 @@ export default {
 
     getJsonModel () {
       const idKeys = ['parent', 'source', 'target']
-      const jsonModel = decodeGraph(graphObject.getModel(), vertices)
+      const jsonModel = decodeGraph(this.graph.getModel(), this.vertices)
 
       return JSON.stringify(
         jsonModel,
@@ -350,52 +372,60 @@ export default {
     },
 
     render (dataModel) {
-      graphObject.getModel().beginUpdate() // Adds cells to the model in a single step
-      const root = graphObject.getDefaultParent()
+      this.graph.getModel().beginUpdate() // Adds cells to the model in a single step
+      const root = this.graph.getDefaultParent()
       try {
         dataModel
           .sort((a, b) => (a.ext.graphics.parent > b.ext.graphics.parent) ? 1 : -1)
           .map(({ ext = {}, ...config }) => {
             const node = ext.graphics
             if (node) {
-              node.parent = graphObject.model.getCell(node.parent) || root
+              node.parent = this.graph.model.getCell(node.parent) || root
 
-              vertices[node.id] = {
-                node: graphObject.insertVertex(node.parent, node.id, node.value, node.xywh[0], node.xywh[1], node.xywh[2], node.xywh[3], node.type),
+              this.vertices[node.id] = {
+                node: this.graph.insertVertex(node.parent, node.id, node.value, node.xywh[0], node.xywh[1], node.xywh[2], node.xywh[3], node.type),
                 config
               }
 
-              vertices[node.id].config = config || {}
+              this.vertices[node.id].config = config || {}
 
               if (node.edges) {
                 node.edges.forEach(edge => {
-                  if (!edges[edge.id]) {
-                    edges[edge.id] = edge
+                  if (!this.edges[edge.id]) {
+                    this.edges[edge.id] = edge
                   }
                 })
               }
             }
           })
 
-        Object.values(edges).forEach(({ id, parent, source, target, value }) => {
-          parent = graphObject.model.getCell(parent) || root
-          graphObject.insertEdge(parent, id, value, vertices[source].node, vertices[target].node)
+        Object.values(this.edges).forEach(({ id, parent, source, target, value }) => {
+          parent = this.graph.model.getCell(parent) || root
+          this.graph.insertEdge(parent, id, value, this.vertices[source].node, this.vertices[target].node)
         })
       } finally {
-        graphObject.getModel().endUpdate() // Updates the display
+        this.graph.getModel().endUpdate() // Updates the display
 
         // Register UNDO and REDO
         const listener = (sender, evt) => {
-          undoManager.undoableEditHappened(evt.getProperty('edit'))
+          this.undoManager.undoableEditHappened(evt.getProperty('edit'))
         }
 
-        graphObject.getModel().addListener(mxEvent.UNDO, listener)
-        graphObject.getView().addListener(mxEvent.UNDO, listener)
+        this.graph.getModel().addListener(mxEvent.UNDO, listener)
+        this.graph.getView().addListener(mxEvent.UNDO, listener)
 
-        graphObject.getModel().addListener(mxEvent.REDO, listener)
-        graphObject.getView().addListener(mxEvent.REDO, listener)
+        this.graph.getModel().addListener(mxEvent.REDO, listener)
+        this.graph.getView().addListener(mxEvent.REDO, listener)
       }
     },
   },
 }
 </script>
+
+<style>
+hr {
+  margin: 1rem 0 1rem 0 !important; 
+  border: 0;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+</style>
