@@ -48,7 +48,7 @@ export function decodeToolbar (config) {
     } else {
       return {
         title,
-        icon: icon ? icon : `icons/${type}.svg`,
+        icon: icon ? icon : `../icons/${type}.svg`,
         width,
         height,
         style: style ? style : `shape=${type}`

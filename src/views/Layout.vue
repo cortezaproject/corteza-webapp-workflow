@@ -7,12 +7,20 @@
   </b-container>
 </template>
 
-<style>
-html {
-  height: 100vh;
-}
+<script>
+export default {
+  created () {
+    this.$auth.check().then((user) => {
+      if (!user) {
+        // check performed: no error & no user,
+        // redirect to auth
+        throw new Error()
+      }
 
-body {
-  height: 100%;
+      this.$router.push({ name: 'editor' })
+    }).catch(() => {
+      this.$auth.open()
+    })
+  }
 }
-</style>
+</script>

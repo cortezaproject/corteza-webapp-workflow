@@ -1,0 +1,17 @@
+@import './inputs/labels.scss';
+@import './inputs/texts.scss';
+@import './inputs/checkables.scss';
+
+.big-form {
+  font-size:16px;
+}
+
+.input-wrap, .form-check, .form-group {
+  margin:0.5em 0;
+}
+
+fieldset {
+  border: 0 none;
+  margin: 0;
+  padding: 0;
+}

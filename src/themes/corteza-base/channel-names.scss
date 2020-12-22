@@ -1,0 +1,72 @@
+.channel-name {
+  &:before {
+    content:"#";
+    display:inline-block;
+    margin-right:5px;
+    font-weight:400;
+    width: 8px;
+  }
+  &.blue {
+    &:before {
+      color: $primary;
+    }
+  }
+  &.green {
+    &:before {
+      color: $success;
+    }
+  }
+  &.red {
+    &:before {
+      color: $danger;
+    }
+  }
+  &.yellow {
+    &:before {
+      color: $warning;
+    }
+  }
+}
+
+.private {
+  .channel-name {
+    &:before {
+      content: "\e98f";
+      font-family: '#{$icomoon-font-family}';
+    }
+  }
+  .ignored {
+    &:before {
+      content: "";
+    }
+  }
+}
+
+.group {
+  &>.channel-name:before {
+    content: '●';
+    font-weight: bold;
+    color: $secondary;
+    font-size: 20px;
+    margin-left: -2px;
+  }
+
+  &.new-moon {
+    a {
+      color: $secondary;
+    }
+  }
+
+  &.full-moon {
+    .channel-name:before {
+      color: $success;
+    }
+  }
+
+  &.last-quarter-moon {
+    .channel-name:before {
+      content: '○';
+      color: $success;
+    }
+  }
+}
