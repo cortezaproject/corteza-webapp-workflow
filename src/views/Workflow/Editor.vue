@@ -1,5 +1,6 @@
 <template>
   <workflow-editor
+    v-if="model"
     :model="model"
     @save="saveModel"
   />
@@ -27,7 +28,7 @@ export default {
 
   methods: {
     getModel () {
-      this.model = JSON.parse(localStorage.getItem('graph'))
+      this.model = JSON.parse(localStorage.getItem('graph')) || []
     },
 
     saveModel (model) {

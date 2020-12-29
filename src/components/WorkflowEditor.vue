@@ -1,8 +1,13 @@
 <template>
-  <div class="h-100 d-flex flex-row px-1 py-2">
+  <div
+    id="editor"
+    class="h-100 d-flex flex-row px-1 py-2"
+    @keyup.8.prevent="deleteSelectedCells"
+    @keyup.46.prevent="deleteSelectedCells"
+  >
     <b-card
       header="Tools"
-      style="max-width: 200px"
+      style="max-width: 200px; min-width: 105px;"
       body-class="p-1"
       header-class="text-center"
     >
@@ -28,14 +33,38 @@
       id="graph"
       ref="graph"
       class="h-100 flex-grow-1 ml-1 p-0"
+
     />
     <b-sidebar
+      v-if="getSelectedCell"
       v-model="sidebar.show"
-      title="Sidebar"
       shadow
       right
+      lazy
+      header-class="p-2 pb-0 mt-3 mw-25"
     >
-      {{ sidebar.selectedCell }}
+      <template #header>
+        <h3
+          class="mb-0"
+        >
+          {{ getSelectedCell.vertex ? 'Step' : 'Edge' }}
+        </h3>
+      </template>
+
+      <hr>
+
+      <div
+        class="px-2"
+      >
+        <b-form-group
+          label="Label"
+        >
+          <b-form-input
+            :value="getSelectedCell.value"
+            @input="setSelectedCellValue"
+          />
+        </b-form-group>
+      </div>
     </b-sidebar>
   </div>
 </template>
@@ -62,6 +91,7 @@ const {
   mxPerimeter,
   mxEdgeStyle,
   mxConnectionHandler,
+  mxClipboard,
 } = mxgraph()
 
 export default {
@@ -90,6 +120,15 @@ export default {
     }
   },
 
+  computed: {
+    getSelectedCell () {
+      if (this.sidebar.selectedCell) {
+        return this.graph.model.getCell(this.sidebar.selectedCell.cellID)
+      }
+      return undefined
+    },
+  },
+
   mounted () {
     try {
       if (!mxClient.isBrowserSupported()) {
@@ -112,13 +151,24 @@ export default {
 
       this.graph.container.style.background = `url("${require('../assets/grid.gif')}")`
 
-      this.render(JSON.parse(localStorage.getItem('graph')))
+      this.render(this.model)
     } catch (e) {
       console.error(e)
     }
   },
 
   methods: {
+    setSelectedCellValue (value) {
+      this.graph.model.setValue(this.getSelectedCell, value)
+    },
+
+    deleteSelectedCells (evt) {
+      if (this.graph.isEnabled() && evt.srcElement.className !== 'form-control') {
+        this.sidebar.show = false
+        this.graph.removeCells()
+      }
+    },
+
     setup() {
       this.graph.setPanning(true)
       this.graph.zoomFactor = 1.1
@@ -137,7 +187,6 @@ export default {
         mxEvent.addListener(this.graph.container, "mousedown", () => {
           if (!this.graph.isEditing()) {
             this.graph.container.setAttribute("tabindex", "-1")
-            this.graph.container.focus()
           }
         })
       }
@@ -200,16 +249,26 @@ export default {
         return null
       }
 
-      const deleteCells = () => {
+      // Ctrl + X
+      this.keyhandler.controlKeys[88] = () => {
         if (this.graph.isEnabled()) {
-          this.graph.removeCells()
+          mxClipboard.cut(this.graph, this.graph.getSelectionCells())
         }
       }
 
-      // Backspace
-      this.keyhandler.normalKeys[8] = deleteCells
-      // Delete
-      this.keyhandler.normalKeys[46] = deleteCells
+      // Ctrl + C
+      this.keyhandler.controlKeys[67] = () => {
+        if (this.graph.isEnabled()) {
+          mxClipboard.copy(this.graph, this.graph.getSelectionCells())
+        }
+      }
+
+      // Ctrl + V
+      this.keyhandler.controlKeys[86] = () => {
+        if (this.graph.isEnabled()) {
+          mxClipboard.paste(this.graph)
+        }
+      }
 
       // Ctrl + A
       this.keyhandler.controlKeys[65] = () => {
@@ -236,13 +295,25 @@ export default {
     events() {
       // Click event
       this.graph.addListener(mxEvent.CLICK, (sender, evt) => {
+        // If CTRL/CMD key is pressed
+        const event = evt.getProperty("event")
         const cell = evt.getProperty("cell") // cell may be null
-        if (cell != null) {
-          console.log(cell)
-          this.sidebar.selectedCell = {
-            cellID: cell.id,
+        if (event) {
+          if (mxEvent.isControlDown(event) || (mxClient.IS_MAC && mxEvent.isMetaDown(event))) {
+          } else {
+            if (cell != null) {
+              this.sidebar.selectedCell = {
+                cellID: cell.id,
+              }
+              this.sidebar.show = true
+            } else {
+              if (this.getSelectedCell) {
+                this.graph.getSelectionModel().removeCell(this.getSelectedCell)
+                this.sidebar.selectedCell = undefined
+              }
+              this.sidebar.show = false
+            }
           }
-          this.sidebar.show = true
         }
 
         evt.consume()
@@ -423,9 +494,7 @@ export default {
 </script>
 
 <style>
-hr {
-  margin: 1rem 0 1rem 0 !important; 
-  border: 0;
-  border-top: 1px solid rgba(0, 0, 0, 0.1);
+#graph {
+  outline: none;
 }
 </style>
