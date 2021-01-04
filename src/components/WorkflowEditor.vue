@@ -1,7 +1,7 @@
 <template>
   <div
     id="editor"
-    class="h-100 d-flex flex-row px-1 py-2"
+    class="h-100 d-flex p-1"
     @keyup.8.prevent="deleteSelectedCells"
     @keyup.46.prevent="deleteSelectedCells"
   >
@@ -18,14 +18,14 @@
       />
       <hr>
       <div
-        class="d-flex align-items-center"
+        class="d-flex flex-column align-items-center"
       >
         <b-button
           variant="link"
-          class="w-100"
+          class="px-0"
           @click="$emit('save', getJsonModel())"
         >
-          To JSON
+          Save Workflow
         </b-button>
       </div>
     </b-card>
@@ -36,24 +36,29 @@
 
     />
     <b-sidebar
-      v-if="getSelectedCell"
       v-model="sidebar.show"
       shadow
       right
       lazy
       header-class="p-2 pb-0 mt-3 mw-25"
     >
-      <template #header>
-        <h3
-          class="mb-0"
-        >
-          {{ getSelectedCell.vertex ? 'Step' : 'Edge' }}
-        </h3>
+      <template
+        #header
+      >
+        <div>
+          <h3
+            v-if="getSelectedCell"
+            class="mb-0"
+          >
+            {{ getSelectedCell.vertex ? 'Step' : 'Edge' }}
+          </h3>
+        </div>
       </template>
 
       <hr>
 
       <div
+        v-if="getSelectedCell"
         class="px-2"
       >
         <b-form-group
@@ -71,7 +76,7 @@
 
 <script>
 import mxgraph from "mxgraph"
-import { decodeGraph, decodeToolbar } from "../lib/codec"
+import { encodeGraph, decodeToolbar } from "../lib/codec"
 import toolbarConfig from "../assets/config/toolbar.json"
 
 const {
@@ -98,9 +103,9 @@ export default {
   name: "WorkflowEditor",
 
   props: {
-    model: {
-      type: Array,
-      default: () => [],
+    workflow: {
+      type: Object,
+      default: () => {},
     },
   },
 
@@ -129,6 +134,16 @@ export default {
     },
   },
 
+  watch: {
+    workflow: {
+      handler (newWorkflow) {
+        if (newWorkflow.workflowID) {
+          this.render(newWorkflow)
+        }
+      }
+    },
+  },
+
   mounted () {
     try {
       if (!mxClient.isBrowserSupported()) {
@@ -150,8 +165,6 @@ export default {
       this.connectionHandler()
 
       this.graph.container.style.background = `url("${require('../assets/grid.gif')}")`
-
-      this.render(this.model)
     } catch (e) {
       console.error(e)
     }
@@ -302,16 +315,16 @@ export default {
           if (mxEvent.isControlDown(event) || (mxClient.IS_MAC && mxEvent.isMetaDown(event))) {
           } else {
             if (cell != null) {
+              this.sidebar.show = true
               this.sidebar.selectedCell = {
                 cellID: cell.id,
               }
-              this.sidebar.show = true
             } else {
+              this.sidebar.show = false
               if (this.getSelectedCell) {
                 this.graph.getSelectionModel().removeCell(this.getSelectedCell)
                 this.sidebar.selectedCell = undefined
               }
-              this.sidebar.show = false
             }
           }
         }
@@ -428,28 +441,31 @@ export default {
 
     getJsonModel () {
       const idKeys = ['parent', 'source', 'target']
-      const jsonModel = decodeGraph(this.graph.getModel(), this.vertices)
+      const jsonModel = encodeGraph(this.graph.getModel(), this.vertices)
 
-      return JSON.stringify(
-        jsonModel,
-        (key, value) => {
+      return jsonModel.map(step => {
+        const visual = {}
+        Object.entries(step.meta.visual).forEach(([key, value]) => {
           if (idKeys.includes(key) && value !== null) {
-            return value.id
+            visual[key] = value.id
+          } else {
+            visual[key] = value
           }
-          return value
-        },
-        4
-      )
+        })
+        step.meta.visual = visual
+        return step
+      })
     },
 
-    render (dataModel) {
+    render (workflow) {
+      const steps = workflow.steps || []
       this.graph.getModel().beginUpdate() // Adds cells to the model in a single step
       const root = this.graph.getDefaultParent()
       try {
-        dataModel
-          .sort((a, b) => (a.ext.graphics.parent > b.ext.graphics.parent) ? 1 : -1)
-          .map(({ ext = {}, ...config }) => {
-            const node = ext.graphics
+        steps
+          .sort((a, b) => (a.meta.visual.parent > b.meta.visual.parent) ? 1 : -1)
+          .map(({ meta = {}, ...config }) => {
+            const node = meta.visual
             if (node) {
               node.parent = this.graph.model.getCell(node.parent) || root
 

@@ -1,5 +1,4 @@
-export function decodeGraph (model, vertices) {
-  console.log(model.cells)
+export function encodeGraph (model, vertices) {
   return Object.values(model.cells)
     .filter(cell => {
       return !!cell.vertex
@@ -19,17 +18,19 @@ export function decodeGraph (model, vertices) {
           return {
             id,
             value,
-            parent,
-            source,
-            target
+            parent: parent.id,
+            source: source.id,
+            target: target.id,
           }
         })
       }
 
       return {
         ...((vertices[cell.id] || {}).config || {}),
-        ext: {
-          graphics: cell
+        meta: {
+          label: cell.value || '',
+          description: '',
+          visual: cell,
         }
       }
     })
@@ -48,7 +49,7 @@ export function decodeToolbar (config) {
     } else {
       return {
         title,
-        icon: icon ? icon : `../icons/${type}.svg`,
+        icon: icon ? icon : `../../icons/${type}.svg`,
         width,
         height,
         style: style ? style : `shape=${type}`

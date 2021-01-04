@@ -14,6 +14,6 @@ Vue.use(BootstrapVueIcons)
 
 Vue.use(plugins.CortezaAPI('system'))
 Vue.use(plugins.CortezaAPI('compose'))
-Vue.use(plugins.CortezaAPI('messaging'))
+Vue.use(plugins.CortezaAPI('automation'))
 
 Vue.use(plugins.Auth(), { api: Vue.prototype.$SystemAPI })

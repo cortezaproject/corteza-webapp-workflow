@@ -12,15 +12,15 @@
             "height": 80,
             "type": "rectangle",
             "style": "rectangle;resizable=0",
-            "icon": "../icons/task.svg"
+            "icon": "../../icons/task.svg"
         },
         {
             "title": "Subprocess",
             "width": 100,
             "height": 80,
             "type": "symbol",
-            "style": "symbol;image=../icons/symbols/subprocess.svg",
-            "icon": "../icons/symbols/small_subprocess.svg"
+            "style": "symbol;image=../../icons/symbols/subprocess.svg",
+            "icon": "../../icons/symbols/small_subprocess.svg"
         },
         {
             "type": "break"
@@ -33,24 +33,24 @@
             "width": 60,
             "height": 60,
             "type": "symbol",
-            "style": "symbol;image=../icons/symbols/event_start.svg",
-            "icon": "../icons/symbols/small_event_start.svg"
+            "style": "symbol;image=../../icons/symbols/event_start.svg",
+            "icon": "../../icons/symbols/small_event_start.svg"
         },
         {
             "title": "Event (Intermediate)",
             "width": 60,
             "height": 60,
             "type": "symbol",
-            "style": "symbol;image=../icons/symbols/event_intermediate.svg",
-            "icon": "../icons/symbols/small_event_intermediate.svg"
+            "style": "symbol;image=../../icons/symbols/event_intermediate.svg",
+            "icon": "../../icons/symbols/small_event_intermediate.svg"
         },
         {
             "title": "Event (End)",
             "width": 60,
             "height": 60,
             "type": "symbol",
-            "style": "symbol;image=../icons/symbols/event_end.svg",
-            "icon": "../icons/symbols/small_event_end.svg"
+            "style": "symbol;image=../../icons/symbols/event_end.svg",
+            "icon": "../../icons/symbols/small_event_end.svg"
         },
         {
             "type": "break"
@@ -63,24 +63,24 @@
             "width": 60,
             "height": 60,
             "type": "symbol",
-            "style": "symbol;image=../icons/symbols/gateway_exclusive.svg",
-            "icon": "../icons/symbols/small_gateway_exclusive.svg"
+            "style": "symbol;image=../../icons/symbols/gateway_exclusive.svg",
+            "icon": "../../icons/symbols/small_gateway_exclusive.svg"
         },
         {
             "title": "Gateway (Parallel)",
             "width": 60,
             "height": 60,
             "type": "symbol",
-            "style": "symbol;image=../icons/symbols/gateway_parallel.svg",
-            "icon": "../icons/symbols/small_gateway_parallel.svg"
+            "style": "symbol;image=../../icons/symbols/gateway_parallel.svg",
+            "icon": "../../icons/symbols/small_gateway_parallel.svg"
         },
         {
             "title": "Gateway (Inclusive)",
             "width": 60,
             "height": 60,
             "type": "symbol",
-            "style": "symbol;image=../icons/symbols/gateway_inclusive.svg",
-            "icon": "../icons/symbols/small_gateway_inclusive.svg"
+            "style": "symbol;image=../../icons/symbols/gateway_inclusive.svg",
+            "icon": "../../icons/symbols/small_gateway_inclusive.svg"
         }
     ]
 }

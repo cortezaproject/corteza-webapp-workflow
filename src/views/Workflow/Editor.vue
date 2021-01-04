@@ -1,8 +1,8 @@
 <template>
   <workflow-editor
-    v-if="model"
-    :model="model"
-    @save="saveModel"
+    v-if="workflow"
+    :workflow="workflow"
+    @save="saveWorkflow"
   />
 </template>
 
@@ -18,22 +18,38 @@ export default {
 
   data () {
     return {
-      model: undefined,
+      workflow: {},
     }
   },
 
-  mounted () {
-    this.getModel()
+  computed: {
+    workflowID () {
+      return this.$route.params.workflowID
+    }
+  },
+
+  async created () {
+    await this.fetchWorkflow()
   },
 
   methods: {
-    getModel () {
-      this.model = JSON.parse(localStorage.getItem('graph')) || []
+    fetchWorkflow () {
+      if (this.workflowID) {
+        this.$AutomationAPI.workflowRead({ workflowID: this.workflowID })
+          .then(wf => this.workflow = wf)
+          .catch(err => console.error(err))
+      }
     },
 
-    saveModel (model) {
-      localStorage.setItem('graph', model)
-    },
+    saveWorkflow (workflow) {
+      console.log(workflow)
+      if (this.workflow.workflowID) {
+        this.workflow.steps = workflow
+        this.$AutomationAPI.workflowUpdate(this.workflow)
+          .then(wf => this.workflow = wf)
+          .catch(err => console.error(err))
+      }
+    }
   }
 }
 </script>

@@ -1,17 +1,19 @@
-$wideminwidth:720px !default;
+$wideminwidth:767px !default;
 $confortableminwidth:1020px !default;
 
-$logo: '/images/logo.png' !default;
+$logo: 'img/logo.png' !default;
 
 // Paths
 $fonts_dir : './fonts/' !default;
-$icomoon-font-path: $fonts_dir + 'icomoon' !default;
-$icomoon-font-family: "icomoon" !default;
 
 // Typography
 $regular: 'nunito_sansregular' !default;
 $bold: 'nunito_sansbold' !default;
 $semibold: 'nunito_sanssemibold' !default;
+$font-size-base: 0.85rem !default;
+
+$font-family-base:      $regular !default;
+$headings-font-family:  $semibold !default;
 
 // Color system
 $white:         #fff !default;
@@ -23,14 +25,59 @@ $warning:       #F5D380 !default;
 $danger:        #E85568 !default;
 $light:         #F3F3F5 !default;
 $dark:          #1e2224 !default;
-$currentmymessagebgcolor : #a7d0e3 !default;
+
+// Options
+$enable-rounded:   false !default;
+$enable-gradients: true !default;
+
+// Components
+$border-radius: 0 !default;
+
+// Body
+$body-bg: $light !default;
+
+// Tables
+$table-cell-padding: 0.5rem !default;
+$table-cell-padding-sm: 0.25rem !default;
+
+$table-border-width: 0 !default;
+
+// Buttons
+$btn-font-size: $font-size-base !default;
+$btn-padding-y: 0.25em !default;
+$btn-padding-x: 1em !default;
+$btn-focus-width: 0 !default;
+$btn-focus-box-shadow: none !default;
+$btn-active-box-shadow: none !default;
+
+// Navbar
+$navbar-bg:             $white !default;
+$navbar-color:          $black !default;
+$navbar-border:         $primary !default;
+$navbar-active-bg:      $white !default;
+$navbar-active-color:   $primary !default;
+$navbar-active-border:  $primary !default;
+$navbar-hover-bg:       $white !default;
+$navbar-hover-color:    $primary !default;
+$navbar-hover-border:   $primary !default;
+$navbar-height:         50px !default;
+$navbar-padding-y:      0 !default;
+$navbar-padding-x:      0 !default;
+
+$navbar-toggler-font-size:  24px !default;
+$sidebar-width:         250px !default;
+$sidebar-height:        calc(100vh - #{$navbar-height}) !default;
+
+// Forms
+$input-font-size: $font-size-base !default;
+$input-btn-focus-width:        0 !default;
+$input-focus-box-shadow:       none !default;
+$input-focus-border-color:     $primary !default;
 
 /* stylelint-disable */
 // This is used within corteza-webapp-compose/src/lib/block/Calendar/feedLoader/
 // to determine default event colors
 :export {
-  wideMinWidth: $wideminwidth;
-  confortableMinWidth: $confortableminwidth;
   primary: $primary;
   danger: $danger;
   secondary: $secondary;
