@@ -93,13 +93,20 @@ export default {
 
       newWorkflow: new automation.Workflow({
         handle: '',
-        ownedBy: this.$auth.user.userID,
-        runAs: this.$auth.user.userID,
+        ownedBy: this.userID,
+        runAs: this.userID,
       }),
     }
   },
 
   computed: {
+    userID () {
+      if (this.$auth.user) {
+        return this.$auth.user.userID
+      }
+      return undefined
+    },
+
     tableFields () {
       return [
         {
@@ -129,7 +136,7 @@ export default {
 
   methods: {
     fetchWorkflows () {
-      this.$AutomationAPI.workflowList()
+      this.$AutomationAPI.workflowList({ disabled: 1 })
         .then(({ set = [], filter = {} }) => {
           this.workflows = set
         })

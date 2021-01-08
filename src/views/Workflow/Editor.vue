@@ -28,7 +28,7 @@ export default {
     }
   },
 
-  async created () {
+  async mounted () {
     await this.fetchWorkflow()
   },
 
@@ -42,7 +42,6 @@ export default {
     },
 
     saveWorkflow (workflow) {
-      console.log(workflow)
       if (this.workflow.workflowID) {
         this.workflow.steps = workflow
         this.$AutomationAPI.workflowUpdate(this.workflow)

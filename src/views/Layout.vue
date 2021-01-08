@@ -3,8 +3,12 @@
     fluid
     class="h-100 m-0 p-0"
   >
-    <workflow-header />
-    <router-view />
+    <!-- <workflow-header
+      v-if="!proccessing"
+    /> -->
+    <router-view
+      v-if="!proccessing"
+    />
     <c-permissions-modal />
   </b-container>
 </template>
@@ -20,7 +24,13 @@ export default {
     CPermissionsModal,
   },
 
-  created () {
+  data () {
+    return {
+      proccessing: true,
+    }
+  },
+
+  beforeCreate () {
     this.$auth.check().then((user) => {
       if (!user) {
         // check performed: no error & no user,
@@ -29,6 +39,8 @@ export default {
       }
     }).catch(() => {
       this.$auth.open()
+    }).finally(() => {
+      this.proccessing = false
     })
   }
 }

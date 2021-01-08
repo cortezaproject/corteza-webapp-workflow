@@ -47,12 +47,20 @@ export function decodeToolbar (config) {
         break: true
       }
     } else {
+      icon = `${process.env.BASE_URL}${icon ? icon : `icons/${type}.svg`}`
+      style = type
+
+      if (type === 'symbol') {
+        style = `${style};image=${icon.replace('small_', '')}`
+      }
+
       return {
         title,
-        icon: icon ? icon : `../../icons/${type}.svg`,
+        icon,
         width,
         height,
-        style: style ? style : `shape=${type}`
+        type,
+        style,
       }
     }
   })

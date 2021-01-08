@@ -6,67 +6,124 @@
     @keyup.46.prevent="deleteSelectedCells"
   >
     <b-card
-      header="Tools"
-      style="max-width: 200px; min-width: 105px;"
-      body-class="p-1"
-      header-class="text-center"
+      no-body
+      class="h-100 border-0 shadow-sm rounded-lg"
+      style="max-width: 200px; min-width: 118px;"
     >
-      <div
-        id="toolbar"
-        ref="toolbar"
-        class="mt-3"
-      />
-      <hr>
-      <div
-        class="d-flex flex-column align-items-center"
+      <b-card-header
+        class="sticky-top h5 px-2"
+        header-bg-variant="white"
+        header-text-variant="white"
+        header-border-variant="primary"
       >
-        <b-button
-          variant="link"
-          class="px-0"
-          @click="$emit('save', getJsonModel())"
+        ''
+      </b-card-header>
+      <b-card-body
+        class="p-1"
+      >
+        <div
+          id="toolbar"
+          ref="toolbar"
+          class="mt-3"
+        />
+        <hr>
+        <div
+          class="d-flex flex-column align-items-center"
         >
-          Save Workflow
-        </b-button>
-      </div>
+          <b-button
+            variant="link"
+            class="px-0"
+            @click="$emit('save', getJsonModel())"
+          >
+            Save Workflow
+          </b-button>
+        </div>
+      </b-card-body>
     </b-card>
-    <div
-      id="graph"
-      ref="graph"
-      class="h-100 flex-grow-1 ml-1 p-0"
 
-    />
+    <b-card
+      no-body
+      class="w-100 h-100 border-0 shadow-sm rounded-lg ml-1"
+      body-class="p-0"
+    >
+      <b-card-header
+        class="sticky-top h5 px-2"
+        header-bg-variant="white"
+        header-text-variant="primary"
+        header-border-variant="primary"
+      >
+        {{ workflow.handle }}
+        <a
+          href="#"
+          @click="openWorkflowSettings()"
+        >
+          <font-awesome-icon
+            :icon="['far', 'edit']"
+          />
+        </a>
+      </b-card-header>
+      <b-card-body
+        class="p-0"
+      >
+        <div
+          id="graph"
+          ref="graph"
+          class="h-100 p-0"
+        />
+      </b-card-body>
+    </b-card>
+
     <b-sidebar
       v-model="sidebar.show"
       shadow
       right
       lazy
-      header-class="p-2 pb-0 mt-3 mw-25"
+      no-enforce-focus
+      header-class="border-bottom border-primary"
+      body-class="p-2"
     >
       <template
         #header
       >
         <div>
-          <h3
-            v-if="getSelectedCell"
-            class="mb-0"
+          <h5
+            class="text-primary mb-0 mr-2"
           >
-            {{ getSelectedCell.vertex ? 'Step' : 'Edge' }}
-          </h3>
+            {{ getSidebarTitle }}
+          </h5>
         </div>
       </template>
 
-      <hr>
-
       <div
-        v-if="getSelectedCell"
-        class="px-2"
+        v-if="sidebar.itemType === 'cell' && getSelectedItem"
       >
         <b-form-group
           label="Label"
         >
           <b-form-input
-            :value="getSelectedCell.value"
+            :value="getSelectedItem.value"
             @input="setSelectedCellValue"
+          />
+        </b-form-group>
+
+        <b-form-group
+          label="Config"
+        >
+          <b-form-textarea
+            v-model="getCellJSON"
+            rows="10"
+          />
+        </b-form-group>
+      </div>
+
+      <div
+        v-else-if="sidebar.itemType === 'workflow'"
+      >
+        <b-form-group
+          label="Handle"
+        >
+          <b-form-input
+            v-model="workflow.handle"
           />
         </b-form-group>
       </div>
@@ -87,6 +144,8 @@ const {
   mxCell,
   mxGeometry,
   mxUndoManager,
+  mxGraphHandler,
+  mxEdgeHandler,
   mxKeyHandler,
   mxDivResizer,
   mxToolbar,
@@ -112,26 +171,44 @@ export default {
   data () {
     return {
       graph: undefined,
-      keyhandler: undefined,
+      eventHandler: undefined,
+      keyHandler: undefined,
       undoManager: undefined,
       vertices: {},
       edges: {},
       toolbar: undefined,
 
       sidebar: {
-        selectedCell: undefined,
+        item: undefined,
+        itemType: undefined,
         show: false,
       },
     }
   },
 
   computed: {
-    getSelectedCell () {
-      if (this.sidebar.selectedCell) {
-        return this.graph.model.getCell(this.sidebar.selectedCell.cellID)
-      }
-      return undefined
+    getSelectedItem () {
+      return this.sidebar.item
     },
+
+    getSidebarTitle () {
+      const { itemType } = this.sidebar
+      if (itemType) {
+        return itemType.charAt(0).toUpperCase() + itemType.slice(1)
+      }
+      return itemType
+    },
+
+    getCellJSON: {
+      get () {
+        const cell = this.vertices[this.getSelectedItem.id]
+        return JSON.stringify(cell.config, undefined, 2)
+      },
+
+      set (value) {
+        this.vertices[this.getSelectedItem.id].config = JSON.parse(value)
+      }
+    }
   },
 
   watch: {
@@ -152,8 +229,10 @@ export default {
 
       mxEvent.disableContextMenu(this.$refs.graph)
       this.graph = new mxGraph(this.$refs.graph)
-      this.keyhandler = new mxKeyHandler(this.graph)
+      this.eventHandler = new mxGraphHandler(this.graph)
+      this.keyHandler = new mxKeyHandler(this.graph)
       this.undoManager = new mxUndoManager()
+      new mxRubberband(this.graph) // Enables multiple selection
 
       this.initToolbar()
       this.setup()
@@ -171,8 +250,13 @@ export default {
   },
 
   methods: {
+    openWorkflowSettings () {
+      this.sidebar.itemType = 'workflow'
+      this.sidebar.show = true
+    },
+
     setSelectedCellValue (value) {
-      this.graph.model.setValue(this.getSelectedCell, value)
+      this.graph.model.setValue(this.getSelectedItem, value)
     },
 
     deleteSelectedCells (evt) {
@@ -184,12 +268,21 @@ export default {
 
     setup() {
       this.graph.setPanning(true)
-      this.graph.zoomFactor = 1.1
+      this.graph.zoomFactor = 1.2
 
       this.graph.setConnectable(true)
       this.graph.setAllowDanglingEdges(false)
-      new mxRubberband(this.graph) // Enables rubberband selection
       this.graph.view.setTranslate(20, 20)
+
+      // Enables guides
+      mxGraphHandler.prototype.guidesEnabled = true
+      
+      // Alt disables guides
+      mxGraphHandler.prototype.useGuidesForEvent = (evt) => {
+        return mxEvent.isAltDown(evt.getEvent())
+      }
+
+      mxEdgeHandler.prototype.snapToTerminals = true
 
       if (mxClient.IS_QUIRKS) {
         document.body.style.overflow = "hidden"
@@ -220,7 +313,7 @@ export default {
         return cell
       }
 
-      const addTool = ({ title, icon, width, height, style }) => {
+      const addTool = ({ title, icon, width, height, style, type }) => {
         const tool = new mxCell(
           null,
           new mxGeometry(0, 0, width, height),
@@ -244,61 +337,61 @@ export default {
 
     keys() {
       // Register control and meta key if Mac
-      this.keyhandler.getFunction = (evt) => {
+      this.keyHandler.getFunction = (evt) => {
         if (evt != null) {
           // If CTRL or META key is pressed
           if (evt.ctrlKey || (mxClient.IS_MAC && evt.metaKey)) {
             // If SHIFT key is pressed
             if (evt.shiftKey) {
-              return this.keyhandler.controlShiftKeys[evt.keyCode]
+              return this.keyHandler.controlShiftKeys[evt.keyCode]
             }
-            return this.keyhandler.controlKeys[evt.keyCode]
+            return this.keyHandler.controlKeys[evt.keyCode]
           }
 
           // If only normal keys are pressed
-          return this.keyhandler.normalKeys[evt.keyCode]
+          return this.keyHandler.normalKeys[evt.keyCode]
         }
 
         return null
       }
 
       // Ctrl + X
-      this.keyhandler.controlKeys[88] = () => {
+      this.keyHandler.controlKeys[88] = () => {
         if (this.graph.isEnabled()) {
           mxClipboard.cut(this.graph, this.graph.getSelectionCells())
         }
       }
 
       // Ctrl + C
-      this.keyhandler.controlKeys[67] = () => {
+      this.keyHandler.controlKeys[67] = () => {
         if (this.graph.isEnabled()) {
           mxClipboard.copy(this.graph, this.graph.getSelectionCells())
         }
       }
 
       // Ctrl + V
-      this.keyhandler.controlKeys[86] = () => {
+      this.keyHandler.controlKeys[86] = () => {
         if (this.graph.isEnabled()) {
           mxClipboard.paste(this.graph)
         }
       }
 
       // Ctrl + A
-      this.keyhandler.controlKeys[65] = () => {
+      this.keyHandler.controlKeys[65] = () => {
         if (this.graph.isEnabled()) {
           this.graph.selectAll()
         }
       }
 
       // Ctrl + Z
-      this.keyhandler.controlKeys[90] = () => {
+      this.keyHandler.controlKeys[90] = () => {
         if (this.graph.isEnabled()) {
           this.undoManager.undo()
         }
       }
 
       // Ctrl + Shift + Z
-      this.keyhandler.controlShiftKeys[90] = () => {
+      this.keyHandler.controlShiftKeys[90] = () => {
         if (this.graph.isEnabled()) {
           this.undoManager.redo()
         }
@@ -315,15 +408,14 @@ export default {
           if (mxEvent.isControlDown(event) || (mxClient.IS_MAC && mxEvent.isMetaDown(event))) {
           } else {
             if (cell != null) {
+              this.sidebar.item = cell
+              this.sidebar.itemType = 'cell'
               this.sidebar.show = true
-              this.sidebar.selectedCell = {
-                cellID: cell.id,
-              }
             } else {
               this.sidebar.show = false
-              if (this.getSelectedCell) {
-                this.graph.getSelectionModel().removeCell(this.getSelectedCell)
-                this.sidebar.selectedCell = undefined
+              if (this.getSelectedItem) {
+                this.graph.getSelectionModel().removeCell(this.getSelectedItem)
+                this.sidebar.item = undefined
               }
             }
           }
@@ -372,21 +464,17 @@ export default {
 
     styling() {
       // Creates the default style for vertices
-      let style = []
+      let style = this.graph.getStylesheet().getDefaultVertexStyle()
       style[mxConstants.STYLE_SHAPE] = mxConstants.SHAPE_RECTANGLE
       style[mxConstants.STYLE_PERIMETER] = mxPerimeter.RectanglePerimeter
       style[mxConstants.STYLE_STROKECOLOR] = "#568ba2"
       style[mxConstants.STYLE_STROKEWIDTH] = 3
-
-      
       style[mxConstants.STYLE_ROUNDED] = true
+      style[mxConstants.STYLE_RESIZABLE] = false
       style[mxConstants.STYLE_FILLCOLOR] = "white"
       style[mxConstants.STYLE_FONTCOLOR] = "black"
-      style[mxConstants.STYLE_ALIGN] = mxConstants.ALIGN_CENTER
-      style[mxConstants.STYLE_VERTICAL_ALIGN] = mxConstants.ALIGN_MIDDLE
-      style[mxConstants.STYLE_FONTSIZE] = "12"
-      style[mxConstants.STYLE_FONTSTYLE] = 1
-      style[mxConstants.OUTLINE_HIGHLIGHT_COLOR] = "#EEEEEE"
+      style[mxConstants.STYLE_FONTSIZE] = 13
+      style[mxConstants.VERTEX_SELECTION_DASHED] = false
       this.graph.getStylesheet().putDefaultVertexStyle(style)
 
       // Creates the default style for edges
@@ -396,19 +484,31 @@ export default {
       style[mxConstants.STYLE_EDGE] = mxEdgeStyle.ElbowConnector
       style[mxConstants.STYLE_ROUNDED] = true
       style[mxConstants.STYLE_FONTCOLOR] = "black"
-      style[mxConstants.STYLE_FONTSIZE] = "10"
+      style[mxConstants.STYLE_FONTSIZE] = 11
       this.graph.getStylesheet().putDefaultEdgeStyle(style)
 
       // Symbol (custom shape) styling
-      style = []
+      style = mxUtils.clone(this.graph.getStylesheet().getDefaultVertexStyle())
       style[mxConstants.STYLE_SHAPE] = mxConstants.SHAPE_IMAGE
       style[mxConstants.STYLE_PERIMETER] = mxPerimeter.RectanglePerimeter
-      style[mxConstants.STYLE_FONTSIZE] = "12"
+      style[mxConstants.STYLE_FONTSIZE] = 13
       style[mxConstants.STYLE_ALIGN] = mxConstants.ALIGN_CENTER
       style[mxConstants.STYLE_VERTICAL_ALIGN] = mxConstants.ALIGN_TOP
       style[mxConstants.STYLE_VERTICAL_LABEL_POSITION] = mxConstants.ALIGN_BOTTOM
-      style[mxConstants.STYLE_RESIZABLE] = "0"
       this.graph.getStylesheet().putCellStyle("symbol", style)
+
+      // Swimlane
+      style = mxUtils.clone(this.graph.getStylesheet().getDefaultVertexStyle())
+      style[mxConstants.STYLE_ROUNDED] = false
+      style[mxConstants.STYLE_RESIZABLE] = true
+      style[mxConstants.STYLE_SHAPE] = mxConstants.SHAPE_SWIMLANE
+      style[mxConstants.STYLE_FONTSIZE] = 15
+      style[mxConstants.STYLE_HORIZONTAL] = false
+      style[mxConstants.STYLE_VERTICAL_LABEL_POSITION] = mxConstants.ALIGN_MIDDLE
+      style[mxConstants.STYLE_VERTICAL_ALIGN] = mxConstants.ALIGN_MIDDLE
+      style[mxConstants.STYLE_STROKEWIDTH] = 2
+      delete style[mxConstants.STYLE_FILLCOLOR]
+      this.graph.getStylesheet().putCellStyle("swimlane", style)
     },
 
     connectionHandler() {
@@ -432,8 +532,24 @@ export default {
         vertex.geometry.x = pt.x
         vertex.geometry.y = pt.y
 
-        graph.setSelectionCells(graph.importCells([vertex], 0, 0, cell))
-      }
+        const [newCell] = graph.importCells([vertex], 0, 0, cell)
+
+        this.vertices[newCell.id] = {
+          node: newCell,
+          config: {
+            stepID: newCell.id,
+            kind: '',
+            ref: '',
+            arguments: null,
+            results: null
+          },
+        }
+
+        graph.setSelectionCells([newCell])
+        this.sidebar.item = this.vertices[newCell.id].node
+        this.sidebar.itemType = 'cell'
+        this.sidebar.show = true
+       }
 
       const img = toolbar.addMode(title, icon, funct)
       mxUtils.makeDraggable(img, graph, funct)
@@ -458,6 +574,8 @@ export default {
     },
 
     render (workflow) {
+      this.graph.model.clear()
+
       const steps = workflow.steps || []
       this.graph.getModel().beginUpdate() // Adds cells to the model in a single step
       const root = this.graph.getDefaultParent()
@@ -466,6 +584,7 @@ export default {
           .sort((a, b) => (a.meta.visual.parent > b.meta.visual.parent) ? 1 : -1)
           .map(({ meta = {}, ...config }) => {
             const node = meta.visual
+            const { label, description } = meta
             if (node) {
               node.parent = this.graph.model.getCell(node.parent) || root
 
@@ -509,8 +628,22 @@ export default {
 }
 </script>
 
-<style>
+<style lang="scss">
 #graph {
   outline: none;
+}
+
+.wf-info {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.b-sidebar {
+  margin-top: 0.25rem !important;
+}
+
+.b-sidebar > .b-sidebar-header {
+  padding: 0.75rem 0.5rem !important;
 }
 </style>
