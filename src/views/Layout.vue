@@ -31,17 +31,18 @@ export default {
   },
 
   beforeCreate () {
-    this.$auth.check().then((user) => {
-      if (!user) {
-        // check performed: no error & no user,
-        // redirect to auth
-        throw new Error()
-      }
-    }).catch(() => {
-      this.$auth.open()
-    }).finally(() => {
-      this.proccessing = false
-    })
+    this.$auth.check()
+      .then(user => {
+        if (!user) {
+          // check performed: no error & no user,
+          // redirect to auth
+          throw new Error()
+        }
+      }).catch(() => {
+        this.$auth.open()
+      }).finally(() => {
+        this.proccessing = false
+      })
   }
 }
 </script>

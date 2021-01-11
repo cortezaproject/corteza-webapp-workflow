@@ -81,6 +81,7 @@
       no-enforce-focus
       header-class="border-bottom border-primary"
       body-class="p-2"
+      footer-class="m-2 pb-1"
     >
       <template
         #header
@@ -127,6 +128,19 @@
           />
         </b-form-group>
       </div>
+
+      <template
+        #footer
+      >
+         <c-input-confirm
+            v-if="sidebar.itemType !== 'workflow'"
+            size="md"
+            :borderless="false"
+            @confirmed="deleteSelectedCell()"
+          >
+            Delete
+          </c-input-confirm>
+      </template>
     </b-sidebar>
   </div>
 </template>
@@ -260,10 +274,14 @@ export default {
     },
 
     deleteSelectedCells (evt) {
-      if (this.graph.isEnabled() && evt.srcElement.className !== 'form-control') {
-        this.sidebar.show = false
-        this.graph.removeCells()
-      }
+      this.sidebar.show = false
+      this.graph.removeCells()
+    },
+
+    deleteSelectedCell () {
+      this.graph.removeCells([this.getSelectedItem])
+      this.sidebar.show = false
+      this.sidebar.item = undefined
     },
 
     setup() {
@@ -557,57 +575,56 @@ export default {
 
     getJsonModel () {
       const idKeys = ['parent', 'source', 'target']
-      const jsonModel = encodeGraph(this.graph.getModel(), this.vertices)
+      return encodeGraph(this.graph.getModel(), this.vertices, this.edges)
 
-      return jsonModel.map(step => {
-        const visual = {}
-        Object.entries(step.meta.visual).forEach(([key, value]) => {
-          if (idKeys.includes(key) && value !== null) {
-            visual[key] = value.id
-          } else {
-            visual[key] = value
-          }
-        })
-        step.meta.visual = visual
-        return step
-      })
+      // return jsonModel.map(step => {
+      //   const visual = {}
+      //   Object.entries(step.meta.visual).forEach(([key, value]) => {
+      //     if (idKeys.includes(key) && value !== null) {
+      //       visual[key] = value.id
+      //     } else {
+      //       visual[key] = value
+      //     }
+      //   })
+      //   step.meta.visual = visual
+      //   return step
+      // })
     },
 
     render (workflow) {
       this.graph.model.clear()
 
       const steps = workflow.steps || []
-      this.graph.getModel().beginUpdate() // Adds cells to the model in a single step
+      const paths = workflow.paths || []
       const root = this.graph.getDefaultParent()
+
+      this.graph.getModel().beginUpdate() // Adds cells to the model in a single step
+
       try {
-        steps
-          .sort((a, b) => (a.meta.visual.parent > b.meta.visual.parent) ? 1 : -1)
-          .map(({ meta = {}, ...config }) => {
-            const node = meta.visual
-            const { label, description } = meta
-            if (node) {
-              node.parent = this.graph.model.getCell(node.parent) || root
+        // Add nodes
+        steps.forEach(({ meta = {}, ...config }) => {
+          const node = meta.visual
+          if (node) {
+            node.parent = this.graph.model.getCell(node.parent) || root
 
-              this.vertices[node.id] = {
-                node: this.graph.insertVertex(node.parent, node.id, node.value, node.xywh[0], node.xywh[1], node.xywh[2], node.xywh[3], node.type),
-                config
-              }
-
-              this.vertices[node.id].config = config || {}
-
-              if (node.edges) {
-                node.edges.forEach(edge => {
-                  if (!this.edges[edge.id]) {
-                    this.edges[edge.id] = edge
-                  }
-                })
-              }
+            this.vertices[node.id] = {
+              node: this.graph.insertVertex(node.parent, node.id, node.value, node.xywh[0], node.xywh[1], node.xywh[2], node.xywh[3], node.type),
+              config
             }
-          })
+          }
+        })
 
-        Object.values(this.edges).forEach(({ id, parent, source, target, value }) => {
-          parent = this.graph.model.getCell(parent) || root
-          this.graph.insertEdge(parent, id, value, this.vertices[source].node, this.vertices[target].node)
+        // Add edges
+        paths.forEach(({ meta, ...config }) => {
+          const edge = meta.visual
+          if (edge) {
+            edge.parent = this.graph.model.getCell(edge.parent) || root
+
+            this.edges[edge.id] = {
+              edge: this.graph.insertEdge(edge.parent, edge.id, edge.value, this.vertices[edge.source].node, this.vertices[edge.target].node),
+              config
+            }
+          }
         })
       } finally {
         this.graph.getModel().endUpdate() // Updates the display
@@ -628,7 +645,7 @@ export default {
 }
 </script>
 
-<style lang="scss">
+<style scoped lang="scss">
 #graph {
   outline: none;
 }
@@ -638,7 +655,9 @@ export default {
   top: 0;
   left: 0;
 }
+</style>
 
+<style>
 .b-sidebar {
   margin-top: 0.25rem !important;
 }

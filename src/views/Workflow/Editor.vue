@@ -41,9 +41,11 @@ export default {
       }
     },
 
-    saveWorkflow (workflow) {
+    saveWorkflow ({ steps = [], paths = [] }) {
       if (this.workflow.workflowID) {
-        this.workflow.steps = workflow
+        this.workflow.steps = steps
+        this.workflow.paths = paths
+
         this.$AutomationAPI.workflowUpdate(this.workflow)
           .then(wf => this.workflow = wf)
           .catch(err => console.error(err))

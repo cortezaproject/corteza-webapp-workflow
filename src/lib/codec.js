@@ -1,5 +1,7 @@
-export function encodeGraph (model, vertices) {
-  return Object.values(model.cells)
+export function encodeGraph (model, vertices, edges) {
+  const paths = {}
+
+  const steps = Object.values(model.cells)
     .filter(cell => {
       return !!cell.vertex
     }).map(cell => {
@@ -11,16 +13,27 @@ export function encodeGraph (model, vertices) {
           cell.geometry.width || 0,
           cell.geometry.height || 0,
         ],
-        parent: cell.parent,
+        parent: cell.parent.id,
         value: cell.value,
         type: cell.style,
-        edges: (cell.edges || []).map(({ id, value, parent, source, target }) => {
-          return {
-            id,
-            value,
-            parent: parent.id,
-            source: source.id,
-            target: target.id,
+        edges: (cell.edges || []).forEach(({ id, value, parent, source, target }) => {
+          if (!paths[id]) {
+            paths[id] = {
+              ...((edges[id] || {}).config || {}),
+              parentID: source.id,
+              childID: target.id,
+              meta: {
+                label: value || '',
+                description: '',
+                visual: {
+                  id,
+                  value,
+                  parent: parent.id,
+                  source: source.id,
+                  target: target.id,
+                }
+              }
+            }
           }
         })
       }
@@ -34,6 +47,8 @@ export function encodeGraph (model, vertices) {
         }
       }
     })
+
+  return { steps, paths: Object.values(paths) }
 }
 
 export function decodeToolbar (config) {
