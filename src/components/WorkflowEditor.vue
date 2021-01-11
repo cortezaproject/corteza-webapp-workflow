@@ -133,10 +133,9 @@
         #footer
       >
          <c-input-confirm
-            v-if="sidebar.itemType !== 'workflow'"
             size="md"
             :borderless="false"
-            @confirmed="deleteSelectedCell()"
+            @confirmed="sidebarDelete()"
           >
             Delete
           </c-input-confirm>
@@ -278,10 +277,14 @@ export default {
       this.graph.removeCells()
     },
 
-    deleteSelectedCell () {
-      this.graph.removeCells([this.getSelectedItem])
-      this.sidebar.show = false
-      this.sidebar.item = undefined
+    sidebarDelete () {
+      if (this.sidebar.itemType === 'workflow') {
+        this.$emit('delete')
+      } else {
+        this.graph.removeCells([this.getSelectedItem])
+        this.sidebar.show = false
+        this.sidebar.item = undefined
+      }
     },
 
     setup() {

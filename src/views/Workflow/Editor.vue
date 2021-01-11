@@ -3,6 +3,7 @@
     v-if="workflow"
     :workflow="workflow"
     @save="saveWorkflow"
+    @delete="deleteWorkflow"
   />
 </template>
 
@@ -50,11 +51,17 @@ export default {
           .then(wf => this.workflow = wf)
           .catch(err => console.error(err))
       }
+    },
+
+    deleteWorkflow () {
+      if (this.workflow.workflowID) {
+        this.$AutomationAPI.workflowDelete(this.workflow)
+          .then(() => {
+            this.$router.push({ name: 'workflow.list' })
+          })
+          .catch(err => console.error(err))
+      }
     }
   }
 }
 </script>
-
-<style>
-
-</style>
