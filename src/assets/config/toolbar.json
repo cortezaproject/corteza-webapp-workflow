@@ -4,20 +4,23 @@
             "title": "Swimlane",
             "width": 360,
             "height": 120,
-            "type": "swimlane"
+            "type": "swimlane",
+            "kind": "swimlane"
         },
         {
             "title": "Task",
-            "width": 100,
-            "height": 80,
-            "type": "rectangle"
+            "width": 80,
+            "height": 60,
+            "type": "rectangle",
+            "kind": "task"
         },
         {
             "title": "Subprocess",
-            "width": 100,
-            "height": 80,
+            "width": 130,
+            "height": 95,
             "type": "symbol",
-            "icon": "icons/small_subprocess.svg"
+            "icon": "icons/small_subprocess.svg",
+            "kind": "subprocess"
         },
         {
             "type": "break"
@@ -30,21 +33,24 @@
             "width": 60,
             "height": 60,
             "type": "symbol",
-            "icon": "icons/small_event_start.svg"
+            "icon": "icons/small_event_start.svg",
+            "kind": "eventStart"
         },
         {
             "title": "Event (Intermediate)",
             "width": 60,
             "height": 60,
             "type": "symbol",
-            "icon": "icons/small_event_intermediate.svg"
+            "icon": "icons/small_event_intermediate.svg",
+            "kind": "eventIntermediate"
         },
         {
             "title": "Event (End)",
             "width": 60,
             "height": 60,
             "type": "symbol",
-            "icon": "icons/small_event_end.svg"
+            "icon": "icons/small_event_end.svg",
+            "kind": "eventEnd"
         },
         {
             "type": "break"
@@ -57,21 +63,24 @@
             "width": 60,
             "height": 60,
             "type": "symbol",
-            "icon": "icons/small_gateway_exclusive.svg"
+            "icon": "icons/small_gateway_exclusive.svg",
+            "kind": "gatewayExclusive"
         },
         {
             "title": "Gateway (Parallel)",
             "width": 60,
             "height": 60,
             "type": "symbol",
-            "icon": "icons/small_gateway_parallel.svg"
+            "icon": "icons/small_gateway_parallel.svg",
+            "kind": "gatewayParallel"
         },
         {
             "title": "Gateway (Inclusive)",
             "width": 60,
             "height": 60,
             "type": "symbol",
-            "icon": "icons/small_gateway_inclusive.svg"
+            "icon": "icons/small_gateway_inclusive.svg",
+            "kind": "gatewayInclusive"
         }
     ]
 }

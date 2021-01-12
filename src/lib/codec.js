@@ -38,8 +38,10 @@ export function encodeGraph (model, vertices, edges) {
         })
       }
 
+      const vertex = mapVertexKind(vertices[cell.id])
+
       return {
-        ...((vertices[cell.id] || {}).config || {}),
+        ...vertex.config,
         meta: {
           label: cell.value || '',
           description: '',
@@ -52,7 +54,7 @@ export function encodeGraph (model, vertices, edges) {
 }
 
 export function decodeToolbar (config) {
-  return config.toolbarConfig.map(({ title, width, height, type, icon = '', style = '' }) => {
+  return config.toolbarConfig.map(({ title, width, height, type, icon, style, kind }) => {
     if (type === 'line') {
       return {
         line: true
@@ -69,6 +71,8 @@ export function decodeToolbar (config) {
         style = `${style};image=${icon.replace('small_', '')}`
       }
 
+      style = `${kind};${style}`
+
       return {
         title,
         icon,
@@ -76,7 +80,55 @@ export function decodeToolbar (config) {
         height,
         type,
         style,
+        kind,
       }
     }
   })
+}
+
+export function mapVertexKind (vertex) {
+  const { style } = vertex
+  if (!style) {
+    return {}
+  }
+
+  const kind = style.split(';')[0]
+
+  if (kind.includes('event')) {
+    return eventKinds[kind]
+  } else if (kind.includes('gateway')) {
+    if (gatewayKinds[kind]) {
+      return gatewayKinds[kind]
+    } else {
+      // Determine if fork or join
+      let inEdgeCount = 0
+      let outEdgeCount = 0
+      const edges = vertex.edges || []
+
+      edges.forEach(({ source, target }) => {
+        if (source.id === vertex.id) {
+          outEdgeCount++
+        } else if (target.id === vertex.id) {
+          inEdgeCount++
+        }
+      })
+
+      return { kind: 'gateway', ref: (inEdgeCount > outEdgeCount ? 'join' : 'fork') }
+    }
+  } else if (kind.includes('task')) {
+    return { kind: 'expressions' }
+  }
+
+  return { kind: kind || '' }
+}
+
+const eventKinds = {
+  'eventStart': { kind: 'event', ref: 'start' },
+  'eventIntermediate': { kind: 'event', ref: 'intermediate' },
+  'eventEnd': { kind: 'event', ref: 'end' },
+}
+
+const gatewayKinds = {
+  'gatewayExclusive': { kind: 'gateway', ref: 'excl' },
+  'gatewayInclusive': { kind: 'gateway', ref: 'incl' },
 }

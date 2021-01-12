@@ -124,10 +124,12 @@
           label="Config"
         >
           <b-form-textarea
-            v-model="getCellJSON"
+            v-model="getSelectedItemConfigJSON"
             rows="10"
           />
         </b-form-group>
+
+        {{ getSelectedItemKind }}
       </div>
 
       <template
@@ -147,7 +149,7 @@
 
 <script>
 import mxgraph from "mxgraph"
-import { encodeGraph, decodeToolbar } from "../lib/codec"
+import { encodeGraph, decodeToolbar, mapVertexKind } from "../lib/codec"
 import toolbarConfig from "../assets/config/toolbar.json"
 
 const {
@@ -194,6 +196,8 @@ export default {
 
       edgeConnected: false,
 
+      rendering: false,
+
       sidebar: {
         item: undefined,
         itemType: undefined,
@@ -215,7 +219,14 @@ export default {
       return itemType
     },
 
-    getCellJSON: {
+    getSelectedItemKind () {
+      if (this.getSelectedItem && this.getSelectedItem.vertex) {
+        return mapVertexKind(this.getSelectedItem)
+      }
+      return {}
+    },
+
+    getSelectedItemConfigJSON: {
       get () {
         let config = {}
         if (this.sidebar.itemType === 'cell') {
@@ -324,6 +335,17 @@ export default {
 
       mxEdgeHandler.prototype.snapToTerminals = true
 
+      // Register UNDO and REDO
+      const listener = (sender, evt) => {
+        this.undoManager.undoableEditHappened(evt.getProperty('edit'))
+      }
+
+      this.graph.getModel().addListener(mxEvent.UNDO, listener)
+      this.graph.getView().addListener(mxEvent.UNDO, listener)
+
+      this.graph.getModel().addListener(mxEvent.REDO, listener)
+      this.graph.getView().addListener(mxEvent.REDO, listener)
+
       if (mxClient.IS_QUIRKS) {
         document.body.style.overflow = "hidden"
         new mxDivResizer(this.graph.container)
@@ -353,24 +375,24 @@ export default {
         return cell
       }
 
-      const addTool = ({ title, icon, width, height, style, type }) => {
-        const tool = new mxCell(
+      const addCell = ({ title, icon, width, height, style }) => {
+        const cell = new mxCell(
           null,
           new mxGeometry(0, 0, width, height),
           style
         )
-        tool.setVertex(true)
+        cell.setVertex(true)
 
-        this.addToolbarItem(title, this.graph, this.toolbar, tool, icon)
+        this.addToolbarItem(title, this.graph, this.toolbar, cell, icon)
       }
 
-      decodeToolbar(toolbarConfig).forEach((tool) => {
-        if (tool.line) {
+      decodeToolbar(toolbarConfig).forEach((cell) => {
+        if (cell.line) {
           this.toolbar.addLine()
-        } else if (tool.break) {
+        } else if (cell.break) {
           this.toolbar.addBreak()
         } else {
-          addTool(tool)
+          addCell(cell)
         }
       })
     },
@@ -450,11 +472,48 @@ export default {
           },
         }
 
+        if (edge.source.style.includes('gatewayParallel')) {
+          this.updateVertexConfig(edge.source.id)
+        }
+
+        if (edge.target.style.includes('gatewayParallel')) {
+          this.updateVertexConfig(edge.target.id)
+        }
+
         this.sidebar.item = edge
         this.sidebar.itemType = 'edge'
         this.sidebar.show = true
 
         this.edgeConnected = true
+      })
+
+
+      this.graph.addListener(mxEvent.CELLS_ADDED, (sender, evt) => {
+        const [cell] = evt.getProperty("cells")
+        if (cell && cell.vertex) {
+          this.addCellToVertices(cell)
+
+          if (!this.rendering) {
+            this.graph.setSelectionCells([cell])
+            this.sidebar.item = this.vertices[cell.id].node
+            this.sidebar.itemType = 'cell'
+            this.sidebar.show = true
+          }
+        }
+      })
+
+      this.graph.addListener(mxEvent.CELLS_REMOVED, (sender, evt) => {
+        const cells = evt.getProperty("cells") || []
+        cells.filter(({ edge }) => edge)
+          .forEach(({ id, source, target }) => {
+            if (source.style.includes('gatewayParallel')) {
+              this.updateVertexConfig(source.id)
+            }
+
+            if (target.style.includes('gatewayParallel')) {
+              this.updateVertexConfig(target.id)
+            }
+          })
       })
 
       // Click event
@@ -470,7 +529,7 @@ export default {
 
         if (event) {
           if (mxEvent.isControlDown(event) || (mxClient.IS_MAC && mxEvent.isMetaDown(event))) {
-            // Prevent sidebar opening/closing when CTRL(CMD) is pressed
+            // Prevent sidebar opening/closing when CTRL(CMD) is pressed while clicking
           } else {
             if (cell != null) {
               this.sidebar.item = cell
@@ -593,27 +652,11 @@ export default {
         graph.stopEditing(false)
 
         const pt = graph.getPointForEvent(evt)
-        const vertex = graph.getModel().cloneCell(prototype)
+        let vertex = graph.getModel().cloneCell(prototype)
         vertex.geometry.x = pt.x
         vertex.geometry.y = pt.y
 
         const [newCell] = graph.importCells([vertex], 0, 0, cell)
-
-        this.vertices[newCell.id] = {
-          node: newCell,
-          config: {
-            stepID: newCell.id,
-            kind: '',
-            ref: '',
-            arguments: null,
-            results: null
-          },
-        }
-
-        graph.setSelectionCells([newCell])
-        this.sidebar.item = this.vertices[newCell.id].node
-        this.sidebar.itemType = 'cell'
-        this.sidebar.show = true
        }
 
       const img = toolbar.addMode(title, icon, funct)
@@ -621,29 +664,38 @@ export default {
     },
 
     getJsonModel () {
-      const idKeys = ['parent', 'source', 'target']
       return encodeGraph(this.graph.getModel(), this.vertices, this.edges)
+    },
 
-      // return jsonModel.map(step => {
-      //   const visual = {}
-      //   Object.entries(step.meta.visual).forEach(([key, value]) => {
-      //     if (idKeys.includes(key) && value !== null) {
-      //       visual[key] = value.id
-      //     } else {
-      //       visual[key] = value
-      //     }
-      //   })
-      //   step.meta.visual = visual
-      //   return step
-      // })
+    addCellToVertices (cell) {
+      this.vertices[cell.id] = {
+        node: cell,
+        config: {
+          stepID: cell.id,
+          kind: '',
+          ref: '',
+          arguments: null,
+          results: null,
+          ...(this.rendering ? {} : mapVertexKind(cell))
+        }
+      }
+    },
+
+    updateVertexConfig (vID) {
+      const { node, config } = this.vertices[vID]
+      this.vertices[vID].config = { ...config, ...mapVertexKind(node) }
     },
 
     render (workflow) {
+      this.rendering = true
       this.graph.model.clear()
 
       const steps = workflow.steps || []
       const paths = workflow.paths || []
       const root = this.graph.getDefaultParent()
+
+      this.vertices = {}
+      this.edges = {}
 
       this.graph.getModel().beginUpdate() // Adds cells to the model in a single step
 
@@ -654,10 +706,7 @@ export default {
           if (node) {
             node.parent = this.graph.model.getCell(node.parent) || root
 
-            this.vertices[node.id] = {
-              node: this.graph.insertVertex(node.parent, node.id, node.value, node.xywh[0], node.xywh[1], node.xywh[2], node.xywh[3], node.type),
-              config
-            }
+            this.graph.insertVertex(node.parent, node.id, node.value, node.xywh[0], node.xywh[1], node.xywh[2], node.xywh[3], node.type)
           }
         })
 
@@ -673,19 +722,12 @@ export default {
             }
           }
         })
+
+        // Updates vertices now that edges are present
+        Object.keys(this.vertices).forEach(vID => this.updateVertexConfig(vID))
       } finally {
         this.graph.getModel().endUpdate() // Updates the display
-
-        // Register UNDO and REDO
-        const listener = (sender, evt) => {
-          this.undoManager.undoableEditHappened(evt.getProperty('edit'))
-        }
-
-        this.graph.getModel().addListener(mxEvent.UNDO, listener)
-        this.graph.getView().addListener(mxEvent.UNDO, listener)
-
-        this.graph.getModel().addListener(mxEvent.REDO, listener)
-        this.graph.getView().addListener(mxEvent.REDO, listener)
+        this.rendering = false
       }
     },
   },
