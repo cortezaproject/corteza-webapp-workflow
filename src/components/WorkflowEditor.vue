@@ -96,9 +96,22 @@
       </template>
 
       <div
-        v-if="sidebar.itemType === 'cell' && getSelectedItem"
+        v-if="getSelectedItem"
       >
+        <div
+          v-if="sidebar.itemType === 'workflow'"
+        >
+          <b-form-group
+            label="Handle"
+          >
+            <b-form-input
+              v-model="workflow.handle"
+            />
+          </b-form-group>
+        </div>
+
         <b-form-group
+          v-else
           label="Label"
         >
           <b-form-input
@@ -113,18 +126,6 @@
           <b-form-textarea
             v-model="getCellJSON"
             rows="10"
-          />
-        </b-form-group>
-      </div>
-
-      <div
-        v-else-if="sidebar.itemType === 'workflow'"
-      >
-        <b-form-group
-          label="Handle"
-        >
-          <b-form-input
-            v-model="workflow.handle"
           />
         </b-form-group>
       </div>
@@ -191,6 +192,8 @@ export default {
       edges: {},
       toolbar: undefined,
 
+      edgeConnected: false,
+
       sidebar: {
         item: undefined,
         itemType: undefined,
@@ -214,12 +217,21 @@ export default {
 
     getCellJSON: {
       get () {
-        const cell = this.vertices[this.getSelectedItem.id]
-        return JSON.stringify(cell.config, undefined, 2)
+        let config = {}
+        if (this.sidebar.itemType === 'cell') {
+          config = this.vertices[this.getSelectedItem.id].config
+        } else if (this.sidebar.itemType === 'edge') {
+          config = this.edges[this.getSelectedItem.id].config
+        }
+        return JSON.stringify(config, undefined, 2)
       },
 
       set (value) {
-        this.vertices[this.getSelectedItem.id].config = JSON.parse(value)
+        if (this.sidebar.itemType === 'cell') {
+          this.vertices[this.getSelectedItem.id].config = JSON.parse(value)
+        } else if (this.sidebar.itemType === 'edge') {
+          this.edges[this.getSelectedItem.id].config = JSON.parse(value)
+        }
       }
     }
   },
@@ -273,8 +285,16 @@ export default {
     },
 
     deleteSelectedCells (evt) {
+      if (this.graph.isEnabled() && evt.srcElement.className !== 'form-control') {
+        this.sidebarClose()
+        this.graph.removeCells()
+      }
+    },
+
+    sidebarClose () {
       this.sidebar.show = false
-      this.graph.removeCells()
+      this.sidebar.item = undefined
+      this.sidebar.itemType = undefined
     },
 
     sidebarDelete () {
@@ -282,8 +302,7 @@ export default {
         this.$emit('delete')
       } else {
         this.graph.removeCells([this.getSelectedItem])
-        this.sidebar.show = false
-        this.sidebar.item = undefined
+        this.sidebarClose()
       }
     },
 
@@ -420,23 +439,48 @@ export default {
     },
 
     events() {
+      // Edge connect event
+      this.graph.connectionHandler.addListener(mxEvent.CONNECT, (sender, evt) => {
+        const edge = evt.getProperty('cell')
+        this.edges[edge.id] = {
+          edge,
+          config: {
+            parentID: edge.source.id,
+            childID: edge.source.id,
+          },
+        }
+
+        this.sidebar.item = edge
+        this.sidebar.itemType = 'edge'
+        this.sidebar.show = true
+
+        this.edgeConnected = true
+      })
+
       // Click event
       this.graph.addListener(mxEvent.CLICK, (sender, evt) => {
-        // If CTRL/CMD key is pressed
+        // Prevent click event handling if edge was just connected
+        if (this.edgeConnected) {
+          this.edgeConnected = false
+          return
+        }
+
         const event = evt.getProperty("event")
         const cell = evt.getProperty("cell") // cell may be null
+
         if (event) {
           if (mxEvent.isControlDown(event) || (mxClient.IS_MAC && mxEvent.isMetaDown(event))) {
+            // Prevent sidebar opening/closing when CTRL(CMD) is pressed
           } else {
             if (cell != null) {
               this.sidebar.item = cell
-              this.sidebar.itemType = 'cell'
+              this.sidebar.itemType = cell.edge ? 'edge' : 'cell'
               this.sidebar.show = true
             } else {
               this.sidebar.show = false
               if (this.getSelectedItem) {
                 this.graph.getSelectionModel().removeCell(this.getSelectedItem)
-                this.sidebar.item = undefined
+                this.sidebarClose()
               }
             }
           }
