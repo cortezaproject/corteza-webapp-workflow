@@ -1,5 +1,6 @@
 export function encodeGraph (model, vertices, edges) {
   const paths = {}
+  const triggers = []
 
   const steps = Object.values(model.cells)
     .filter(cell => {
@@ -16,8 +17,9 @@ export function encodeGraph (model, vertices, edges) {
         parent: cell.parent.id,
         value: cell.value,
         type: cell.style,
-        edges: (cell.edges || []).forEach(({ id, value, parent, source, target }) => {
-          if (!paths[id]) {
+        edges: (cell.edges || []).forEach(edge => {
+          if (!paths[edge.id]) {
+            const { id, value, parent, source, target, geometry } = edge
             paths[id] = {
               ...((edges[id] || {}).config || {}),
               parentID: source.id,
@@ -31,6 +33,7 @@ export function encodeGraph (model, vertices, edges) {
                   parent: parent.id,
                   source: source.id,
                   target: target.id,
+                  points: geometry.points
                 }
               }
             }
@@ -38,10 +41,18 @@ export function encodeGraph (model, vertices, edges) {
         })
       }
 
-      const vertex = mapVertexKind(vertices[cell.id])
+      if (vertices[cell.id].triggers) {
+        triggers.push({
+          ...vertices[cell.id].triggers,
+          stepID: cell.id,
+          enabled: true,
+          constraints: vertices[cell.id].triggers.Constraints
+        })
+      }
 
       return {
-        ...vertex.config,
+        ...vertices[cell.id].config,
+        ...mapVertexKind(vertices[cell.id].node),
         meta: {
           label: cell.value || '',
           description: '',
@@ -50,7 +61,7 @@ export function encodeGraph (model, vertices, edges) {
       }
     })
 
-  return { steps, paths: Object.values(paths) }
+  return { steps, paths: Object.values(paths), triggers }
 }
 
 export function decodeToolbar (config) {
@@ -67,7 +78,7 @@ export function decodeToolbar (config) {
       icon = `${process.env.BASE_URL}${icon ? icon : `icons/${type}.svg`}`
       style = type
 
-      if (type === 'symbol') {
+      if (kind !== 'swimlane') {
         style = `${style};image=${icon.replace('small_', '')}`
       }
 

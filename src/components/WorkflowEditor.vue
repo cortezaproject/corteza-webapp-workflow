@@ -79,9 +79,10 @@
       right
       lazy
       no-enforce-focus
-      header-class="border-bottom border-primary"
-      body-class="p-2"
-      footer-class="m-2 pb-1"
+      width="25vw"
+      header-class="bg-white border-bottom border-primary"
+      body-class="bg-white"
+      footer-class="bg-white p-2"
     >
       <template
         #header
@@ -90,47 +91,34 @@
           <h5
             class="text-primary mb-0 mr-2"
           >
-            {{ getSidebarTitle }}
+            {{ getSidebarItemType }}
           </h5>
         </div>
       </template>
 
       <div
-        v-if="getSelectedItem"
+        v-if="sidebar.itemType === 'workflow'"
+        class="p-2"
       >
-        <div
-          v-if="sidebar.itemType === 'workflow'"
-        >
-          <b-form-group
-            label="Handle"
-          >
-            <b-form-input
-              v-model="workflow.handle"
-            />
-          </b-form-group>
-        </div>
-
         <b-form-group
-          v-else
-          label="Label"
+          label="Handle"
         >
           <b-form-input
-            :value="getSelectedItem.value"
-            @input="setSelectedCellValue"
+            v-model="workflow.handle"
           />
         </b-form-group>
 
-        <b-form-group
-          label="Config"
+        <b-form-checkbox
+          v-model="workflow.enabled"
         >
-          <b-form-textarea
-            v-model="getSelectedItemConfigJSON"
-            rows="10"
-          />
-        </b-form-group>
-
-        {{ getSelectedItemKind }}
+          Enabled
+        </b-form-checkbox>
       </div>
+
+      <configurator
+        v-else-if="this.sidebar.item"
+        :item.sync="this.sidebar.item"
+      />
 
       <template
         #footer
@@ -151,6 +139,7 @@
 import mxgraph from "mxgraph"
 import { encodeGraph, decodeToolbar, mapVertexKind } from "../lib/codec"
 import toolbarConfig from "../assets/config/toolbar.json"
+import Configurator from '../components/Configurator'
 
 const {
   mxClient,
@@ -172,15 +161,27 @@ const {
   mxEdgeStyle,
   mxConnectionHandler,
   mxClipboard,
+  mxParallelEdgeLayout,
+  mxPoint,
+  mxCellEditor,
 } = mxgraph()
 
 export default {
-  name: "WorkflowEditor",
+  name: 'WorkflowEditor',
+
+  components: {
+    Configurator
+  },
 
   props: {
     workflow: {
       type: Object,
       default: () => {},
+    },
+
+    triggers: {
+      type: Array,
+      default: () => [],
     },
   },
 
@@ -195,6 +196,7 @@ export default {
       toolbar: undefined,
 
       edgeConnected: false,
+      // edgeLayout: undefined,
 
       rendering: false,
 
@@ -207,11 +209,7 @@ export default {
   },
 
   computed: {
-    getSelectedItem () {
-      return this.sidebar.item
-    },
-
-    getSidebarTitle () {
+    getSidebarItemType () {
       const { itemType } = this.sidebar
       if (itemType) {
         return itemType.charAt(0).toUpperCase() + itemType.slice(1)
@@ -219,32 +217,9 @@ export default {
       return itemType
     },
 
-    getSelectedItemKind () {
-      if (this.getSelectedItem && this.getSelectedItem.vertex) {
-        return mapVertexKind(this.getSelectedItem)
-      }
-      return {}
+    getSelectedItem () {
+      return this.sidebar.item ? this.sidebar.item : undefined
     },
-
-    getSelectedItemConfigJSON: {
-      get () {
-        let config = {}
-        if (this.sidebar.itemType === 'cell') {
-          config = this.vertices[this.getSelectedItem.id].config
-        } else if (this.sidebar.itemType === 'edge') {
-          config = this.edges[this.getSelectedItem.id].config
-        }
-        return JSON.stringify(config, undefined, 2)
-      },
-
-      set (value) {
-        if (this.sidebar.itemType === 'cell') {
-          this.vertices[this.getSelectedItem.id].config = JSON.parse(value)
-        } else if (this.sidebar.itemType === 'edge') {
-          this.edges[this.getSelectedItem.id].config = JSON.parse(value)
-        }
-      }
-    }
   },
 
   watch: {
@@ -255,12 +230,22 @@ export default {
         }
       }
     },
+
+    'sidebar.item': {
+      deep: true,
+      handler (item) {
+        if (item) {
+          const { value } = item.node
+          this.graph.model.setValue(item.node, value)
+        }
+      }
+    },
   },
 
   mounted () {
     try {
       if (!mxClient.isBrowserSupported()) {
-        throw new Error(mxUtils.error("Browser is not supported!", 200, false))
+        throw new Error(mxUtils.error('Browser is not supported!', 200, false))
       }
 
       mxEvent.disableContextMenu(this.$refs.graph)
@@ -279,7 +264,9 @@ export default {
       this.styling()
       this.connectionHandler()
 
-      this.graph.container.style.background = `url("${require('../assets/grid.gif')}")`
+      this.graph.container.style.background = `url('${require('../assets/grid.gif')}')`
+
+      this.render(this.workflow)
     } catch (e) {
       console.error(e)
     }
@@ -289,10 +276,6 @@ export default {
     openWorkflowSettings () {
       this.sidebar.itemType = 'workflow'
       this.sidebar.show = true
-    },
-
-    setSelectedCellValue (value) {
-      this.graph.model.setValue(this.getSelectedItem, value)
     },
 
     deleteSelectedCells (evt) {
@@ -312,8 +295,10 @@ export default {
       if (this.sidebar.itemType === 'workflow') {
         this.$emit('delete')
       } else {
-        this.graph.removeCells([this.getSelectedItem])
-        this.sidebarClose()
+        if (this.getSelectedItem) {
+          this.graph.removeCells([this.getSelectedItem.node])
+          this.sidebarClose()
+        }
       }
     },
 
@@ -335,6 +320,11 @@ export default {
 
       mxEdgeHandler.prototype.snapToTerminals = true
 
+      // this.edgeLayout = new mxParallelEdgeLayout(this.graph)
+      // this.edgeLayout.isEdgeIgnored = (edge) => {
+      //   return (edge.geometry.points || []).length
+      // }
+
       // Register UNDO and REDO
       const listener = (sender, evt) => {
         this.undoManager.undoableEditHappened(evt.getProperty('edit'))
@@ -347,14 +337,14 @@ export default {
       this.graph.getView().addListener(mxEvent.REDO, listener)
 
       if (mxClient.IS_QUIRKS) {
-        document.body.style.overflow = "hidden"
+        document.body.style.overflow = 'hidden'
         new mxDivResizer(this.graph.container)
       }
 
       if (mxClient.IS_NS) {
-        mxEvent.addListener(this.graph.container, "mousedown", () => {
+        mxEvent.addListener(this.graph.container, 'mousedown', () => {
           if (!this.graph.isEditing()) {
-            this.graph.container.setAttribute("tabindex", "-1")
+            this.graph.container.setAttribute('tabindex', '-1')
           }
         })
       }
@@ -463,47 +453,49 @@ export default {
     events() {
       // Edge connect event
       this.graph.connectionHandler.addListener(mxEvent.CONNECT, (sender, evt) => {
-        const edge = evt.getProperty('cell')
-        this.edges[edge.id] = {
-          edge,
+        const node = evt.getProperty('cell')
+        this.edges[node.id] = {
+          node,
           config: {
-            parentID: edge.source.id,
-            childID: edge.source.id,
+            parentID: node.source.id,
+            childID: node.source.id,
           },
         }
 
-        if (edge.source.style.includes('gatewayParallel')) {
-          this.updateVertexConfig(edge.source.id)
+        if (node.source.style.includes('gatewayParallel')) {
+          this.updateVertexConfig(node.source.id)
         }
 
-        if (edge.target.style.includes('gatewayParallel')) {
-          this.updateVertexConfig(edge.target.id)
+        if (node.target.style.includes('gatewayParallel')) {
+          this.updateVertexConfig(node.target.id)
         }
 
-        this.sidebar.item = edge
+        this.sidebar.item = this.edges[node.id]
         this.sidebar.itemType = 'edge'
         this.sidebar.show = true
 
         this.edgeConnected = true
+
+        // this.edgeLayout.execute(this.graph.getDefaultParent())
       })
 
 
       this.graph.addListener(mxEvent.CELLS_ADDED, (sender, evt) => {
-        const [cell] = evt.getProperty("cells")
+        const [cell] = evt.getProperty('cells')
         if (cell && cell.vertex) {
           this.addCellToVertices(cell)
 
           if (!this.rendering) {
             this.graph.setSelectionCells([cell])
-            this.sidebar.item = this.vertices[cell.id].node
-            this.sidebar.itemType = 'cell'
+            this.sidebar.item = this.vertices[cell.id]
+            this.sidebar.itemType = this.vertices[cell.id].config.kind
             this.sidebar.show = true
           }
         }
       })
 
       this.graph.addListener(mxEvent.CELLS_REMOVED, (sender, evt) => {
-        const cells = evt.getProperty("cells") || []
+        const cells = evt.getProperty('cells') || []
         cells.filter(({ edge }) => edge)
           .forEach(({ id, source, target }) => {
             if (source.style.includes('gatewayParallel')) {
@@ -524,27 +516,32 @@ export default {
           return
         }
 
-        const event = evt.getProperty("event")
-        const cell = evt.getProperty("cell") // cell may be null
+        const event = evt.getProperty('event')
+        const cell = evt.getProperty('cell') // cell may be null
 
         if (event) {
           if (mxEvent.isControlDown(event) || (mxClient.IS_MAC && mxEvent.isMetaDown(event))) {
             // Prevent sidebar opening/closing when CTRL(CMD) is pressed while clicking
           } else {
             if (cell != null) {
-              this.sidebar.item = cell
-              this.sidebar.itemType = cell.edge ? 'edge' : 'cell'
+              this.sidebar.item = cell.edge ? this.edges[cell.id] : this.vertices[cell.id]
+              this.sidebar.itemType = cell.edge ? 'edge' : this.vertices[cell.id].config.kind
               this.sidebar.show = true
             } else {
               this.sidebar.show = false
               if (this.getSelectedItem) {
-                this.graph.getSelectionModel().removeCell(this.getSelectedItem)
+                this.graph.getSelectionModel().removeCell(this.getSelectedItem.node)
                 this.sidebarClose()
               }
             }
           }
         }
 
+        evt.consume()
+      })
+
+      // Doubleclick event
+      this.graph.addListener(mxEvent.CLICK, (sender, evt) => {
         evt.consume()
       })
 
@@ -591,23 +588,23 @@ export default {
       let style = this.graph.getStylesheet().getDefaultVertexStyle()
       style[mxConstants.STYLE_SHAPE] = mxConstants.SHAPE_RECTANGLE
       style[mxConstants.STYLE_PERIMETER] = mxPerimeter.RectanglePerimeter
-      style[mxConstants.STYLE_STROKECOLOR] = "#568ba2"
+      style[mxConstants.STYLE_STROKECOLOR] = '#568ba2'
       style[mxConstants.STYLE_STROKEWIDTH] = 3
       style[mxConstants.STYLE_ROUNDED] = true
       style[mxConstants.STYLE_RESIZABLE] = false
-      style[mxConstants.STYLE_FILLCOLOR] = "white"
-      style[mxConstants.STYLE_FONTCOLOR] = "black"
+      style[mxConstants.STYLE_FILLCOLOR] = 'white'
+      style[mxConstants.STYLE_FONTCOLOR] = 'black'
       style[mxConstants.STYLE_FONTSIZE] = 13
       style[mxConstants.VERTEX_SELECTION_DASHED] = false
       this.graph.getStylesheet().putDefaultVertexStyle(style)
 
       // Creates the default style for edges
       style = this.graph.getStylesheet().getDefaultEdgeStyle()
-      style[mxConstants.STYLE_STROKECOLOR] = "grey"
-      style[mxConstants.STYLE_LABEL_BACKGROUNDCOLOR] = "white"
+      style[mxConstants.STYLE_STROKECOLOR] = 'grey'
+      style[mxConstants.STYLE_LABEL_BACKGROUNDCOLOR] = 'white'
       style[mxConstants.STYLE_EDGE] = mxEdgeStyle.ElbowConnector
       style[mxConstants.STYLE_ROUNDED] = true
-      style[mxConstants.STYLE_FONTCOLOR] = "black"
+      style[mxConstants.STYLE_FONTCOLOR] = 'black'
       style[mxConstants.STYLE_FONTSIZE] = 11
       this.graph.getStylesheet().putDefaultEdgeStyle(style)
 
@@ -619,7 +616,19 @@ export default {
       style[mxConstants.STYLE_ALIGN] = mxConstants.ALIGN_CENTER
       style[mxConstants.STYLE_VERTICAL_ALIGN] = mxConstants.ALIGN_TOP
       style[mxConstants.STYLE_VERTICAL_LABEL_POSITION] = mxConstants.ALIGN_BOTTOM
-      this.graph.getStylesheet().putCellStyle("symbol", style)
+      this.graph.getStylesheet().putCellStyle('symbol', style)
+
+      // Gateway
+      style = mxUtils.clone(this.graph.getStylesheet().getCellStyle('symbol'))
+      style[mxConstants.STYLE_PERIMETER] = mxPerimeter.EllipsePerimeter
+      this.graph.getStylesheet().putCellStyle('event', style)
+
+      // Gateway
+      style = mxUtils.clone(this.graph.getStylesheet().getCellStyle('symbol'))
+      style[mxConstants.STYLE_PERIMETER] = mxPerimeter.RhombusPerimeter
+      style[mxConstants.STYLE_VERTICAL_LABEL_POSITION] = mxConstants.ALIGN_TOP
+      style[mxConstants.STYLE_VERTICAL_ALIGN] = mxConstants.ALIGN_BOTTOM
+      this.graph.getStylesheet().putCellStyle('gateway', style)
 
       // Swimlane
       style = mxUtils.clone(this.graph.getStylesheet().getDefaultVertexStyle())
@@ -632,7 +641,7 @@ export default {
       style[mxConstants.STYLE_VERTICAL_ALIGN] = mxConstants.ALIGN_MIDDLE
       style[mxConstants.STYLE_STROKEWIDTH] = 2
       delete style[mxConstants.STYLE_FILLCOLOR]
-      this.graph.getStylesheet().putCellStyle("swimlane", style)
+      this.graph.getStylesheet().putCellStyle('swimlane', style)
     },
 
     connectionHandler() {
@@ -663,11 +672,11 @@ export default {
       mxUtils.makeDraggable(img, graph, funct)
     },
 
-    getJsonModel () {
-      return encodeGraph(this.graph.getModel(), this.vertices, this.edges)
-    },
-
     addCellToVertices (cell) {
+      const triggers = this.triggers.find(({ stepID }) => {
+        return stepID === cell.id
+      })
+
       this.vertices[cell.id] = {
         node: cell,
         config: {
@@ -677,7 +686,11 @@ export default {
           arguments: null,
           results: null,
           ...(this.rendering ? {} : mapVertexKind(cell))
-        }
+        },
+      }
+
+      if (triggers) {
+        this.vertices[cell.id].triggers = triggers
       }
     },
 
@@ -687,6 +700,7 @@ export default {
     },
 
     render (workflow) {
+      console.log(this.triggers.length)
       this.rendering = true
       this.graph.model.clear()
 
@@ -701,14 +715,15 @@ export default {
 
       try {
         // Add nodes
-        steps.forEach(({ meta = {}, ...config }) => {
-          const node = meta.visual
-          if (node) {
-            node.parent = this.graph.model.getCell(node.parent) || root
+        steps.sort((a, b) => a.meta.visual.parent - b.meta.visual.parent)
+          .forEach(({ meta = {}, ...config }) => {
+            const node = meta.visual
+            if (node) {
+              node.parent = this.graph.model.getCell(node.parent) || root
 
-            this.graph.insertVertex(node.parent, node.id, node.value, node.xywh[0], node.xywh[1], node.xywh[2], node.xywh[3], node.type)
-          }
-        })
+              this.graph.insertVertex(node.parent, node.id, node.value, node.xywh[0], node.xywh[1], node.xywh[2], node.xywh[3], node.type)
+            }
+          })
 
         // Add edges
         paths.forEach(({ meta, ...config }) => {
@@ -716,8 +731,13 @@ export default {
           if (edge) {
             edge.parent = this.graph.model.getCell(edge.parent) || root
 
+            const newEdge = this.graph.insertEdge(edge.parent, edge.id, edge.value, this.vertices[edge.source].node, this.vertices[edge.target].node)
+            newEdge.geometry.points = (edge.points || []).map(({ x, y }) => {
+              return new mxPoint(x, y)
+            })
+
             this.edges[edge.id] = {
-              edge: this.graph.insertEdge(edge.parent, edge.id, edge.value, this.vertices[edge.source].node, this.vertices[edge.target].node),
+              node: newEdge,
               config
             }
           }
@@ -726,10 +746,17 @@ export default {
         // Updates vertices now that edges are present
         Object.keys(this.vertices).forEach(vID => this.updateVertexConfig(vID))
       } finally {
+        // this.edgeLayout.execute(this.graph.getDefaultParent())
+
         this.graph.getModel().endUpdate() // Updates the display
+
         this.rendering = false
       }
     },
+
+    getJsonModel () {
+      return encodeGraph(this.graph.getModel(), this.vertices, this.edges)
+    }
   },
 }
 </script>
@@ -748,7 +775,7 @@ export default {
 
 <style>
 .b-sidebar {
-  margin-top: 0.25rem !important;
+  padding-top: 0.25rem !important;
 }
 
 .b-sidebar > .b-sidebar-header {

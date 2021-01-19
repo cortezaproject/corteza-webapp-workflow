@@ -32,7 +32,7 @@
             "title": "Event (Start)",
             "width": 60,
             "height": 60,
-            "type": "symbol",
+            "type": "event",
             "icon": "icons/small_event_start.svg",
             "kind": "eventStart"
         },
@@ -40,7 +40,7 @@
             "title": "Event (Intermediate)",
             "width": 60,
             "height": 60,
-            "type": "symbol",
+            "type": "event",
             "icon": "icons/small_event_intermediate.svg",
             "kind": "eventIntermediate"
         },
@@ -48,7 +48,7 @@
             "title": "Event (End)",
             "width": 60,
             "height": 60,
-            "type": "symbol",
+            "type": "event",
             "icon": "icons/small_event_end.svg",
             "kind": "eventEnd"
         },
@@ -62,25 +62,25 @@
             "title": "Gateway (Exclusive)",
             "width": 60,
             "height": 60,
-            "type": "symbol",
+            "type": "gateway",
             "icon": "icons/small_gateway_exclusive.svg",
             "kind": "gatewayExclusive"
-        },
-        {
-            "title": "Gateway (Parallel)",
-            "width": 60,
-            "height": 60,
-            "type": "symbol",
-            "icon": "icons/small_gateway_parallel.svg",
-            "kind": "gatewayParallel"
         },
         {
             "title": "Gateway (Inclusive)",
             "width": 60,
             "height": 60,
-            "type": "symbol",
+            "type": "gateway",
             "icon": "icons/small_gateway_inclusive.svg",
             "kind": "gatewayInclusive"
+        },
+        {
+            "title": "Gateway (Parallel)",
+            "width": 60,
+            "height": 60,
+            "type": "gateway",
+            "icon": "icons/small_gateway_parallel.svg",
+            "kind": "gatewayParallel"
         }
     ]
 }
