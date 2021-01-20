@@ -9,7 +9,13 @@
       active
       title="General"
     >
+      <workflow-basic
+        v-if="item.workflowID"
+        :workflow="item"
+      />
+
       <basic
+        v-else
         :item="item"
       />
     </b-tab>
@@ -29,11 +35,13 @@
 <script>
 import base from './base'
 import basic from './basic'
+import WorkflowBasic from './WorkflowBasic'
 import * as Configurators from './loader'
 
 export default {
   components: {
     ...Configurators,
+    WorkflowBasic,
     basic,
   },
 

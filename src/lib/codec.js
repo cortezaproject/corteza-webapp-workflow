@@ -1,11 +1,14 @@
 export function encodeGraph (model, vertices, edges) {
+  const steps = []
   const paths = {}
   const triggers = []
 
-  const steps = Object.values(model.cells)
+  Object.values(model.cells)
     .filter(cell => {
       return !!cell.vertex
-    }).map(cell => {
+    }).forEach(cell => {
+      const triggerEdges = []
+
       cell = {
         id: cell.id,
         xywh: [
@@ -18,47 +21,58 @@ export function encodeGraph (model, vertices, edges) {
         value: cell.value,
         type: cell.style,
         edges: (cell.edges || []).forEach(edge => {
-          if (!paths[edge.id]) {
-            const { id, value, parent, source, target, geometry } = edge
-            paths[id] = {
-              ...((edges[id] || {}).config || {}),
-              parentID: source.id,
-              childID: target.id,
-              meta: {
-                label: value || '',
-                description: '',
-                visual: {
-                  id,
-                  value,
-                  parent: parent.id,
-                  source: source.id,
-                  target: target.id,
-                  points: geometry.points
-                }
+          const { id, value, parent, source, target, geometry } = edge
+          edge = {
+            ...((edges[id] || {}).config || {}),
+            parentID: source.id,
+            childID: target.id,
+            meta: {
+              label: value || '',
+              description: '',
+              visual: {
+                id,
+                value,
+                parent: parent.id,
+                source: source.id,
+                target: target.id,
+                points: geometry.points
               }
             }
+          }
+
+          if (vertices[source.id].triggers || vertices[target.id].triggers) {
+            triggerEdges.push(edge)
+          } else if (!paths[id]) {
+            paths[id] = edge
           }
         })
       }
 
       if (vertices[cell.id].triggers) {
+        cell.edges = triggerEdges
         triggers.push({
           ...vertices[cell.id].triggers,
-          stepID: cell.id,
-          enabled: true,
-          constraints: vertices[cell.id].triggers.Constraints
+          stepID: (triggerEdges[0] || { childID: '0' }).childID,
+          enabled: vertices[cell.id].triggers.enabled,
+          constraints: vertices[cell.id].triggers.constraints,
+          meta: {
+            name: cell.value || '',
+            description: '',
+            visual: cell,
+          }
+        })
+      } else {
+        steps.push({
+          ...vertices[cell.id].config,
+          ...mapVertexKind(vertices[cell.id].node),
+          meta: {
+            label: cell.value || '',
+            description: '',
+            visual: cell,
+          }
         })
       }
 
-      return {
-        ...vertices[cell.id].config,
-        ...mapVertexKind(vertices[cell.id].node),
-        meta: {
-          label: cell.value || '',
-          description: '',
-          visual: cell,
-        }
-      }
     })
 
   return { steps, paths: Object.values(paths), triggers }
@@ -126,17 +140,19 @@ export function mapVertexKind (vertex) {
 
       return { kind: 'gateway', ref: (inEdgeCount > outEdgeCount ? 'join' : 'fork') }
     }
-  } else if (kind.includes('task')) {
+  } else if (kind.includes('function')) {
+    return { kind: 'function' }
+  } else if (kind.includes('expressions')) {
     return { kind: 'expressions' }
   }
 
-  return { kind: kind || '' }
+  return {}
 }
 
 const eventKinds = {
-  'eventStart': { kind: 'event', ref: 'start' },
-  'eventIntermediate': { kind: 'event', ref: 'intermediate' },
-  'eventEnd': { kind: 'event', ref: 'end' },
+  'eventStart': { kind: 'trigger', ref: 'start' },
+  'eventIntermediate': { kind: 'trigger', ref: 'intermediate' },
+  'eventEnd': { kind: 'trigger', ref: 'end' },
 }
 
 const gatewayKinds = {

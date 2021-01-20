@@ -8,19 +8,30 @@
             "kind": "swimlane"
         },
         {
-            "title": "Task",
-            "width": 80,
-            "height": 60,
-            "type": "rectangle",
-            "kind": "task"
-        },
-        {
             "title": "Subprocess",
             "width": 130,
             "height": 95,
             "type": "symbol",
             "icon": "icons/small_subprocess.svg",
             "kind": "subprocess"
+        },
+        {
+            "type": "break"
+        },
+        {
+            "title": "Function",
+            "width": 80,
+            "height": 60,
+            "type": "function",
+            "kind": "function"
+        },
+        {
+            "title": "Expressions",
+            "width": 80,
+            "height": 60,
+            "type": "expressions",
+            "icon": "icons/small_expressions.svg",
+            "kind": "expressions"
         },
         {
             "type": "break"

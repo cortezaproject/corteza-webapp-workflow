@@ -47,7 +47,7 @@ export default {
   },
 
   methods: {
-    fetchWorkflow () {
+    async fetchWorkflow () {
       if (this.workflowID) {
         return this.$AutomationAPI.workflowRead({ workflowID: this.workflowID })
           .then(wf => this.workflow = wf)
@@ -55,7 +55,7 @@ export default {
       }
     },
 
-    fetchTriggers () {
+    async fetchTriggers () {
       return this.$AutomationAPI.triggerList({ workflowID: this.workflowID })
         .then(({ set = [] }) => this.triggers = set)
         .catch(err => console.error(err))
@@ -75,7 +75,6 @@ export default {
         )
 
         await Promise.all(triggers.map(t => {
-          console.log(t)
           // Update triggers that already have an ID
           if (t.triggerID) {
             return this.$AutomationAPI.triggerUpdate({

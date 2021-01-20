@@ -27,4 +27,3 @@ export default {
   extends: base,
 }
 </script>
-

@@ -96,27 +96,8 @@
         </div>
       </template>
 
-      <div
-        v-if="sidebar.itemType === 'workflow'"
-        class="p-2"
-      >
-        <b-form-group
-          label="Handle"
-        >
-          <b-form-input
-            v-model="workflow.handle"
-          />
-        </b-form-group>
-
-        <b-form-checkbox
-          v-model="workflow.enabled"
-        >
-          Enabled
-        </b-form-checkbox>
-      </div>
-
       <configurator
-        v-else-if="this.sidebar.item"
+        v-if="this.sidebar.item"
         :item.sync="this.sidebar.item"
       />
 
@@ -234,7 +215,7 @@ export default {
     'sidebar.item': {
       deep: true,
       handler (item) {
-        if (item) {
+        if (item && !item.workflowID) {
           const { value } = item.node
           this.graph.model.setValue(item.node, value)
         }
@@ -275,6 +256,7 @@ export default {
   methods: {
     openWorkflowSettings () {
       this.sidebar.itemType = 'workflow'
+      this.sidebar.item = this.workflow
       this.sidebar.show = true
     },
 
@@ -618,7 +600,7 @@ export default {
       style[mxConstants.STYLE_VERTICAL_LABEL_POSITION] = mxConstants.ALIGN_BOTTOM
       this.graph.getStylesheet().putCellStyle('symbol', style)
 
-      // Gateway
+      // Event
       style = mxUtils.clone(this.graph.getStylesheet().getCellStyle('symbol'))
       style[mxConstants.STYLE_PERIMETER] = mxPerimeter.EllipsePerimeter
       this.graph.getStylesheet().putCellStyle('event', style)
@@ -629,6 +611,10 @@ export default {
       style[mxConstants.STYLE_VERTICAL_LABEL_POSITION] = mxConstants.ALIGN_TOP
       style[mxConstants.STYLE_VERTICAL_ALIGN] = mxConstants.ALIGN_BOTTOM
       this.graph.getStylesheet().putCellStyle('gateway', style)
+
+      // Expression
+      style = mxUtils.clone(this.graph.getStylesheet().getCellStyle('symbol'))
+      this.graph.getStylesheet().putCellStyle('expressions', style)
 
       // Swimlane
       style = mxUtils.clone(this.graph.getStylesheet().getDefaultVertexStyle())
@@ -673,18 +659,22 @@ export default {
     },
 
     addCellToVertices (cell) {
-      const triggers = this.triggers.find(({ stepID }) => {
-        return stepID === cell.id
+      const triggers = this.triggers.find(({ meta }) => {
+        return ((meta || {}).visual || {}).id === cell.id
       })
+
+      const config = (this.workflow.steps || []).find(({ stepID }) => {
+        return stepID === cell.id
+      }) || {}
 
       this.vertices[cell.id] = {
         node: cell,
         config: {
           stepID: cell.id,
-          kind: '',
-          ref: '',
-          arguments: null,
-          results: null,
+          kind: config.kind || '',
+          ref: config.ref || '',
+          arguments: config.arguments || null,
+          results: config.results || null,
           ...(this.rendering ? {} : mapVertexKind(cell))
         },
       }
@@ -700,9 +690,29 @@ export default {
     },
 
     render (workflow) {
-      console.log(this.triggers.length)
       this.rendering = true
       this.graph.model.clear()
+
+      if (!this.workflow.steps) {
+        this.workflow.steps = []
+      }
+
+      if (!this.workflow.paths) {
+        this.workflow.paths = []
+      }
+
+      // Add triggers to steps/paths
+      this.triggers.forEach(({ meta, ...config }) => {
+        this.workflow.steps.push({
+          stepID: meta.visual.id,
+          kind: 'trigger',
+          meta
+        })
+
+        meta.visual.edges.forEach(edge => {
+          this.workflow.paths.push(edge)
+        })
+      })
 
       const steps = workflow.steps || []
       const paths = workflow.paths || []
@@ -717,7 +727,7 @@ export default {
         // Add nodes
         steps.sort((a, b) => a.meta.visual.parent - b.meta.visual.parent)
           .forEach(({ meta = {}, ...config }) => {
-            const node = meta.visual
+            const node = (meta || {}).visual
             if (node) {
               node.parent = this.graph.model.getCell(node.parent) || root
 
@@ -727,7 +737,7 @@ export default {
 
         // Add edges
         paths.forEach(({ meta, ...config }) => {
-          const edge = meta.visual
+          const edge = (meta || {}).visual
           if (edge) {
             edge.parent = this.graph.model.getCell(edge.parent) || root
 
