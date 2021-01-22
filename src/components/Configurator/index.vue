@@ -27,7 +27,9 @@
       <component
         :is="stepComponent"
         :item="item"
+        :edges="edges"
         class="h-100"
+        @update-edge="$emit('update-edge', $event)"
       />
     </b-tab>
   </b-tabs>

@@ -45,6 +45,11 @@
           placeholder="Value"
         />
 
+        <b-form-input
+          v-model="argument.source"
+          placeholder="Source"
+        />
+
         <b-button
           class="ml-1"
           variant="danger"
@@ -119,15 +124,18 @@ export default {
   computed: {
     functionTypes () {
       return [
-        { value: '', text: 'Select function', disabled: true },
+        { value: undefined, text: 'Select function', disabled: true },
         { value: 'httpRequestSend', text: 'Send HTTP request' },
-        { value: 'logInfo', text: 'Log info' }
+        { value: 'logInfo', text: 'Log info' },
+        { value: 'logDebug', text: 'Log debug' },
+        { value: 'logWarn', text: 'Log warn' },
+        { value: 'logError', text: 'Log error' },
       ]
     },
 
     fieldTypes () {
       return [
-        { value: '', text: 'Select type', disabled: true },
+        { value: undefined, text: 'Select type', disabled: true },
         ...this.types
       ]
     },
@@ -153,9 +161,10 @@ export default {
   methods: {
     addArgument () {
       this.item.config.arguments.push({
-        target: '',
-        value: '',
-        type: ''
+        target: undefined,
+        value: undefined,
+        type: undefined,
+        source: undefined
       })
     },
 
@@ -165,9 +174,8 @@ export default {
 
     addResult () {
       this.item.config.results.push({
-        target: '',
-        expr: '',
-        // type: ''
+        target: undefined,
+        expr: undefined,
       })
     },
 

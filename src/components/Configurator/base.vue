@@ -5,6 +5,11 @@ export default {
       type: Object,
       default: () => {},
     },
+
+    edges: {
+      type: Object,
+      default: () => {},
+    },
   },
 
   computed: {

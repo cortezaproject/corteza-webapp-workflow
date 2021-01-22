@@ -56,7 +56,7 @@ export default {
     },
 
     async fetchTriggers () {
-      return this.$AutomationAPI.triggerList({ workflowID: this.workflowID })
+      return this.$AutomationAPI.triggerList({ workflowID: this.workflowID, disabled: 1 })
         .then(({ set = [] }) => this.triggers = set)
         .catch(err => console.error(err))
     },

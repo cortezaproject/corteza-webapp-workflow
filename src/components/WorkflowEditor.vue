@@ -97,8 +97,9 @@
       </template>
 
       <configurator
-        v-if="this.sidebar.item"
-        :item.sync="this.sidebar.item"
+        v-if="sidebar.item"
+        :item.sync="sidebar.item"
+        :edges.sync="edges"
       />
 
       <template
@@ -435,6 +436,7 @@ export default {
     events() {
       // Edge connect event
       this.graph.connectionHandler.addListener(mxEvent.CONNECT, (sender, evt) => {
+        console.log('ehre')
         const node = evt.getProperty('cell')
         this.edges[node.id] = {
           node,
@@ -444,30 +446,39 @@ export default {
           },
         }
 
-        if (node.source.style.includes('gatewayParallel')) {
-          this.updateVertexConfig(node.source.id)
+        const source = this.vertices[node.source.id]
+        const target = this.vertices[node.target.id]
+
+        if (source.config.kind === 'gateway') {
+          if (['join', 'fork'].includes(source.config.ref)) {
+            this.updateVertexConfig(source.node.id)
+          }
+  
+          if (source.config.ref === 'excl') {
+            const outPaths = source.node.edges.filter(e => e.source.id === source.node.id) || []
+            this.edges[node.id].node.value = `#${outPaths.length} - ${outPaths.length === 1 ? 'If' : 'Else (if)'}`
+          }
         }
 
-        if (node.target.style.includes('gatewayParallel')) {
-          this.updateVertexConfig(node.target.id)
+        if (target.config.kind === 'gateway' && ['join', 'fork'].includes(target.config.ref)) {
+          this.updateVertexConfig(target.node.id)
         }
 
-        this.sidebar.item = this.edges[node.id]
-        this.sidebar.itemType = 'edge'
-        this.sidebar.show = true
+        // this.sidebar.item = this.edges[node.id]
+        // this.sidebar.itemType = 'edge'
+        // this.sidebar.show = true
 
-        this.edgeConnected = true
 
         // this.edgeLayout.execute(this.graph.getDefaultParent())
+        this.edgeConnected = true
       })
 
 
       this.graph.addListener(mxEvent.CELLS_ADDED, (sender, evt) => {
         const [cell] = evt.getProperty('cells')
         if (cell && cell.vertex) {
-          this.addCellToVertices(cell)
-
           if (!this.rendering) {
+            this.addCellToVertices(cell)
             this.graph.setSelectionCells([cell])
             this.sidebar.item = this.vertices[cell.id]
             this.sidebar.itemType = this.vertices[cell.id].config.kind
@@ -479,13 +490,22 @@ export default {
       this.graph.addListener(mxEvent.CELLS_REMOVED, (sender, evt) => {
         const cells = evt.getProperty('cells') || []
         cells.filter(({ edge }) => edge)
-          .forEach(({ id, source, target }) => {
-            if (source.style.includes('gatewayParallel')) {
-              this.updateVertexConfig(source.id)
+          .forEach(({ source, target }) => {
+            source = this.vertices[source.id]
+            target = this.vertices[target.id]
+
+            if (source.config.kind === 'gateway') {
+              console.log(source.node.edges.filter(e => e.source.id === source.node.id))
+              this.graph.removeCells(source.node.edges.filter(e => e.source.id === source.node.id))
+              if (['join', 'fork'].includes(target.config.ref)) {
+                this.updateVertexConfig(source.node.id)
+              }
             }
 
-            if (target.style.includes('gatewayParallel')) {
-              this.updateVertexConfig(target.id)
+            if (target.config.kind === 'gateway') {
+              if (['join', 'fork'].includes(target.config.ref)) {
+                this.updateVertexConfig(target.node.id)
+              }
             }
           })
       })
@@ -659,6 +679,7 @@ export default {
     },
 
     addCellToVertices (cell) {
+      console.log(cell)
       const triggers = this.triggers.find(({ meta }) => {
         return ((meta || {}).visual || {}).id === cell.id
       })
@@ -673,10 +694,16 @@ export default {
           stepID: cell.id,
           kind: config.kind || '',
           ref: config.ref || '',
-          arguments: config.arguments || null,
-          results: config.results || null,
           ...(this.rendering ? {} : mapVertexKind(cell))
         },
+      }
+
+      if (config.arguments) {
+        this.vertices[cell.id].config.arguments = config.arguments
+      }
+
+      if (config.results) {
+        this.vertices[cell.id].config.results = config.results
       }
 
       if (triggers) {
@@ -731,7 +758,11 @@ export default {
             if (node) {
               node.parent = this.graph.model.getCell(node.parent) || root
 
-              this.graph.insertVertex(node.parent, node.id, node.value, node.xywh[0], node.xywh[1], node.xywh[2], node.xywh[3], node.type)
+
+              console.log(config)
+
+              const newCell = this.graph.insertVertex(node.parent, node.id, node.value, node.xywh[0], node.xywh[1], node.xywh[2], node.xywh[3], node.type)
+              this.addCellToVertices(newCell)
             }
           })
 
