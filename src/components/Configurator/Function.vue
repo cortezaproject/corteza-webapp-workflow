@@ -1,32 +1,23 @@
 <template>
-  <div>
+  <div
+    v-if="!processing"
+  >
     <b-form-group
       label="Type"
     >
       <b-form-select
         v-model="item.config.ref"
         :options="functionTypes"
+        @input="setParams"
       />
     </b-form-group>
 
-    <b-form-group>
-      <template #label>
-        <div
-          class="d-flex"
-        >
-          Arguments
-          <b-button
-            variant="link"
-            class="align-top border-0 p-0 ml-auto"
-            @click="addArgument()"
-          >
-            + Add
-          </b-button>
-        </div>
-      </template>
-
+    <b-form-group
+      v-if="args.length"
+      label="Arguments"
+    >
       <b-input-group
-        v-for="(argument, index) in functionArguments"
+        v-for="(argument, index) in args"
         :key="index"
         class="mb-2"
       >
@@ -37,7 +28,8 @@
 
         <b-form-select
           v-model="argument.type"
-          :options="fieldTypes"
+          :options="(paramTypes[item.config.ref][argument.target] || [])"
+          :disabled="(paramTypes[item.config.ref][argument.target] || []).length <= 1" 
         />
 
         <b-form-input
@@ -49,35 +41,15 @@
           v-model="argument.source"
           placeholder="Source"
         />
-
-        <b-button
-          class="ml-1"
-          variant="danger"
-          @click="removeArgument(index)"
-        >
-          X
-        </b-button>
       </b-input-group>
     </b-form-group>
 
-    <b-form-group>
-      <template #label>
-        <div
-          class="d-flex"
-        >
-          Results
-          <b-button
-            variant="link"
-            class="align-top border-0 p-0 ml-auto"
-            @click="addResult()"
-          >
-            + Add
-          </b-button>
-        </div>
-      </template>
-
+    <b-form-group
+      v-if="results.length"
+      label="Results"
+    >
       <b-input-group
-        v-for="(result, index) in functionResults"
+        v-for="(result, index) in results"
         :key="index"
         class="mb-2"
       >
@@ -86,23 +58,16 @@
           placeholder="Target"
         />
 
-        <!-- <b-form-select
+        <b-form-select
           v-model="result.type"
-          :options="fieldTypes"
-        /> -->
+          :options="(resultTypes[item.config.ref][result.name] || [])"
+          disabled
+        />
 
         <b-form-input
           v-model="result.expr"
           placeholder="Expression"
         />
-
-        <b-button
-          class="ml-1"
-          variant="danger"
-          @click="removeResult(index)"
-        >
-          X
-        </b-button>
       </b-input-group>
     </b-form-group>
   </div>
@@ -116,71 +81,101 @@ export default {
 
   data () {
     return {
+      processing: true,
+
       functions: [],
-      types: []
+      args: [],
+      results: [],
+
+      paramTypes: {},
+      resultTypes: {},
     }
   },
 
   computed: {
     functionTypes () {
       return [
-        { value: undefined, text: 'Select function', disabled: true },
-        { value: 'httpRequestSend', text: 'Send HTTP request' },
-        { value: 'logInfo', text: 'Log info' },
-        { value: 'logDebug', text: 'Log debug' },
-        { value: 'logWarn', text: 'Log warn' },
-        { value: 'logError', text: 'Log error' },
+        { value: '', text: 'Select function', disabled: true },
+        ...this.functions.map(({ ref, meta }) => ({ value: ref, text: meta.short })),
       ]
-    },
-
-    fieldTypes () {
-      return [
-        { value: undefined, text: 'Select type', disabled: true },
-        ...this.types
-      ]
-    },
-
-    functionArguments () {
-      return this.item.config.arguments
-    },
-
-    functionResults () {
-      return this.item.config.results
     },
   },
 
-  async created () {
-    this.item.config.arguments = this.item.config.arguments || []
-    this.item.config.results = this.item.config.results || []
+  watch: {
+    'item.node.id': {
+      immediate: true,
+      async handler () {
+        this.processing = true
 
-    // await this.getFunctionTypes()
-    await this.getTypes()
+        this.$set(this.item.config, 'arguments', this.item.config.arguments || [])
+        this.$set(this.item.config, 'results', this.item.config.results || [])
+
+        await this.getFunctionTypes()
+        await this.getTypes()
+
+        this.setParams(this.item.config.ref)
+
+        this.processing = false
+      }
+    },
+
+    args: {
+      deep: true,
+      handler (args) {
+        this.item.config.arguments = args.filter(({ value, source }) => value || source)
+      }
+    },
+
+    results: {
+      deep: true,
+      handler (res) {
+        this.item.config.results = res.filter(({ target }) => target).map(({ target, expr }) => ({ target, expr }))
+      }
+    }
   },
 
-  
   methods: {
-    addArgument () {
-      this.item.config.arguments.push({
-        target: undefined,
-        value: undefined,
-        type: undefined,
-        source: undefined
-      })
-    },
+    setParams (fName) {
+      if (fName) {
+        const func = this.functions.find(({ ref }) => ref === fName)
 
-    removeArgument (index) {
-      this.item.config.arguments.splice(index, 1)
-    },
+        // Set parameters
+        if (!this.paramTypes[func.ref]) {
+          this.paramTypes[func.ref] = {}
+          func.parameters?.forEach(({ name, types }) => {
+            this.paramTypes[func.ref][name] = types || []
+          })
+        }
 
-    addResult () {
-      this.item.config.results.push({
-        target: undefined,
-        expr: undefined,
-      })
-    },
+        this.args = func.parameters?.map(param => {
+          const arg = this.item.config.arguments.find(({ target }) => target === param.name) || {}
+          return {
+            name: param.name,
+            target: arg.target || param.name,
+            type: arg.type || this.paramTypes[func.ref][param.name][0],
+            value: arg.value || undefined,
+            source: arg.source || undefined
+          }
+        }) || []
 
-    removeResult (index) {
-      this.item.config.results.splice(index, 1)
+        // Set results
+        if (!this.resultTypes[func.ref]) {
+          this.resultTypes[func.ref] = {}
+          func.results?.forEach(({ name, types }) => {
+            this.resultTypes[func.ref][name] = types || []
+          })
+        }
+
+        this.results = func.results?.map(result => {
+          const res = this.item.config.results.find(({ target }) => target === result.name) || {}
+          return {
+            name: result.name,
+            target: res.target || undefined,
+            type: this.resultTypes[func.ref][result.name][0],
+            expr: res.expr || result.name
+          }
+        }) || []
+      }
     },
 
     async getFunctionTypes () {

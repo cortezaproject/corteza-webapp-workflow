@@ -2,7 +2,8 @@
   <b-tabs
     active-nav-item-class="bg-grey"
     nav-wrapper-class="bg-white"
-    active-tab-class="tab-content h-auto overflow-auto p-2"
+    active-tab-class="h-100 overflow-auto p-2"
+    content-class="h-100"
     card
   >
     <b-tab
@@ -56,9 +57,3 @@ export default {
   },
 }
 </script>
-
-<style lang="scss" scoped>
-.tab-content {
-  max-height: 70vh;
-}
-</style>

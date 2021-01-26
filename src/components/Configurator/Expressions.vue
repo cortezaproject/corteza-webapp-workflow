@@ -17,7 +17,7 @@
       </template>
 
       <b-input-group
-        v-for="(argument, index) in expressionsArguments"
+        v-for="(argument, index) in item.config.arguments"
         :key="index"
         class="mb-2"
       >
@@ -67,14 +67,10 @@ export default {
         ...this.types
       ]
     },
-
-    expressionsArguments () {
-      return this.item.config.arguments
-    },
   },
 
   async created () {
-    this.item.config.arguments = this.item.config.arguments || []
+    this.$set(this.item.config, 'arguments', this.item.config.arguments || [])
 
     await this.getTypes()
   },
