@@ -92,7 +92,7 @@ export function decodeToolbar (config) {
       icon = `${process.env.BASE_URL}${icon ? icon : `icons/${type}.svg`}`
       style = type
 
-      if (kind !== 'swimlane') {
+      if (style !== 'swimlane') {
         style = `${style};image=${icon.replace('small_', '')}`
       }
 
@@ -144,6 +144,8 @@ export function mapVertexKind (vertex) {
     return { kind: 'function' }
   } else if (kind.includes('expressions')) {
     return { kind: 'expressions' }
+  } else if (kind.includes('visual')) {
+    return { kind: 'visual', ref: 'swimlane' }
   }
 
   return {}

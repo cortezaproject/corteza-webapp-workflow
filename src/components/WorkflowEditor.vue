@@ -436,7 +436,6 @@ export default {
     events() {
       // Edge connect event
       this.graph.connectionHandler.addListener(mxEvent.CONNECT, (sender, evt) => {
-        console.log('ehre')
         const node = evt.getProperty('cell')
         this.edges[node.id] = {
           node,
@@ -495,7 +494,6 @@ export default {
             target = this.vertices[target.id]
 
             if (source.config.kind === 'gateway') {
-              console.log(source.node.edges.filter(e => e.source.id === source.node.id))
               this.graph.removeCells(source.node.edges.filter(e => e.source.id === source.node.id))
               if (['join', 'fork'].includes(target.config.ref)) {
                 this.updateVertexConfig(source.node.id)
@@ -679,7 +677,6 @@ export default {
     },
 
     addCellToVertices (cell) {
-      console.log(cell)
       const triggers = this.triggers.find(({ meta }) => {
         return ((meta || {}).visual || {}).id === cell.id
       })
@@ -757,9 +754,6 @@ export default {
             const node = (meta || {}).visual
             if (node) {
               node.parent = this.graph.model.getCell(node.parent) || root
-
-
-              console.log(config)
 
               const newCell = this.graph.insertVertex(node.parent, node.id, node.value, node.xywh[0], node.xywh[1], node.xywh[2], node.xywh[3], node.type)
               this.addCellToVertices(newCell)
