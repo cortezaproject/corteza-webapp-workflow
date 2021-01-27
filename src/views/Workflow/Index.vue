@@ -11,16 +11,17 @@
             md="5"
           >
             <b-form
+              v-if="newWorkflow"
               @submit.prevent="createWorkflow"
             >
               <b-form-group label="Create Workflow">
                 <b-input-group>
                   <b-input
-                    id="handle"
-                    v-model="newWorkflow.handle"
+                    id="name"
+                    v-model="newWorkflow.meta.name"
                     type="text"
                     required
-                    placeholder="Workflow handle"
+                    placeholder="Workflow name"
                   />
                   <b-input-group-append>
                     <b-button
@@ -57,6 +58,9 @@
           borderless
           responsive
         >
+          <template v-slot:cell(label)="{ item: m }">
+            {{ m.meta.name || m.handle }}
+          </template>
           <template v-slot:cell(steps)="{ item: m }">
             {{ (m.steps || []).length }}
           </template>
@@ -92,9 +96,11 @@ export default {
       workflows: [],
 
       newWorkflow: new automation.Workflow({
-        handle: '',
         ownedBy: this.userID,
         runAs: this.userID,
+        meta: {
+          name: '',
+        },
       }),
     }
   },
@@ -110,7 +116,7 @@ export default {
     tableFields () {
       return [
         {
-          key: 'handle',
+          key: 'label',
           sortable: true,
         },
         {
@@ -144,6 +150,10 @@ export default {
     },
 
     createWorkflow () {
+      this.newWorkflow.handle = this.newWorkflow.meta.name.trim(' ').split(' ').map(s => {
+        return string[0].toUpperCase() + string.slice(1).toLowerCase()
+      }).join('')
+
       this.$AutomationAPI.workflowCreate(this.newWorkflow)
         .then(wf => this.openWorkflowEditor(wf))
         .catch(err => console.error(err))

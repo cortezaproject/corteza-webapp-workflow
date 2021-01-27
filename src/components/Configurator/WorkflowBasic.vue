@@ -4,7 +4,8 @@
       label="Label"
     >
       <b-form-input
-        v-model="workflow.handle"
+        v-model="workflow.meta.name"
+        @input="setHandle"
       />
     </b-form-group>
     
@@ -24,6 +25,14 @@ export default {
       default: () => {},
     },
   },
+
+  methods: {
+    setHandle (handle = '') {
+      this.newWorkflow.handle = handle.trim(' ').split(' ').map(s => {
+        return string[0].toUpperCase() + string.slice(1).toLowerCase()
+      }).join('')
+    }
+  }
 }
 </script>
 

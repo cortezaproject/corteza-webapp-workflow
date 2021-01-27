@@ -52,7 +52,7 @@
         header-text-variant="primary"
         header-border-variant="primary"
       >
-        {{ workflow.handle }}
+        {{ workflow.meta.name || workflow.handle }}
         <a
           href="#"
           @click="openWorkflowSettings()"
