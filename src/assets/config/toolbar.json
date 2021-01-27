@@ -8,17 +8,6 @@
             "kind": "visual"
         },
         {
-            "title": "Subprocess",
-            "width": 130,
-            "height": 95,
-            "type": "symbol",
-            "icon": "icons/small_subprocess.svg",
-            "kind": "subprocess"
-        },
-        {
-            "type": "break"
-        },
-        {
             "title": "Function",
             "width": 80,
             "height": 60,
@@ -48,6 +37,31 @@
             "kind": "eventStart"
         },
         {
+            "title": "Error",
+            "width": 60,
+            "height": 60,
+            "type": "event",
+            "icon": "icons/small_error.svg",
+            "kind": "error"
+        },
+        {
+            "type": "break"
+        },
+        {
+            "type": "line"
+        },
+        {
+            "title": "Gateway (Exclusive)",
+            "width": 60,
+            "height": 60,
+            "type": "gateway",
+            "icon": "icons/small_gateway_exclusive.svg",
+            "kind": "gatewayExclusive"
+        }
+    ],
+
+    "disabledSteps": [
+        {
             "title": "Event (Intermediate)",
             "width": 60,
             "height": 60,
@@ -64,18 +78,12 @@
             "kind": "eventEnd"
         },
         {
-            "type": "break"
-        },
-        {
-            "type": "line"
-        },
-        {
-            "title": "Gateway (Exclusive)",
-            "width": 60,
-            "height": 60,
-            "type": "gateway",
-            "icon": "icons/small_gateway_exclusive.svg",
-            "kind": "gatewayExclusive"
+            "title": "Subprocess",
+            "width": 130,
+            "height": 95,
+            "type": "symbol",
+            "icon": "icons/small_subprocess.svg",
+            "kind": "subprocess"
         },
         {
             "title": "Gateway (Inclusive)",

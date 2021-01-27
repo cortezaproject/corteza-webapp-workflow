@@ -146,6 +146,8 @@ export function mapVertexKind (vertex) {
     return { kind: 'expressions' }
   } else if (kind.includes('visual')) {
     return { kind: 'visual', ref: 'swimlane' }
+  } else if (kind.includes('error')) {
+    return { kind: 'error-handler' }
   }
 
   return {}
