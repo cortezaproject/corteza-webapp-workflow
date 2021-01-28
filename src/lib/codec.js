@@ -93,7 +93,7 @@ export function decodeToolbar (config) {
       style = type
 
       if (style !== 'swimlane') {
-        style = `${style};image=${icon.replace('small_', '')}`
+        style = `${style};image=${icon}`
       }
 
       style = `${kind};${style}`

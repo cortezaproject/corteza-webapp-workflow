@@ -8,19 +8,26 @@
             "kind": "visual"
         },
         {
-            "title": "Function",
-            "width": 80,
-            "height": 60,
-            "type": "function",
-            "kind": "function"
+            "type": "break"
+        },
+        {
+            "type": "line"
         },
         {
             "title": "Expressions",
             "width": 80,
-            "height": 60,
+            "height": 80,
             "type": "expressions",
-            "icon": "icons/small_expressions.svg",
+            "icon": "icons/expressions.svg",
             "kind": "expressions"
+        },
+        {
+            "title": "Function",
+            "width": 80,
+            "height": 80,
+            "icon": "icons/function.svg",
+            "type": "function",
+            "kind": "function"
         },
         {
             "type": "break"
@@ -30,18 +37,14 @@
         },
         {
             "title": "Event (Start)",
-            "width": 60,
-            "height": 60,
             "type": "event",
-            "icon": "icons/small_event_start.svg",
+            "icon": "icons/event_start.svg",
             "kind": "eventStart"
         },
         {
             "title": "Error",
-            "width": 60,
-            "height": 60,
             "type": "event",
-            "icon": "icons/small_error.svg",
+            "icon": "icons/error.svg",
             "kind": "error"
         },
         {
@@ -52,10 +55,8 @@
         },
         {
             "title": "Gateway (Exclusive)",
-            "width": 60,
-            "height": 60,
             "type": "gateway",
-            "icon": "icons/small_gateway_exclusive.svg",
+            "icon": "icons/gateway_exclusive.svg",
             "kind": "gatewayExclusive"
         }
     ],
@@ -63,42 +64,34 @@
     "disabledSteps": [
         {
             "title": "Event (Intermediate)",
-            "width": 60,
-            "height": 60,
             "type": "event",
-            "icon": "icons/small_event_intermediate.svg",
+            "icon": "icons/event_intermediate.svg",
             "kind": "eventIntermediate"
         },
         {
             "title": "Event (End)",
-            "width": 60,
-            "height": 60,
             "type": "event",
-            "icon": "icons/small_event_end.svg",
+            "icon": "icons/event_end.svg",
             "kind": "eventEnd"
         },
         {
             "title": "Subprocess",
-            "width": 130,
-            "height": 95,
+            "width": 80,
+            "height": 80,
             "type": "symbol",
-            "icon": "icons/small_subprocess.svg",
+            "icon": "icons/subprocess.svg",
             "kind": "subprocess"
         },
         {
             "title": "Gateway (Inclusive)",
-            "width": 60,
-            "height": 60,
             "type": "gateway",
-            "icon": "icons/small_gateway_inclusive.svg",
+            "icon": "icons/gateway_inclusive.svg",
             "kind": "gatewayInclusive"
         },
         {
             "title": "Gateway (Parallel)",
-            "width": 60,
-            "height": 60,
             "type": "gateway",
-            "icon": "icons/small_gateway_parallel.svg",
+            "icon": "icons/gateway_parallel.svg",
             "kind": "gatewayParallel"
         }
     ]
