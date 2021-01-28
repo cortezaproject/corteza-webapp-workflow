@@ -58,7 +58,7 @@
           borderless
           responsive
         >
-                    
+
           <template v-slot:cell(label)="{ item: m }">
             {{ m.meta.name || m.handle }}
           </template>
@@ -104,6 +104,7 @@ export default {
       newWorkflow: new automation.Workflow({
         ownedBy: this.userID,
         runAs: this.userID,
+        enabled: true,
         meta: {
           name: '',
         },
