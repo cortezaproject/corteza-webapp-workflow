@@ -58,8 +58,14 @@
           borderless
           responsive
         >
+                    
           <template v-slot:cell(label)="{ item: m }">
             {{ m.meta.name || m.handle }}
+          </template>
+          <template v-slot:cell(enabled)="{ item: m }">
+            <font-awesome-icon
+              :icon="['fas', m.enabled ? 'check' : 'times']"
+            />
           </template>
           <template v-slot:cell(steps)="{ item: m }">
             {{ (m.steps || []).length }}
@@ -120,12 +126,19 @@ export default {
           sortable: true,
         },
         {
+          key: 'enabled',
+          sortable: true,
+          class: 'text-center',
+        },
+        {
           key: 'steps',
           sortable: true,
+          class: 'text-center',
         },
         {
           key: 'updatedAt',
           sortable: true,
+          class: 'text-right',
         },
         {
           key: 'actions',

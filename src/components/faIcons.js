@@ -1,7 +1,8 @@
 import { library } from '@fortawesome/fontawesome-svg-core'
 import {
   faCheck,
-  faTimes
+  faTimes,
+  faHome,
 } from '@fortawesome/free-solid-svg-icons'
 
 import {
@@ -13,5 +14,6 @@ library.add(
   faEdit,
   faTrashAlt,
   faCheck,
-  faTimes
+  faTimes,
+  faHome,
 )
