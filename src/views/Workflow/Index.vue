@@ -165,7 +165,7 @@ export default {
 
     createWorkflow () {
       this.newWorkflow.handle = this.newWorkflow.meta.name.trim(' ').split(' ').map(s => {
-        return string[0].toUpperCase() + string.slice(1).toLowerCase()
+        return s[0].toUpperCase() + s.slice(1).toLowerCase()
       }).join('')
 
       this.$AutomationAPI.workflowCreate(this.newWorkflow)

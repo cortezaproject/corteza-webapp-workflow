@@ -2,8 +2,6 @@
   <div
     id="editor"
     class="h-100 d-flex p-1"
-    @keyup.8.prevent="deleteSelectedCells"
-    @keyup.46.prevent="deleteSelectedCells"
   >
     <b-card
       no-body
@@ -16,7 +14,14 @@
         header-text-variant="white"
         header-border-variant="primary"
       >
-        ''
+        <router-link
+          :to="{name: 'workflow.list'}"
+          class="mr-2"
+        >
+          <font-awesome-icon
+            :icon="['fas', 'home']"
+          />
+        </router-link>
       </b-card-header>
       <b-card-body
         class="p-1"
@@ -261,11 +266,9 @@ export default {
       this.sidebar.show = true
     },
 
-    deleteSelectedCells (evt) {
-      if (this.graph.isEnabled() && evt.srcElement.className !== 'form-control') {
-        this.sidebarClose()
-        this.graph.removeCells()
-      }
+    deleteSelectedCells () {
+      this.sidebarClose()
+      this.graph.removeCells()
     },
 
     sidebarClose () {
@@ -348,7 +351,7 @@ export default {
         return cell
       }
 
-      const addCell = ({ title, icon, width, height, style }) => {
+      const addCell = ({ title, icon, width = 60, height = 60, style }) => {
         const cell = new mxCell(
           null,
           new mxGeometry(0, 0, width, height),
@@ -431,6 +434,20 @@ export default {
           this.undoManager.redo()
         }
       }
+
+      // Backspace
+      this.keyHandler.normalKeys[8] = () => {
+        if (this.graph.isEnabled()) {
+          this.deleteSelectedCells()
+        }
+      }
+
+      // Delete
+      this.keyHandler.normalKeys[46] = () => {
+        if (this.graph.isEnabled()) {
+          this.deleteSelectedCells()
+        }
+      }
     },
 
     events() {
@@ -447,6 +464,7 @@ export default {
 
         const source = this.vertices[node.source.id]
         const target = this.vertices[node.target.id]
+        const outPaths = source.node.edges.filter(e => e.source.id === source.node.id) || []
 
         if (source.config.kind === 'gateway') {
           if (['join', 'fork'].includes(source.config.ref)) {
@@ -454,13 +472,12 @@ export default {
           }
   
           if (source.config.ref === 'excl') {
-            const outPaths = source.node.edges.filter(e => e.source.id === source.node.id) || []
             this.edges[node.id].node.value = `#${outPaths.length} - ${outPaths.length === 1 ? 'If' : 'Else (if)'}`
           }
-        }
-
-        if (target.config.kind === 'gateway' && ['join', 'fork'].includes(target.config.ref)) {
-          this.updateVertexConfig(target.node.id)
+        } else if (source.config.kind === 'error-handler') {
+          this.edges[node.id].node.value = `#${outPaths.length} - ${outPaths.length === 1 ? 'Catch' : 'Try'}`
+        } else if (source.config.kind === 'iterator') {
+          this.edges[node.id].node.value = `#${outPaths.length} - ${outPaths.length === 1 ? 'Loop body' : 'Loop end'}`
         }
 
         // this.sidebar.item = this.edges[node.id]
@@ -498,6 +515,10 @@ export default {
               if (['join', 'fork'].includes(target.config.ref)) {
                 this.updateVertexConfig(source.node.id)
               }
+            } else if (source.config.kind === 'iterator') {
+              this.graph.removeCells(source.node.edges.filter(e => e.source.id === source.node.id))
+            }  else if (source.config.kind === 'error-handler') {
+              this.graph.removeCells(source.node.edges.filter(e => e.source.id === source.node.id))
             }
 
             if (target.config.kind === 'gateway') {
@@ -617,6 +638,17 @@ export default {
       style[mxConstants.STYLE_VERTICAL_ALIGN] = mxConstants.ALIGN_TOP
       style[mxConstants.STYLE_VERTICAL_LABEL_POSITION] = mxConstants.ALIGN_BOTTOM
       this.graph.getStylesheet().putCellStyle('symbol', style)
+
+      // Iterator
+      style = mxUtils.clone(this.graph.getStylesheet().getCellStyle('symbol'))
+      style[mxConstants.STYLE_ALIGN] = mxConstants.ALIGN_CENTER
+      style[mxConstants.STYLE_VERTICAL_ALIGN] = mxConstants.ALIGN_MIDDLE
+      style[mxConstants.STYLE_VERTICAL_LABEL_POSITION] = mxConstants.ALIGN_MIDDLE
+      this.graph.getStylesheet().putCellStyle('function', style)
+
+      // Iterator
+      style = mxUtils.clone(this.graph.getStylesheet().getCellStyle('symbol'))
+      this.graph.getStylesheet().putCellStyle('iterator', style)
 
       // Event
       style = mxUtils.clone(this.graph.getStylesheet().getCellStyle('symbol'))

@@ -1,5 +1,11 @@
 <template>
   <div>
+    <div
+      v-if="!gatewayEdges.length"
+    >
+      Connect two paths to configure gateway
+    </div>
+
     <b-form-group
       v-for="edge in gatewayEdges"
       :key="edge.id"

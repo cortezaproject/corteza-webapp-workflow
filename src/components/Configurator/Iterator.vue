@@ -191,7 +191,7 @@ export default {
 
     async getFunctionTypes () {
       return this.$AutomationAPI.functionList()
-        .then(({ set }) => this.functions = set.filter(({ kind = '' }) => kind !== 'iterator').sort((a, b) => a.meta.short.localeCompare(b.meta.short) ? 1 : -1))
+        .then(({ set }) => this.functions = set.filter(({ kind = '' }) => kind === 'iterator').sort((a, b) => a.meta.short.localeCompare(b.meta.short) ? 1 : -1))
         .catch(err => console.error(err))
     },
 

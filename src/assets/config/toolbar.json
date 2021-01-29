@@ -30,6 +30,15 @@
             "kind": "function"
         },
         {
+            
+            "title": "Iterator",
+            "width": 80,
+            "height": 80,
+            "icon": "icons/iterator.svg",
+            "type": "iterator",
+            "kind": "iterator"
+        },
+        {
             "type": "break"
         },
         {

@@ -29,7 +29,7 @@ export default {
   methods: {
     setHandle (handle = '') {
       this.newWorkflow.handle = handle.trim(' ').split(' ').map(s => {
-        return string[0].toUpperCase() + string.slice(1).toLowerCase()
+        return s[0].toUpperCase() + s.slice(1).toLowerCase()
       }).join('')
     }
   }
