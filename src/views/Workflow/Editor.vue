@@ -51,14 +51,14 @@ export default {
       if (this.workflowID) {
         return this.$AutomationAPI.workflowRead({ workflowID: this.workflowID })
           .then(wf => this.workflow = wf)
-          .catch(err => console.error(err))
+          .catch(this.defaultErrorHandler('Failed to fetch workflow'))
       }
     },
 
     async fetchTriggers () {
       return this.$AutomationAPI.triggerList({ workflowID: this.workflowID, disabled: 1 })
         .then(({ set = [] }) => this.triggers = set)
-        .catch(err => console.error(err))
+        .catch(this.defaultErrorHandler('Failed to fetch triggers'))
     },
 
     async saveWorkflow ({ steps = [], paths = [], triggers = [] }) {
@@ -93,8 +93,11 @@ export default {
         }))
 
         this.$AutomationAPI.workflowUpdate(this.workflow)
-          .then(wf => this.workflow = wf)
-          .catch(err => console.error(err))
+          .then(wf => {
+            this.workflow = wf
+            this.raiseSuccessAlert('Workflow updated')
+          })
+          .catch(this.defaultErrorHandler('Failed to save workflow'))
 
         await this.fetchTriggers()
       }
@@ -106,7 +109,7 @@ export default {
           .then(() => {
             this.$router.push({ name: 'workflow.list' })
           })
-          .catch(err => console.error(err))
+          .catch(this.defaultErrorHandler('Failed to delete workflow'))
       }
     }
   }

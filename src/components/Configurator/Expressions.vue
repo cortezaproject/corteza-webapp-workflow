@@ -92,7 +92,7 @@ export default {
     async getTypes () {
       return this.$AutomationAPI.typeList()
         .then(({ set }) => this.types = set)
-        .catch(err => console.error(err))
+        .catch(this.defaultErrorHandler('Failed to fetch types'))
     }
   }
 }

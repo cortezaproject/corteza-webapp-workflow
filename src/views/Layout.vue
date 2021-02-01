@@ -3,9 +3,6 @@
     fluid
     class="h-100 m-0 p-0"
   >
-    <!-- <workflow-header
-      v-if="!proccessing"
-    /> -->
     <router-view
       v-if="!proccessing"
     />
@@ -38,11 +35,24 @@ export default {
           // redirect to auth
           throw new Error()
         }
+
+        this.$root.$on('alert', this.displayToast)
       }).catch(() => {
         this.$auth.open()
       }).finally(() => {
         this.proccessing = false
       })
-  }
+  },
+
+  methods: {
+    displayToast ({ title, message, variant, countdown }) {
+      this.$bvToast.toast(message, {
+        title,
+        variant,
+        autoHideDelay: countdown,
+        toaster: 'b-toaster-bottom-left'
+      })
+    }
+  },
 }
 </script>

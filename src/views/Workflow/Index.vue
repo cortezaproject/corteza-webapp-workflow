@@ -160,7 +160,7 @@ export default {
         .then(({ set = [], filter = {} }) => {
           this.workflows = set
         })
-        .catch(err => console.error(err))
+        .catch(this.defaultErrorHandler('Failed to fetch workflows'))
     },
 
     createWorkflow () {
@@ -170,7 +170,7 @@ export default {
 
       this.$AutomationAPI.workflowCreate(this.newWorkflow)
         .then(wf => this.openWorkflowEditor(wf))
-        .catch(err => console.error(err))
+        .catch(this.defaultErrorHandler('Failed to create workflow'))
     },
 
     openWorkflowEditor (workflow) {

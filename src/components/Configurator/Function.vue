@@ -192,13 +192,13 @@ export default {
     async getFunctionTypes () {
       return this.$AutomationAPI.functionList()
         .then(({ set }) => this.functions = set.filter(({ kind = '' }) => kind !== 'iterator').sort((a, b) => a.meta.short.localeCompare(b.meta.short) ? 1 : -1))
-        .catch(err => console.error(err))
+        .catch(this.defaultErrorHandler('Failed to fetch functions'))
     },
 
     async getTypes () {
       return this.$AutomationAPI.typeList()
         .then(({ set }) => this.types = set)
-        .catch(err => console.error(err))
+        .catch(this.defaultErrorHandler('Failed to fetch types'))
     }
   }
 }
