@@ -16,66 +16,126 @@
       v-if="args.length"
       label="Arguments"
     >
-      <b-input-group
-        v-for="(argument, index) in args"
-        :key="index"
-        class="mb-2"
+      <b-table
+        id="arguments"
+        outlined
+        fixed
+        head-variant="light"
+        :items="args"
+        :fields="argumentFields"
+        @row-clicked="item=>$set(item, '_showDetails', !item._showDetails)"
       >
-        <b-form-input
-          v-model="argument.target"
-          disabled
-          placeholder="Target"
-        />
+        <template #cell(target)="{ item: a }">
+          <code
+            v-if="a.required"
+          >
+            {{ a.target }}
+          </code>
+          <span
+            v-else
+          >
+            {{ a.target }}
+          </span>
+        </template>
 
-        <b-form-select
-          v-model="argument.type"
-          :options="(paramTypes[item.config.ref][argument.target] || [])"
-          :disabled="(paramTypes[item.config.ref][argument.target] || []).length <= 1" 
-        />
+        <template #cell(type)="{ item: a }">
+          <var>{{ a.type }}</var>
+        </template>
 
-        <b-form-input
-          v-model="argument.value"
-          placeholder="Value"
-        />
+        <template #cell(value)="{ item: a }">
+          <samp>{{ a[a.valueType] }}</samp>
+        </template>
 
-        <b-form-input
-          v-model="argument.source"
-          placeholder="Source"
-        />
+        <template #row-details="{ item: a }">
+          <b-form-group
+            v-if="(paramTypes[item.config.ref][a.target] || []).length > 2"
+            label="Type"
+          >
+            <b-form-select
+              v-model="a.type"
+              :options="(paramTypes[item.config.ref][a.target] || [])"
+              :disabled="(paramTypes[item.config.ref][a.target] || []).length <= 1" 
+            />
+            <hr>
+          </b-form-group>
 
-        <b-form-input
-          v-model="argument.expr"
-          placeholder="Expression"
-        />
-      </b-input-group>
+
+          <b-form-group
+            label="Value type"
+          >
+            <b-form-radio-group
+              id="value-types"
+              v-model="a.valueType"
+              :options="valueTypes"
+              button-variant="outline-primary"
+              buttons
+              class="bg-white"
+            />
+          </b-form-group>
+
+          <b-form-input
+            v-if="a.valueType === 'value'"
+            v-model="a.value"
+            placeholder="Value"
+          />
+
+          <b-form-input
+            v-else-if="a.valueType === 'source'"
+            v-model="a.source"
+            placeholder="Source"
+          />
+
+          <b-form-input
+            v-else-if="a.valueType === 'expr'"
+            v-model="a.expr"
+            placeholder="Expression"
+          />
+        </template>
+      </b-table>
     </b-form-group>
 
     <b-form-group
       v-if="results.length"
       label="Results"
     >
-      <b-input-group
-        v-for="(result, index) in results"
-        :key="index"
-        class="mb-2"
+      <b-table
+        id="results"
+        outlined
+        fixed
+        head-variant="light"
+        :items="results"
+        :fields="resultFields"
+        @row-clicked="item=>$set(item, '_showDetails', !item._showDetails)"
       >
-        <b-form-input
-          v-model="result.target"
-          placeholder="Target"
-        />
+        <template #cell(type)="{ item: a }">
+          <var>{{ a.type }}</var>
+        </template>
 
-        <b-form-select
-          v-model="result.type"
-          :options="(resultTypes[item.config.ref][result.name] || [])"
-          disabled
-        />
+        <template #cell(value)="{ item: a }">
+          <samp>{{ a.expr }}</samp>
+        </template>
 
-        <b-form-input
-          v-model="result.expr"
-          disabled
-          placeholder="Expression"
-        />
-      </b-input-group>
+        <template #row-details="{ item: a }">
+          <b-form-group
+            label="Target"
+          >
+            <b-form-input
+              v-model="a.target"
+              placeholder="Target"
+            />
+          </b-form-group>
+
+          <b-form-group
+            label="Result"
+            class="mb-0"
+          >
+            <b-form-input
+              v-model="a.expr"
+              placeholder="Expression"
+            />
+          </b-form-group>
+        </template>
+      </b-table>
     </b-form-group>
   </div>
 </template>
@@ -106,6 +166,54 @@ export default {
         ...this.functions.map(({ ref, meta }) => ({ value: ref, text: meta.short })),
       ]
     },
+
+    argumentFields () {
+      return [
+        {
+          key: 'target',
+          label: 'Name',
+          tdClass: 'border-top text-truncate pointer'
+        },
+        {
+          key: 'type',
+          class: 'text-center',
+          tdClass: 'border-top text-truncate pointer'
+        },
+        {
+          key: 'value',
+          class: 'text-right',
+          tdClass: 'border-top text-truncate pointer'
+        },
+      ]
+    },
+
+    resultFields () {
+      return [
+        {
+          key: 'target',
+          tdClass: 'border-top text-truncate pointer'
+        },
+        {
+          key: 'type',
+          class: 'text-center',
+          tdClass: 'border-top text-truncate pointer'
+        },
+        {
+          key: 'expr',
+          label: 'Result',
+          class: 'text-right',
+          tdClass: 'border-top text-truncate pointer'
+        },
+      ]
+    },
+
+    valueTypes () {
+      return [
+        { text: 'Value', value: 'value' },
+        { text: 'Source', value: 'source' },
+        { text: 'Expression', value: 'expr' },
+      ]
+    }
   },
 
   watch: {
@@ -130,6 +238,21 @@ export default {
       deep: true,
       handler (args) {
         this.item.config.arguments = args.filter(({ value, source, expr }) => value || source || expr)
+          .map(arg => {
+            if (arg.valueType !== 'value') {
+              arg.value = undefined
+            } 
+
+            if (arg.valueType !== 'source') {
+              arg.source = undefined
+            }
+
+            if (arg.valueType !== 'expr') {
+              arg.expr = undefined
+            }
+
+            return arg
+          })
       }
     },
 
@@ -163,9 +286,11 @@ export default {
             name: param.name,
             target: param.name,
             type: arg.type || this.paramTypes[func.ref][param.name][0],
+            valueType: this.getValueType(arg),
             value: arg.value || undefined,
             source: arg.source || undefined,
-            expr: arg.expr || undefined
+            expr: arg.expr || undefined,
+            required: param.required || false
           }
         }) || []
 
@@ -181,6 +306,7 @@ export default {
           const res = this.item.config.results.find(({ expr }) => expr === result.name) || {}
           return {
             name: result.name,
+            valueType: 'expr',
             target: res.target || undefined,
             type: this.resultTypes[func.ref][result.name][0],
             expr: res.expr || result.name
@@ -199,7 +325,30 @@ export default {
       return this.$AutomationAPI.typeList()
         .then(({ set }) => this.types = set)
         .catch(this.defaultErrorHandler('Failed to fetch types'))
+    },
+
+    getValueType (item) {
+      let type = 'value'
+
+      if (item.source) {
+        type = 'source'
+      } else if (item.expr) {
+        type = 'expr'
+      }
+
+      return type
     }
   }
 }
 </script>
+
+<style lang="scss">
+.pointer {
+  cursor: pointer;
+}
+
+.b-table-details {
+  padding: 0;
+  background-color: #e9ecef
+}
+</style>
