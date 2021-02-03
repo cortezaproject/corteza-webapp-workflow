@@ -87,7 +87,7 @@
       width="25vw"
       header-class="bg-white border-bottom border-primary"
       body-class="bg-white"
-      footer-class="bg-white p-2"
+      footer-class="bg-white p-2 border-top border-primary"
     >
       <template
         #header
