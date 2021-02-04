@@ -124,8 +124,9 @@
 
 <script>
 import mxgraph from "mxgraph"
-import { encodeGraph, decodeToolbar, mapVertexKind } from "../lib/codec"
-import toolbarConfig from "../assets/config/toolbar.json"
+import { encodeGraph } from "../lib/codec"
+import { getStyleFromKind, getKindFromStyle } from "../lib/style"
+import toolbarConfig from "../assets/config/toolbar.js"
 import Configurator from '../components/Configurator'
 
 const {
@@ -362,13 +363,19 @@ export default {
         this.addToolbarItem(title, this.graph, this.toolbar, cell, icon)
       }
 
-      decodeToolbar(toolbarConfig).forEach((cell) => {
-        if (cell.line) {
+      toolbarConfig.forEach(cell => {
+        if (cell.kind === 'line') {
           this.toolbar.addLine()
-        } else if (cell.break) {
+        } else if (cell.kind === 'break') {
           this.toolbar.addBreak()
         } else {
-          addCell(cell)
+          const cellStyle = getStyleFromKind(cell)
+          if (cellStyle) {
+            addCell({
+              ...cell,
+              ...cellStyle
+            })
+          }
         }
       })
     },
@@ -639,7 +646,7 @@ export default {
       style[mxConstants.STYLE_VERTICAL_LABEL_POSITION] = mxConstants.ALIGN_BOTTOM
       this.graph.getStylesheet().putCellStyle('symbol', style)
 
-      // Iterator
+      // Function
       style = mxUtils.clone(this.graph.getStylesheet().getCellStyle('symbol'))
       style[mxConstants.STYLE_ALIGN] = mxConstants.ALIGN_CENTER
       style[mxConstants.STYLE_VERTICAL_ALIGN] = mxConstants.ALIGN_MIDDLE
@@ -654,6 +661,10 @@ export default {
       style = mxUtils.clone(this.graph.getStylesheet().getCellStyle('symbol'))
       style[mxConstants.STYLE_PERIMETER] = mxPerimeter.EllipsePerimeter
       this.graph.getStylesheet().putCellStyle('event', style)
+
+      // Error handler
+      style = mxUtils.clone(this.graph.getStylesheet().getCellStyle('event'))
+      this.graph.getStylesheet().putCellStyle('error-handler', style)
 
       // Gateway
       style = mxUtils.clone(this.graph.getStylesheet().getCellStyle('symbol'))
@@ -723,7 +734,7 @@ export default {
           stepID: cell.id,
           kind: config.kind || '',
           ref: config.ref || '',
-          ...(this.rendering ? {} : mapVertexKind(cell))
+          ...(this.rendering ? {} : getKindFromStyle(cell))
         },
       }
 
@@ -742,7 +753,7 @@ export default {
 
     updateVertexConfig (vID) {
       const { node, config } = this.vertices[vID]
-      this.vertices[vID].config = { ...config, ...mapVertexKind(node) }
+      this.vertices[vID].config = { ...config, ...(this.rendering ? {} : getKindFromStyle(node)) }
     },
 
     render (workflow) {
@@ -786,8 +797,10 @@ export default {
             const node = (meta || {}).visual
             if (node) {
               node.parent = this.graph.model.getCell(node.parent) || root
+ 
+              let { width, height, style } = getStyleFromKind(config)
 
-              const newCell = this.graph.insertVertex(node.parent, node.id, node.value, node.xywh[0], node.xywh[1], node.xywh[2], node.xywh[3], node.type)
+              const newCell = this.graph.insertVertex(node.parent, node.id, node.value, node.xywh[0], node.xywh[1], node.xywh[2] || width, node.xywh[3] || height, style)
               this.addCellToVertices(newCell)
             }
           })

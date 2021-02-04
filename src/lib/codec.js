@@ -11,6 +11,7 @@ export function encodeGraph (model, vertices, edges) {
 
       cell = {
         id: cell.id,
+        value: cell.value,
         xywh: [
           cell.geometry.x || 0,
           cell.geometry.y || 0,
@@ -18,11 +19,8 @@ export function encodeGraph (model, vertices, edges) {
           cell.geometry.height || 0,
         ],
         parent: cell.parent.id,
-        value: cell.value,
-        type: cell.style,
-        edges: (cell.edges || []).forEach(edge => {
-          const { id, value, parent, source, target, geometry } = edge
-          edge = {
+        edges: (cell.edges || []).forEach(({ id, value, parent, source, target, geometry }) => {
+          const edge = {
             ...((edges[id] || {}).config || {}),
             parentID: source.id,
             childID: target.id,
@@ -76,92 +74,4 @@ export function encodeGraph (model, vertices, edges) {
     })
 
   return { steps, paths: Object.values(paths), triggers }
-}
-
-export function decodeToolbar (config) {
-  return config.toolbarConfig.map(({ title, width, height, type, icon, style, kind }) => {
-    if (type === 'line') {
-      return {
-        line: true
-      }
-    } else if (type === 'break') {
-      return {
-        break: true
-      }
-    } else {
-      icon = `${process.env.BASE_URL}${icon ? icon : `icons/${type}.svg`}`
-      style = type
-
-      if (style !== 'swimlane') {
-        style = `${style};image=${icon}`
-      }
-
-      style = `${kind};${style}`
-
-      return {
-        title,
-        icon,
-        width,
-        height,
-        type,
-        style,
-        kind,
-      }
-    }
-  })
-}
-
-export function mapVertexKind (vertex) {
-  const { style } = vertex
-  if (!style) {
-    return {}
-  }
-
-  const kind = style.split(';')[0]
-
-  if (kind.includes('event')) {
-    return eventKinds[kind]
-  } else if (kind.includes('gateway')) {
-    if (gatewayKinds[kind]) {
-      return gatewayKinds[kind]
-    } else {
-      // Determine if fork or join
-      let inEdgeCount = 0
-      let outEdgeCount = 0
-      const edges = vertex.edges || []
-
-      edges.forEach(({ source, target }) => {
-        if (source.id === vertex.id) {
-          outEdgeCount++
-        } else if (target.id === vertex.id) {
-          inEdgeCount++
-        }
-      })
-
-      return { kind: 'gateway', ref: (inEdgeCount > outEdgeCount ? 'join' : 'fork') }
-    }
-  } else if (kind.includes('function')) {
-    return { kind: 'function' }
-  } else if (kind.includes('expressions')) {
-    return { kind: 'expressions' }
-  } else if (kind.includes('visual')) {
-    return { kind: 'visual', ref: 'swimlane' }
-  } else if (kind.includes('error')) {
-    return { kind: 'error-handler' }
-  } else if (kind.includes('iterator')) {
-    return { kind: 'iterator' }
-  }
-
-  return {}
-}
-
-const eventKinds = {
-  'eventStart': { kind: 'trigger', ref: 'start' },
-  'eventIntermediate': { kind: 'trigger', ref: 'intermediate' },
-  'eventEnd': { kind: 'trigger', ref: 'end' },
-}
-
-const gatewayKinds = {
-  'gatewayExclusive': { kind: 'gateway', ref: 'excl' },
-  'gatewayInclusive': { kind: 'gateway', ref: 'incl' },
 }

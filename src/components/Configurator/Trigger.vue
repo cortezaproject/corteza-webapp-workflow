@@ -132,7 +132,7 @@ export default {
   },
 
   created () {
-    if (!this.item.triggers && this.eventType === 'start') {
+    if (!this.item.triggers) {
       this.$set(this.item, 'triggers', {
         resourceType: null,
         eventType: null,

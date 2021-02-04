@@ -40,16 +40,9 @@
           @row-clicked="item=>$set(item, '_showDetails', !item._showDetails)"
         >
           <template #cell(target)="{ item: a }">
-            <code
-              v-if="a.required"
-            >
-              {{ a.target }}
-            </code>
-            <span
-              v-else
-            >
-              {{ a.target }}
-            </span>
+            <samp>
+              {{ `${a.target}${a.required ? '*' : ''}` }}
+            </samp>
           </template>
 
           <template #cell(type)="{ item: a }">
