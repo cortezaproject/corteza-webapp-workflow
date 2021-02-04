@@ -1,27 +1,37 @@
 <template>
-  <div>
-    <b-form-group>
-      <template #label>
-        <div
-          class="d-flex"
+  <b-card
+    no-body
+    class="w-100 h-100 shadow-sm rounded-lg"
+  >
+    <b-card-header
+      class="sticky-top h5 px-2"
+      header-bg-variant="white"
+      header-text-variant="primary"
+    >
+      <div
+        class="d-flex"
+      >
+        Arguments
+        <b-button
+          variant="link"
+          class="align-top border-0 p-0 ml-auto"
+          @click="addArgument()"
         >
-          Arguments
-          <b-button
-            variant="link"
-            class="align-top border-0 p-0 ml-auto"
-            @click="addArgument()"
-          >
-            + Add
-          </b-button>
-        </div>
-      </template>
+          + Add
+        </b-button>
+      </div>
+    </b-card-header>
 
+    <b-card-body
+      v-if="item.config.arguments.length"
+      class="p-0 border-top border-primary"
+    >
       <b-table
-        v-if="item.config.arguments.length"
         id="arguments"
         outlined
         fixed
         head-variant="light"
+        class="mb-0"
         :items="item.config.arguments"
         :fields="argumentFields"
         @row-clicked="item=>$set(item, '_showDetails', !item._showDetails)"
@@ -75,8 +85,8 @@
           </div>
         </template>
       </b-table>
-    </b-form-group>
-  </div>
+    </b-card-body>
+  </b-card>
 </template>
 
 <script>

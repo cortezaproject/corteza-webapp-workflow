@@ -12,131 +12,161 @@
       />
     </b-form-group>
 
-    <b-form-group
+    <b-card
       v-if="args.length"
-      label="Arguments"
+      no-body
+      class="w-100 h-100 shadow-sm rounded-lg"
     >
-      <b-table
-        id="arguments"
-        outlined
-        fixed
-        head-variant="light"
-        :items="args"
-        :fields="argumentFields"
-        @row-clicked="item=>$set(item, '_showDetails', !item._showDetails)"
+      <b-card-header
+        class="sticky-top h5 px-2"
+        header-bg-variant="white"
+        header-text-variant="primary"
+        header-border-variant="primary"
       >
-        <template #cell(target)="{ item: a }">
-          <code
-            v-if="a.required"
-          >
-            {{ a.target }}
-          </code>
-          <span
-            v-else
-          >
-            {{ a.target }}
-          </span>
-        </template>
+        Arguments
+      </b-card-header>
 
-        <template #cell(type)="{ item: a }">
-          <var>{{ a.type }}</var>
-        </template>
-
-        <template #cell(value)="{ item: a }">
-          <samp>{{ a[a.valueType] }}</samp>
-        </template>
-
-        <template #row-details="{ item: a }">
-          <b-form-group
-            v-if="(paramTypes[item.config.ref][a.target] || []).length > 2"
-            label="Type"
-          >
-            <b-form-select
-              v-model="a.type"
-              :options="(paramTypes[item.config.ref][a.target] || [])"
-              :disabled="(paramTypes[item.config.ref][a.target] || []).length <= 1" 
-            />
-            <hr>
-          </b-form-group>
-
-
-          <b-form-group
-            label="Value type"
-          >
-            <b-form-radio-group
-              id="value-types"
-              v-model="a.valueType"
-              :options="valueTypes"
-              button-variant="outline-primary"
-              buttons
-              class="bg-white"
-            />
-          </b-form-group>
-
-          <b-form-input
-            v-if="a.valueType === 'value'"
-            v-model="a.value"
-            placeholder="Value"
-          />
-
-          <b-form-input
-            v-else-if="a.valueType === 'source'"
-            v-model="a.source"
-            placeholder="Source"
-          />
-
-          <b-form-input
-            v-else-if="a.valueType === 'expr'"
-            v-model="a.expr"
-            placeholder="Expression"
-          />
-        </template>
-      </b-table>
-    </b-form-group>
-
-    <b-form-group
-      v-if="results.length"
-      label="Results"
-    >
-      <b-table
-        id="results"
-        outlined
-        fixed
-        head-variant="light"
-        :items="results"
-        :fields="resultFields"
-        @row-clicked="item=>$set(item, '_showDetails', !item._showDetails)"
+      <b-card-body
+        class="p-0"
       >
-        <template #cell(type)="{ item: a }">
-          <var>{{ a.type }}</var>
-        </template>
+        <b-table
+          id="arguments"
+          outlined
+          fixed
+          head-variant="light"
+          class="mb-0"
+          :items="args"
+          :fields="argumentFields"
+          @row-clicked="item=>$set(item, '_showDetails', !item._showDetails)"
+        >
+          <template #cell(target)="{ item: a }">
+            <code
+              v-if="a.required"
+            >
+              {{ a.target }}
+            </code>
+            <span
+              v-else
+            >
+              {{ a.target }}
+            </span>
+          </template>
 
-        <template #cell(value)="{ item: a }">
-          <samp>{{ a.expr }}</samp>
-        </template>
+          <template #cell(type)="{ item: a }">
+            <var>{{ a.type }}</var>
+          </template>
 
-        <template #row-details="{ item: a }">
-          <b-form-group
-            label="Target"
-          >
+          <template #cell(value)="{ item: a }">
+            <samp>{{ a[a.valueType] }}</samp>
+          </template>
+
+          <template #row-details="{ item: a }">
+            <b-form-group
+              v-if="(paramTypes[item.config.ref][a.target] || []).length > 2"
+              label="Type"
+            >
+              <b-form-select
+                v-model="a.type"
+                :options="(paramTypes[item.config.ref][a.target] || [])"
+                :disabled="(paramTypes[item.config.ref][a.target] || []).length <= 1" 
+              />
+              <hr>
+            </b-form-group>
+
+
+            <b-form-group
+              label="Value type"
+            >
+              <b-form-radio-group
+                id="value-types"
+                v-model="a.valueType"
+                :options="valueTypes"
+                button-variant="outline-primary"
+                buttons
+                class="bg-white"
+              />
+            </b-form-group>
+
             <b-form-input
-              v-model="a.target"
-              placeholder="Target"
+              v-if="a.valueType === 'value'"
+              v-model="a.value"
+              placeholder="Value"
             />
-          </b-form-group>
 
-          <b-form-group
-            label="Result"
-            class="mb-0"
-          >
             <b-form-input
+              v-else-if="a.valueType === 'source'"
+              v-model="a.source"
+              placeholder="Source"
+            />
+
+            <b-form-input
+              v-else-if="a.valueType === 'expr'"
               v-model="a.expr"
               placeholder="Expression"
             />
-          </b-form-group>
-        </template>
-      </b-table>
-    </b-form-group>
+          </template>
+        </b-table>
+      </b-card-body>
+    </b-card>
+
+    <b-card
+      v-if="results.length"
+      no-body
+      class="w-100 h-100 shadow-sm rounded-lg mt-3"
+    >
+      <b-card-header
+        class="sticky-top h5 px-2"
+        header-bg-variant="white"
+        header-text-variant="primary"
+        header-border-variant="primary"
+      >
+        Results
+      </b-card-header>
+
+      <b-card-body
+        class="p-0"
+      >
+        <b-table
+          id="results"
+          outlined
+          fixed
+          head-variant="light"
+          class="mb-0"
+          :items="results"
+          :fields="resultFields"
+          @row-clicked="item=>$set(item, '_showDetails', !item._showDetails)"
+        >
+          <template #cell(type)="{ item: a }">
+            <var>{{ a.type }}</var>
+          </template>
+
+          <template #cell(value)="{ item: a }">
+            <samp>{{ a.expr }}</samp>
+          </template>
+
+          <template #row-details="{ item: a }">
+            <b-form-group
+              label="Target"
+            >
+              <b-form-input
+                v-model="a.target"
+                placeholder="Target"
+              />
+            </b-form-group>
+
+            <b-form-group
+              label="Result"
+              class="mb-0"
+            >
+              <b-form-input
+                v-model="a.expr"
+                placeholder="Expression"
+              />
+            </b-form-group>
+          </template>
+        </b-table>
+      </b-card-body>
+    </b-card>
   </div>
 </template>
 
