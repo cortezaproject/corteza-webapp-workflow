@@ -8,7 +8,7 @@
       />
     </b-form-group>
 
-    <b-form-group
+    <!-- <b-form-group
       v-if="getSelectedItemConfigJSON"
       label="Config"
     >
@@ -16,7 +16,7 @@
         v-model="getSelectedItemConfigJSON"
         rows="10"
       />
-    </b-form-group>
+    </b-form-group> -->
   </div>
 </template>
 
