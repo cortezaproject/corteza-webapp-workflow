@@ -30,6 +30,20 @@
           class="mt-3"
         />
       </b-card-body>
+      
+      <b-card-footer
+          class="d-flex justify-content-center"
+      >
+        <a
+          href="#"
+          class="h5 mb-0"
+          v-b-modal.keyboard
+        >
+          <font-awesome-icon
+            :icon="['fas', 'keyboard']"
+          />
+        </a>
+      </b-card-footer>
     </b-card>
 
     <b-card
@@ -133,6 +147,20 @@
           </c-input-confirm>
       </template>
     </b-sidebar>
+
+    <b-modal
+      id="keyboard"
+      title="Keyboard shortcuts"
+      hide-footer
+    >
+      <b-table
+        :items="keyboardShortcuts"
+      />
+
+      <small>
+        If using a MAC keyboard, replace Ctrl with the CMD key
+      </small>
+    </b-modal>
   </div>
 </template>
 
@@ -210,6 +238,20 @@ export default {
         itemType: undefined,
         show: false,
       },
+
+      keyboardShortcuts: [
+        { action: 'Select all', shortcut: 'Ctrl + A'},
+        { action: 'Add to selection', shortcut: 'Ctrl + left mouse button'},
+        { action: 'Delete selected elements', shortcut: 'Delete or Backspace'},
+        { action: 'Zoom in(out) to mouse pointer', shortcut: 'Mouse wheel'},
+        { action: 'Reset view to starting point', shortcut: 'Ctrl + Space'},
+        { action: 'Undo', shortcut: 'Ctrl + Z'},
+        { action: 'Redo', shortcut: 'Ctrl + Shift + Z'},
+        { action: 'Cut', shortcut: 'Ctrl + X'},
+        { action: 'Copy', shortcut: 'Ctrl + C'},
+        { action: 'Paste', shortcut: 'Ctrl + V'},
+        { action: 'Save', shortcut: 'Ctrl + S'},
+      ]
     }
   },
 
@@ -298,11 +340,10 @@ export default {
 
     setup() {
       this.graph.setPanning(true)
-      this.graph.zoomFactor = 1.2
+      this.graph.zoomFactor = 1.1
 
       this.graph.setConnectable(true)
       this.graph.setAllowDanglingEdges(false)
-      this.graph.view.setTranslate(10, 10)
 
       // Enables guides
       mxGraphHandler.prototype.guidesEnabled = true
@@ -398,65 +439,53 @@ export default {
 
       // Ctrl + X
       this.keyHandler.controlKeys[88] = () => {
-        if (this.graph.isEnabled()) {
-          mxClipboard.cut(this.graph, this.graph.getSelectionCells())
-        }
+        mxClipboard.cut(this.graph, this.graph.getSelectionCells())
       }
 
       // Ctrl + C
       this.keyHandler.controlKeys[67] = () => {
-        if (this.graph.isEnabled()) {
-          mxClipboard.copy(this.graph, this.graph.getSelectionCells())
-        }
+        mxClipboard.copy(this.graph, this.graph.getSelectionCells())
       }
 
       // Ctrl + V
       this.keyHandler.controlKeys[86] = () => {
-        if (this.graph.isEnabled()) {
-          mxClipboard.paste(this.graph)
-        }
+        mxClipboard.paste(this.graph)
       }
 
       // Ctrl + A
       this.keyHandler.controlKeys[65] = () => {
-        if (this.graph.isEnabled()) {
-          this.graph.selectAll()
-        }
+        this.graph.selectAll()
       }
 
       // Ctrl + S
       this.keyHandler.controlKeys[83] = () => {
-        if (this.graph.isEnabled()) {
-          this.saveWorkflow()
-        }
+        this.saveWorkflow()
       }
 
       // Ctrl + Z
       this.keyHandler.controlKeys[90] = () => {
-        if (this.graph.isEnabled()) {
-          this.undoManager.undo()
-        }
+        this.undoManager.undo()
       }
 
       // Ctrl + Shift + Z
       this.keyHandler.controlShiftKeys[90] = () => {
-        if (this.graph.isEnabled()) {
-          this.undoManager.redo()
-        }
+        this.undoManager.redo()
       }
 
       // Backspace
       this.keyHandler.normalKeys[8] = () => {
-        if (this.graph.isEnabled()) {
-          this.deleteSelectedCells()
-        }
+        this.deleteSelectedCells()
       }
 
       // Delete
       this.keyHandler.normalKeys[46] = () => {
-        if (this.graph.isEnabled()) {
-          this.deleteSelectedCells()
-        }
+        this.deleteSelectedCells()
+      }
+
+      // Ctrl + Space, Resets view to original state (zoom = 1, x = 0, y = 0)
+      this.keyHandler.controlKeys[32] = () => {
+        this.graph.zoomTo(1)
+        this.graph.view.setTranslate(0, 0)
       }
     },
 
@@ -846,18 +875,20 @@ export default {
       } finally {
         // this.edgeLayout.execute(this.graph.getDefaultParent())
 
+        this.graph.getModel().endUpdate() // Updates the display
+
         // Register UNDO and REDO
         const listener = (sender, evt) => {
           this.undoManager.undoableEditHappened(evt.getProperty('edit'))
         }
+
+        this.undoManager.clear()
 
         this.graph.getModel().addListener(mxEvent.UNDO, listener)
         this.graph.getView().addListener(mxEvent.UNDO, listener)
 
         this.graph.getModel().addListener(mxEvent.REDO, listener)
         this.graph.getView().addListener(mxEvent.REDO, listener)
-
-        this.graph.getModel().endUpdate() // Updates the display
 
         this.rendering = false
       }

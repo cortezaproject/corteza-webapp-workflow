@@ -3,7 +3,8 @@ import {
   faCheck,
   faTimes,
   faHome,
-  faSave
+  faSave,
+  faKeyboard
 } from '@fortawesome/free-solid-svg-icons'
 
 import {
@@ -17,5 +18,6 @@ library.add(
   faCheck,
   faTimes,
   faHome,
-  faSave
+  faSave,
+  faKeyboard
 )
