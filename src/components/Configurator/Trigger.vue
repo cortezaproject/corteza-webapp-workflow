@@ -1,5 +1,7 @@
 <template>
-  <b-form>
+  <b-form
+    class="p-2"
+  >
     <b-form-group
       label="Resource"
     >

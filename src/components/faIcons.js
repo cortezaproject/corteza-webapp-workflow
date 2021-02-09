@@ -5,7 +5,9 @@ import {
   faHome,
   faSave,
   faKeyboard,
-  faCog
+  faCog,
+  faChevronLeft,
+  faChevronDown
 } from '@fortawesome/free-solid-svg-icons'
 
 import {
@@ -21,5 +23,7 @@ library.add(
   faHome,
   faSave,
   faKeyboard,
-  faCog
+  faCog,
+  faChevronLeft,
+  faChevronDown
 )

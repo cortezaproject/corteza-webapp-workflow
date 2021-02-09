@@ -2,20 +2,24 @@
   <div
     v-if="!processing"
   >
-    <b-form-group
-      label="Type"
+    <div
+      class="p-2"
     >
-      <b-form-select
-        v-model="item.config.ref"
-        :options="functionTypes"
-        @input="setParams"
-      />
-    </b-form-group>
+      <b-form-group
+        label="Type"
+      >
+        <b-form-select
+          v-model="item.config.ref"
+          :options="functionTypes"
+          @input="setParams"
+        />
+      </b-form-group>
+    </div>
 
     <b-card
       v-if="args.length"
       no-body
-      class="w-100 h-100 shadow-sm rounded-lg"
+      class="w-100 h-100 border-left-0 border-right-0 shadow-sm rounded-lg"
     >
       <b-card-header
         class="sticky-top h5 px-2"
@@ -105,7 +109,7 @@
     <b-card
       v-if="results.length"
       no-body
-      class="w-100 h-100 shadow-sm rounded-lg mt-3"
+      class="w-100 h-100 border-left-0 border-right-0 shadow-sm rounded-lg mt-3"
     >
       <b-card-header
         class="sticky-top h5 px-2"

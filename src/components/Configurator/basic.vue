@@ -2,6 +2,7 @@
   <div>
     <b-form-group
       label="Label"
+      class="mb-0"
     >
       <b-form-input
         v-model="item.node.value"

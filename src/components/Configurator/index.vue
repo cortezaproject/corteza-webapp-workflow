@@ -1,34 +1,83 @@
 <template>
-  <b-tabs
-    active-nav-item-class="bg-grey"
-    nav-wrapper-class="bg-white"
-    active-tab-class="h-100 overflow-auto p-2"
-    content-class="h-100"
-    card
+  <div
+    class="d-flex flex-column"
   >
-    <b-tab
-      active
-      title="General"
+    <b-card
+      no-body
+      no-border
+      class="flex-grow-1 mb-1 border-0"
     >
-      <basic
-        :item="item"
-        @update-value="$emit('update-value', $event)"
-      />
-    </b-tab>
-    <b-tab
+      <b-card-header
+        header-tag="header"
+        class="p-0"
+      >
+        <b-button
+          block
+          variant="primary"
+          class="d-flex align-items-center justify-content-between text-left"
+          @click="collapse.basic = !collapse.basic"
+        >
+          General
+          <font-awesome-icon
+            :icon="['fas', collapse.basic ? 'chevron-down' : 'chevron-left']"
+          />
+        </b-button>
+      </b-card-header>
+      <b-collapse
+        v-model="collapse.basic"
+        appear
+        accordion="basic"
+      >
+        <b-card-body
+          class="p-2"
+        >
+          <basic
+            :item="item"
+            @update-value="$emit('update-value', $event)"
+          />
+        </b-card-body>
+      </b-collapse>
+    </b-card>
+
+    <b-card
       v-if="stepComponent"
-      title="Configure"
-      class="h-100"
+      no-body
+      class="flex-grow-1 border-0"
     >
-      <component
-        :is="stepComponent"
-        :item="item"
-        :edges="edges"
-        class="h-100"
-        @update-edge="$emit('update-edge', $event)"
-      />
-    </b-tab>
-  </b-tabs>
+      <b-card-header
+        header-tag="header"
+        class="p-0"
+      >
+        <b-button
+          block
+          variant="primary"
+          class="d-flex align-items-center justify-content-between text-left"
+          @click="collapse.configurator = !collapse.configurator"
+        >
+          Configuration
+          <font-awesome-icon
+            :icon="['fas', collapse.configurator ? 'chevron-down' : 'chevron-left']"
+          />
+        </b-button>
+      </b-card-header>
+      <b-collapse
+        v-model="collapse.configurator"
+        appear
+        accordion="configurator"
+      >
+        <b-card-body
+          class="p-0"
+        >
+          <component
+            :is="stepComponent"
+            :item="item"
+            :edges="edges"
+            @update-edge="$emit('update-edge', $event)"
+          />
+        </b-card-body>
+      </b-collapse>
+    </b-card>
+  </div>
 </template>
 <script>
 import base from './base'
@@ -42,6 +91,15 @@ export default {
   },
 
   extends: base,
+
+  data () {
+    return {
+      collapse: {
+        basic: true,
+        configurator: true,
+      }
+    }
+  },
 
   computed: {
     stepComponent () {

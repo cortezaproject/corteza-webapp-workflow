@@ -1,5 +1,7 @@
 <template>
-  <div>
+  <div
+    class="p-2"
+  >
     <div
       v-if="!gatewayEdges.length"
     >
