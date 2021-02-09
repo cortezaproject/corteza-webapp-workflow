@@ -29,13 +29,9 @@ export default {
 
   computed: {
     kind () {
-      if (this.item.workflowID) {
-        return 'Workflow'
-      } else {
-        const { kind } = this.item.config
-        if (kind) {
-          return kind.charAt(0).toUpperCase() + kind.slice(1)
-        }
+      const { kind } = this.item.config
+      if (kind) {
+        return kind.charAt(0).toUpperCase() + kind.slice(1)
       }
 
       return undefined

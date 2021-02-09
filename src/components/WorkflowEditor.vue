@@ -27,7 +27,7 @@
         <div
           id="toolbar"
           ref="toolbar"
-          class="mt-3"
+          class="mt-1"
         />
       </b-card-body>
       
@@ -52,21 +52,21 @@
       body-class="p-0"
     >
       <b-card-header
-        class="d-flex sticky-top h5 px-2"
+        class="sticky-top px-2"
         header-bg-variant="white"
-        header-text-variant="primary"
         header-border-variant="primary"
       >
-        {{ workflow.meta.name || workflow.handle }}
         <div
-          class="d-inline-flex align-items-ceejustify-content-between ml-2"
+          class="d-flex h5 mb-0"
         >
+          {{ workflow.meta.name || workflow.handle }}
           <a
             href="#"
-            @click="openWorkflowSettings()"
+            class="ml-2"
+            v-b-modal.workflow
           >
             <font-awesome-icon
-              :icon="['far', 'edit']"
+              :icon="['fas', 'cog']"
             />
           </a>
 
@@ -81,7 +81,7 @@
               :icon="['fas', 'save']"
             />
           </b-button>
-          <!-- <a
+          <a
             v-else
             href="#"
             class="ml-2"
@@ -90,8 +90,13 @@
             <font-awesome-icon
               :icon="['fas', 'save']"
             />
-          </a> -->
+          </a>
         </div>
+        <p
+          class="mb-0"
+        >
+          {{ workflow.meta.description }}
+        </p>
       </b-card-header>
       <b-card-body
         class="p-0"
@@ -110,7 +115,7 @@
       right
       lazy
       no-enforce-focus
-      width="25vw"
+      width="500px"
       header-class="bg-white border-bottom border-primary"
       body-class="bg-white"
       footer-class="bg-white p-2 border-top border-primary"
@@ -161,6 +166,17 @@
         If using a MAC keyboard, replace Ctrl with the CMD key
       </small>
     </b-modal>
+
+    <b-modal
+      id="workflow"
+      title="Workflow configuration"
+      hide-footer
+    >
+      <workflow-configurator
+        v-if="workflow.workflowID"
+        :workflow="workflow"
+      />
+    </b-modal>
   </div>
 </template>
 
@@ -170,6 +186,7 @@ import { encodeGraph } from "../lib/codec"
 import { getStyleFromKind, getKindFromStyle } from "../lib/style"
 import toolbarConfig from "../assets/config/toolbar.js"
 import Configurator from '../components/Configurator'
+import WorkflowConfigurator from '../components/Configurator/Workflow'
 
 const {
   mxClient,
@@ -202,7 +219,8 @@ export default {
   name: 'WorkflowEditor',
 
   components: {
-    Configurator
+    Configurator,
+    WorkflowConfigurator
   },
 
   props: {
@@ -310,12 +328,6 @@ export default {
   },
 
   methods: {
-    openWorkflowSettings () {
-      this.sidebar.itemType = 'workflow'
-      this.sidebar.item = this.workflow
-      this.sidebar.show = true
-    },
-
     deleteSelectedCells () {
       this.sidebarClose()
       this.graph.removeCells()
@@ -328,13 +340,9 @@ export default {
     },
 
     sidebarDelete () {
-      if (this.sidebar.itemType === 'workflow') {
-        this.$emit('delete')
-      } else {
-        if (this.getSelectedItem) {
-          this.graph.removeCells([this.getSelectedItem.node])
-          this.sidebarClose()
-        }
+      if (this.getSelectedItem) {
+        this.graph.removeCells([this.getSelectedItem.node])
+        this.sidebarClose()
       }
     },
 
@@ -928,6 +936,6 @@ export default {
 }
 
 #toolbar > hr {
-  margin-right: 0 !important;
+  margin: 0.5rem 0 0.5rem 0 !important;
 }
 </style>
