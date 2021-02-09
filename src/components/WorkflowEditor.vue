@@ -543,9 +543,8 @@ export default {
           if (!this.rendering) {
             this.addCellToVertices(cell)
             this.graph.setSelectionCells([cell])
-            this.sidebar.item = this.vertices[cell.id]
-            this.sidebar.itemType = this.vertices[cell.id].config.kind
             this.sidebar.show = true
+            this.reopenSidebar(this.vertices[cell.id], this.vertices[cell.id].config.kind)
           }
         }
       })
@@ -592,9 +591,9 @@ export default {
             // Prevent sidebar opening/closing when CTRL(CMD) is pressed while clicking
           } else {
             if (cell != null) {
-              this.sidebar.item = cell.edge ? this.edges[cell.id] : this.vertices[cell.id]
-              this.sidebar.itemType = cell.edge ? 'edge' : this.vertices[cell.id].config.kind
-              this.sidebar.show = true
+              const item = cell.edge ? this.edges[cell.id] : this.vertices[cell.id]
+              const itemType = cell.edge ? 'edge' : this.vertices[cell.id].config.kind
+              this.reopenSidebar(item, itemType)
             } else {
               this.sidebar.show = false
               if (this.getSelectedItem) {
@@ -809,6 +808,23 @@ export default {
 
     configChangeDetected () {
       this.graph.model.fireEvent(new mxEventObject("customChange"))
+    },
+
+    reopenSidebar (item, itemType) {
+      if (!this.sidebar.show) {
+        this.sidebar.item = item
+        this.sidebar.itemType = itemType
+        this.sidebar.show = true
+      } else {
+        this.sidebar.show = false
+        if (!this.sidebar.show) {
+          setTimeout(() => {
+          this.sidebar.item = item
+          this.sidebar.itemType = itemType
+            this.sidebar.show = !this.sidebar.show
+          }, 300)
+        }
+      }
     },
 
     render (workflow) {
