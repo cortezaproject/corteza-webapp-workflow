@@ -44,7 +44,7 @@ export default {
   computed: {
     // Used to detect changes in node value
     valueID () {
-      return `${this.item.node.id}-${this.item.node.value}`
+      return `${this.item.node.id || '0'}-${this.item.node.value || undefined}`
     }
   }
 }

@@ -213,6 +213,7 @@ const {
   mxParallelEdgeLayout,
   mxPoint,
   mxCellEditor,
+  mxCellMarker,
 } = mxgraph()
 
 export default {
@@ -244,6 +245,7 @@ export default {
       vertices: {},
       edges: {},
       toolbar: undefined,
+      cellMarker: undefined,
 
       edgeConnected: false,
       // edgeLayout: undefined,
@@ -312,6 +314,8 @@ export default {
 
       this.initToolbar()
       this.setup()
+
+      this.initCellMarker()
 
       this.keys()
       this.events()
@@ -422,6 +426,19 @@ export default {
             })
           }
         }
+      })
+    },
+
+    initCellMarker () {
+      this.cellMarker = new mxCellMarker(this.graph)
+      this.cellMarker.hotspot = 0.5
+
+      this.graph.addMouseListener({
+        mouseDown: (a, b) => {},
+        mouseMove: (sender, me) => {
+          this.cellMarker.process(me)
+        },
+        mouseUp: () => {}
       })
     },
 
@@ -680,6 +697,8 @@ export default {
       style[mxConstants.STYLE_ROUNDED] = true
       style[mxConstants.STYLE_FONTCOLOR] = 'black'
       style[mxConstants.STYLE_FONTSIZE] = 11
+      style[mxConstants.STYLE_ENDSIZE] = 15
+      style[mxConstants.STYLE_STARTSIZE] = 15
       this.graph.getStylesheet().putDefaultEdgeStyle(style)
 
       // Symbol (custom shape) styling
@@ -738,7 +757,7 @@ export default {
     },
 
     connectionHandler() {
-      mxConstants.DEFAULT_HOTSPOT = 0.4
+      mxConstants.DEFAULT_HOTSPOT = 0
 
       new mxConnectionHandler(this.graph, (source, target, style) => {
         const edge = new mxCell('', new mxGeometry())

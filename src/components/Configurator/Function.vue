@@ -83,13 +83,13 @@
             <b-form-input
               v-if="a.valueType === 'value'"
               v-model="a.value"
-              placeholder="Value"
+              placeholder="Constant value"
             />
 
             <b-form-input
               v-else-if="a.valueType === 'source'"
               v-model="a.source"
-              placeholder="Source"
+              placeholder="Copy from variable"
             />
 
             <b-form-input
@@ -232,8 +232,8 @@ export default {
 
     valueTypes () {
       return [
-        { text: 'Value', value: 'value' },
-        { text: 'Source', value: 'source' },
+        { text: 'Constant value', value: 'value' },
+        { text: 'Copy from variable', value: 'source' },
         { text: 'Expression', value: 'expr' },
       ]
     }
