@@ -6,17 +6,15 @@
     <b-card
       no-body
       class="h-100 border-0 shadow-sm rounded-lg"
-      style="max-width: 200px; min-width: 118px;"
     >
       <b-card-header
-        class="sticky-top h5 px-2"
+        class="d-flex justify-content-center sticky-top h5 px-2"
         header-bg-variant="white"
         header-text-variant="white"
         header-border-variant="primary"
       >
         <router-link
           :to="{name: 'workflow.list'}"
-          class="mr-2"
         >
           <font-awesome-icon
             :icon="['fas', 'home']"
@@ -31,18 +29,6 @@
           ref="toolbar"
           class="mt-3"
         />
-        <hr>
-        <div
-          class="d-flex flex-column align-items-center"
-        >
-          <b-button
-            variant="link"
-            class="px-0"
-            @click="$emit('save', getJsonModel())"
-          >
-            Save Workflow
-          </b-button>
-        </div>
       </b-card-body>
     </b-card>
 
@@ -52,20 +38,46 @@
       body-class="p-0"
     >
       <b-card-header
-        class="sticky-top h5 px-2"
+        class="d-flex sticky-top h5 px-2"
         header-bg-variant="white"
         header-text-variant="primary"
         header-border-variant="primary"
       >
         {{ workflow.meta.name || workflow.handle }}
-        <a
-          href="#"
-          @click="openWorkflowSettings()"
+        <div
+          class="d-inline-flex align-items-ceejustify-content-between ml-2"
         >
-          <font-awesome-icon
-            :icon="['far', 'edit']"
-          />
-        </a>
+          <a
+            href="#"
+            @click="openWorkflowSettings()"
+          >
+            <font-awesome-icon
+              :icon="['far', 'edit']"
+            />
+          </a>
+
+          <b-button
+            v-if="changeDetected"
+            variant="warning"
+            class="p-0 px-1 ml-2 border-0"
+            @click="saveWorkflow()"
+          >
+            Changes detected. Click here to save.
+            <font-awesome-icon
+              :icon="['fas', 'save']"
+            />
+          </b-button>
+          <!-- <a
+            v-else
+            href="#"
+            class="ml-2"
+            @click="saveWorkflow()"
+          >
+            <font-awesome-icon
+              :icon="['fas', 'save']"
+            />
+          </a> -->
+        </div>
       </b-card-header>
       <b-card-body
         class="p-0"
@@ -105,6 +117,8 @@
         v-if="sidebar.item"
         :item.sync="sidebar.item"
         :edges.sync="edges"
+        @update-value="setValue($event)"
+        @change-config="configChangeDetected()"
       />
 
       <template
@@ -149,6 +163,8 @@ const {
   mxEdgeStyle,
   mxConnectionHandler,
   mxClipboard,
+  mxEventSource,
+  mxEventObject,
   mxParallelEdgeLayout,
   mxPoint,
   mxCellEditor,
@@ -187,6 +203,7 @@ export default {
       // edgeLayout: undefined,
 
       rendering: false,
+      changeDetected: false,
 
       sidebar: {
         item: undefined,
@@ -215,16 +232,6 @@ export default {
       handler (newWorkflow) {
         if (newWorkflow.workflowID) {
           this.render(newWorkflow)
-        }
-      }
-    },
-
-    'sidebar.item': {
-      deep: true,
-      handler (item) {
-        if (item && !item.workflowID) {
-          const { value } = item.node
-          this.graph.model.setValue(item.node, value)
         }
       }
     },
@@ -311,17 +318,6 @@ export default {
       // this.edgeLayout.isEdgeIgnored = (edge) => {
       //   return (edge.geometry.points || []).length
       // }
-
-      // Register UNDO and REDO
-      const listener = (sender, evt) => {
-        this.undoManager.undoableEditHappened(evt.getProperty('edit'))
-      }
-
-      this.graph.getModel().addListener(mxEvent.UNDO, listener)
-      this.graph.getView().addListener(mxEvent.UNDO, listener)
-
-      this.graph.getModel().addListener(mxEvent.REDO, listener)
-      this.graph.getView().addListener(mxEvent.REDO, listener)
 
       if (mxClient.IS_QUIRKS) {
         document.body.style.overflow = 'hidden'
@@ -425,6 +421,13 @@ export default {
       this.keyHandler.controlKeys[65] = () => {
         if (this.graph.isEnabled()) {
           this.graph.selectAll()
+        }
+      }
+
+      // Ctrl + S
+      this.keyHandler.controlKeys[83] = () => {
+        if (this.graph.isEnabled()) {
+          this.saveWorkflow()
         }
       }
 
@@ -568,11 +571,6 @@ export default {
         evt.consume()
       })
 
-      // Doubleclick event
-      this.graph.addListener(mxEvent.CLICK, (sender, evt) => {
-        evt.consume()
-      })
-
       // Zoom event
       mxEvent.addMouseWheelListener((evt, up) => {
         if (mxEvent.isConsumed(evt)) {
@@ -609,6 +607,18 @@ export default {
 
         mxEvent.consume(evt)
       }, this.graph.container)
+
+      this.graph.model.addListener(mxEvent.CHANGE, (sender, evt) => {
+        if (!this.rendering) {
+          this.changeDetected = true
+        }
+      })
+
+      this.graph.model.addListener('customChange', (sender, evt) => {
+        if (!this.rendering) {
+          this.changeDetected = true
+        }
+      })
     },
 
     styling() {
@@ -756,6 +766,14 @@ export default {
       this.vertices[vID].config = { ...config, ...(this.rendering ? {} : getKindFromStyle(node)) }
     },
 
+    setValue (value) {
+      this.graph.model.setValue(this.sidebar.item.node, value)
+    },
+
+    configChangeDetected () {
+      this.graph.model.fireEvent(new mxEventObject("customChange"))
+    },
+
     render (workflow) {
       this.rendering = true
       this.graph.model.clear()
@@ -828,6 +846,17 @@ export default {
       } finally {
         // this.edgeLayout.execute(this.graph.getDefaultParent())
 
+        // Register UNDO and REDO
+        const listener = (sender, evt) => {
+          this.undoManager.undoableEditHappened(evt.getProperty('edit'))
+        }
+
+        this.graph.getModel().addListener(mxEvent.UNDO, listener)
+        this.graph.getView().addListener(mxEvent.UNDO, listener)
+
+        this.graph.getModel().addListener(mxEvent.REDO, listener)
+        this.graph.getView().addListener(mxEvent.REDO, listener)
+
         this.graph.getModel().endUpdate() // Updates the display
 
         this.rendering = false
@@ -836,6 +865,11 @@ export default {
 
     getJsonModel () {
       return encodeGraph(this.graph.getModel(), this.vertices, this.edges)
+    },
+
+    saveWorkflow () {
+      this.changeDetected = false
+      this.$emit('save', this.getJsonModel())
     }
   },
 }
@@ -860,5 +894,9 @@ export default {
 
 .b-sidebar > .b-sidebar-header {
   padding: 0.75rem 0.5rem !important;
+}
+
+#toolbar > hr {
+  margin-right: 0 !important;
 }
 </style>

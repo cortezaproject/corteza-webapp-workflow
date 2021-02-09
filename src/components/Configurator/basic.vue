@@ -25,5 +25,27 @@ import base from './base'
 
 export default {
   extends: base,
+
+  watch: {
+    // Used to detect changes in node value
+    valueID: {
+      handler (newValueID, oldValueID) {
+        const [nID, nValue] = newValueID.split('-')
+        const [oID, oValue] = oldValueID.split('-')
+        if (nID === oID) {
+          if (nValue !== oValue) {
+            this.$emit('update-value', this.item.node.value)
+          }
+        }
+      }
+    }
+  },
+
+  computed: {
+    // Used to detect changes in node value
+    valueID () {
+      return `${this.item.node.id}-${this.item.node.value}`
+    }
+  }
 }
 </script>

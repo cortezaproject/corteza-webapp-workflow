@@ -18,6 +18,7 @@
       <basic
         v-else
         :item="item"
+        @update-value="$emit('update-value', $event)"
       />
     </b-tab>
     <b-tab

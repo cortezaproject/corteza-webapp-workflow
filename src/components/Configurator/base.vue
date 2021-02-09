@@ -12,6 +12,21 @@ export default {
     },
   },
 
+  watch: {
+    getSelectedItemConfigJSON: {
+      handler (newValue, oldValue) {
+        if (newValue !== oldValue) {
+          const nID = JSON.parse(newValue).stepID
+          const oID = JSON.parse(oldValue).stepID
+
+          if (nID === oID) {
+            this.$emit('change-config')
+          }
+        }
+      }
+    }
+  },
+
   computed: {
     kind () {
       if (this.item.workflowID) {

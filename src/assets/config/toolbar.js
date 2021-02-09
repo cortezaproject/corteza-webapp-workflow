@@ -15,8 +15,14 @@ export default [
         kind: 'expressions',
     },
     {
+        kind: 'break'
+    },
+    {
         title: 'Function',
         kind: 'function'
+    },
+    {
+        kind: 'break'
     },
     {
         title: 'Iterator',
@@ -32,6 +38,9 @@ export default [
         title: 'Trigger (Start)',
         kind: 'trigger',
         ref: 'start',
+    },
+    {
+        kind: 'break'
     },
     {
         title: 'Error',

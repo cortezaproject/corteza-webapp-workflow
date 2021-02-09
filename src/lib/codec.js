@@ -62,7 +62,6 @@ export function encodeGraph (model, vertices, edges) {
       } else {
         steps.push({
           ...vertices[cell.id].config,
-          ...mapVertexKind(vertices[cell.id].node),
           meta: {
             label: cell.value || '',
             description: '',
