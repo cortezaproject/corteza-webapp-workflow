@@ -14,12 +14,16 @@
         <b-button
           block
           variant="primary"
-          class="d-flex align-items-center justify-content-between text-left"
+          class="d-flex align-items-center justify-content-between px-2 py-1"
           @click="collapse.basic = !collapse.basic"
         >
-          General
+          <span
+            class="h5 mb-0"
+          >
+            General
+          </span>
           <font-awesome-icon
-            :icon="['fas', collapse.basic ? 'chevron-down' : 'chevron-left']"
+            :icon="['fas', collapse.configurator ? 'chevron-down' : 'chevron-left']"
           />
         </b-button>
       </b-card-header>
@@ -51,10 +55,14 @@
         <b-button
           block
           variant="primary"
-          class="d-flex align-items-center justify-content-between text-left"
+          class="d-flex align-items-center justify-content-between px-2 py-1"
           @click="collapse.configurator = !collapse.configurator"
         >
-          Configuration
+          <span
+            class="h5 mb-0"
+          >
+            Configuration
+          </span>
           <font-awesome-icon
             :icon="['fas', collapse.configurator ? 'chevron-down' : 'chevron-left']"
           />
