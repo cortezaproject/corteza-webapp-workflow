@@ -3,7 +3,7 @@
     v-if="!processing"
   >
     <div
-      class="p-2"
+      class="p-2 mb-3 shadow-sm"
     >
       <b-form-group
         label="Type"

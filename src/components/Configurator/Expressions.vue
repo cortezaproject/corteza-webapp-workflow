@@ -1,7 +1,7 @@
 <template>
   <b-card
     no-body
-    class="w-100 h-100 border-0 rounded-lg"
+    class="w-100 h-100 border-0 shadow-sm rounded-lg"
   >
     <b-card-header
       class="sticky-top h5 px-2"
