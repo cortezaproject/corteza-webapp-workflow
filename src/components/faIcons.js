@@ -7,7 +7,8 @@ import {
   faKeyboard,
   faCog,
   faChevronLeft,
-  faChevronDown
+  faChevronDown,
+  faExclamationTriangle
 } from '@fortawesome/free-solid-svg-icons'
 
 import {
@@ -25,5 +26,6 @@ library.add(
   faKeyboard,
   faCog,
   faChevronLeft,
-  faChevronDown
+  faChevronDown,
+  faExclamationTriangle
 )

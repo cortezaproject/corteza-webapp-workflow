@@ -81,6 +81,7 @@
               :icon="['fas', 'save']"
             />
           </b-button>
+
           <a
             v-else
             href="#"
@@ -91,6 +92,18 @@
               :icon="['fas', 'save']"
             />
           </a>
+
+          <b-button
+            v-if="(workflow.issues || []).length"
+            variant="danger"
+            class="p-0 px-1 ml-2 border-0"
+            v-b-modal.issues
+          >
+            Issues detected. Click here to view
+            <font-awesome-icon
+              :icon="['fas', 'exclamation-triangle']"
+            />
+          </b-button>
         </div>
         <p
           class="mb-0"
@@ -110,6 +123,7 @@
     </b-card>
 
     <b-sidebar
+      v-if="getSelectedItem"
       v-model="sidebar.show"
       shadow
       right
@@ -123,12 +137,23 @@
       <template
         #header
       >
-        <div>
+        <div
+          class="d-flex w-100 h5 mb-0"
+        >
           <h5
-            class="text-primary mb-0 mr-2"
+            class="text-primary mb-0"
           >
             {{ getSidebarItemType }}
           </h5>
+
+          <div
+            class="ml-auto"
+          >
+            ID: <var>{{ getSelectedItem.config.stepID }}</var>
+          </div>
+        </div>
+        <div>
+          
         </div>
       </template>
 
@@ -175,6 +200,22 @@
         v-if="workflow.workflowID"
         :workflow="workflow"
       />
+    </b-modal>
+
+    <b-modal
+      id="issues"
+      title="Workflow issues"
+      hide-footer
+    >
+      <div
+        v-for="(issue, index) in workflow.issues"
+        :key="index"
+      >
+        <b>Position:</b> <var>{{ issue.culprit.step }}</var>
+        <p>
+          <code>{{ issue.description[0].toUpperCase() + issue.description.slice(1).toLowerCase() }}</code>
+        </p>
+      </div>
     </b-modal>
   </div>
 </template>
@@ -377,6 +418,10 @@ export default {
           }, 300)
         }
       }
+    },
+
+    showIssues () {
+      console.log('issues')
     },
 
     setup() {
