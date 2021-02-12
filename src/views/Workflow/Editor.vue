@@ -3,6 +3,7 @@
     v-if="!processing"
     :workflow="workflow"
     :triggers="triggers"
+    :change-detected="changeDetected"
     @save="saveWorkflow"
     @delete="deleteWorkflow"
   />
@@ -23,6 +24,8 @@ export default {
       processing: true,
       workflow: {},
       triggers: [],
+
+      changeDetected: false,
     }
   },
 
@@ -40,6 +43,10 @@ export default {
   },
 
   async mounted () {
+    this.$root.$on('change-detected', () => {
+      this.changeDetected = true
+    })
+
     await this.fetchWorkflow()
     await this.fetchTriggers()
 
@@ -92,14 +99,16 @@ export default {
             }
           }))
 
-          return this.$AutomationAPI.workflowUpdate(this.workflow)
+
+          await this.$AutomationAPI.workflowUpdate(this.workflow)
             .then(wf => {
               this.workflow = wf
+              this.changeDetected = false
               this.raiseSuccessAlert('Workflow updated')
             })
-        }).catch(this.defaultErrorHandler('Failed to save workflow'))
 
-        await this.fetchTriggers()
+          await this.fetchTriggers()
+        }).catch(this.defaultErrorHandler('Failed to save workflow'))
       }
     },
 

@@ -80,7 +80,6 @@
             :is="stepComponent"
             :item="item"
             :edges="edges"
-            @update-edge="$emit('update-edge', $event)"
           />
         </b-card-body>
       </b-collapse>
@@ -112,6 +111,15 @@ export default {
   computed: {
     stepComponent () {
       return Configurators[this.kind]
+    },
+
+    kind () {
+      const { kind } = this.item.config
+      if (kind) {
+        return kind.charAt(0).toUpperCase() + kind.slice(1)
+      }
+
+      return undefined
     },
   },
 }

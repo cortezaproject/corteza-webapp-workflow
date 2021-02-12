@@ -14,11 +14,13 @@
     >
       <b-form-textarea
         v-model="workflow.meta.description"
+        @input="$root.$emit('change-detected')"
       />
     </b-form-group>
 
     <b-form-checkbox
       v-model="workflow.enabled"
+      @input="$root.$emit('change-detected')"
     >
       Enabled
     </b-form-checkbox>
@@ -39,6 +41,8 @@ export default {
       this.workflow.handle = handle.trim(' ').split(' ').map(s => {
         return s[0].toUpperCase() + s.slice(1).toLowerCase()
       }).join('')
+
+      this.$root.$emit('change-detected')
     }
   }
 }

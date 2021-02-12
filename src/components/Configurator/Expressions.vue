@@ -51,6 +51,7 @@
             <b-form-input
               v-model="a.target"
               placeholder="Target"
+              @input="$root.$emit('change-detected')"
             />
           </b-form-group>
 
@@ -60,6 +61,7 @@
             <b-form-select
               v-model="a.type"
               :options="fieldTypes"
+              @input="$root.$emit('change-detected')"
             />
           </b-form-group>
 
@@ -69,6 +71,7 @@
             <b-form-input
               v-model="a.expr"
               placeholder="Expression"
+              @input="$root.$emit('change-detected')"
             />
           </b-form-group>
 
@@ -129,7 +132,6 @@ export default {
     await this.getTypes()
   },
 
-  
   methods: {
     addArgument () {
       this.item.config.arguments.push({
@@ -138,10 +140,12 @@ export default {
         type: 'Any',
         _showDetails: true
       })
+      this.$root.$emit('change-detected')
     },
 
     removeArgument (index) {
       this.item.config.arguments.splice(index, 1)
+      this.$root.$emit('change-detected')
     },
 
     async getTypes () {

@@ -53,6 +53,7 @@ export default {
   methods: {
     updateEdge (id, expr) {
       this.edges[id].config.expr = expr
+      this.$root.$emit('change-detected')
     }
   }
 }

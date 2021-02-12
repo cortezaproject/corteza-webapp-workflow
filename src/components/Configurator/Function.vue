@@ -61,11 +61,13 @@
             <b-form-group
               v-if="(paramTypes[item.config.ref][a.target] || []).length > 2"
               label="Type"
+              class="mb-0"
             >
               <b-form-select
                 v-model="a.type"
                 :options="(paramTypes[item.config.ref][a.target] || [])"
-                :disabled="(paramTypes[item.config.ref][a.target] || []).length <= 1" 
+                :disabled="(paramTypes[item.config.ref][a.target] || []).length <= 1"
+                @input="$root.$emit('change-detected')"
               />
               <hr>
             </b-form-group>
@@ -81,6 +83,7 @@
                 button-variant="outline-primary"
                 buttons
                 class="bg-white"
+                @input="$root.$emit('change-detected')"
               />
             </b-form-group>
 
@@ -88,18 +91,21 @@
               v-if="a.valueType === 'value'"
               v-model="a.value"
               placeholder="Constant value"
+              @input="$root.$emit('change-detected')"
             />
 
             <b-form-input
               v-else-if="a.valueType === 'source'"
               v-model="a.source"
               placeholder="Copy from variable"
+              @input="$root.$emit('change-detected')"
             />
 
             <b-form-input
               v-else-if="a.valueType === 'expr'"
               v-model="a.expr"
               placeholder="Expression"
+              @input="$root.$emit('change-detected')"
             />
           </template>
         </b-table>
@@ -148,16 +154,18 @@
               <b-form-input
                 v-model="a.target"
                 placeholder="Target"
+                @input="$root.$emit('change-detected')"
               />
             </b-form-group>
 
             <b-form-group
-              label="Result"
+              label="Result (expression)"
               class="mb-0"
             >
               <b-form-input
                 v-model="a.expr"
                 placeholder="Expression"
+                @input="$root.$emit('change-detected')"
               />
             </b-form-group>
           </template>
@@ -255,7 +263,7 @@ export default {
         await this.getFunctionTypes()
         await this.getTypes()
 
-        this.setParams(this.item.config.ref)
+        this.setParams(this.item.config.ref, true)
 
         this.processing = false
       }
@@ -266,19 +274,14 @@ export default {
       handler (args) {
         this.item.config.arguments = args.filter(({ value, source, expr }) => value || source || expr)
           .map(arg => {
-            if (arg.valueType !== 'value') {
-              arg.value = undefined
-            } 
-
-            if (arg.valueType !== 'source') {
-              arg.source = undefined
+            const argMapped = {
+              target: arg.target,
+              type: arg.type
             }
 
-            if (arg.valueType !== 'expr') {
-              arg.expr = undefined
-            }
+            argMapped[arg.valueType] = arg[arg.valueType]
 
-            return arg
+            return argMapped
           })
       }
     },
@@ -292,9 +295,13 @@ export default {
   },
 
   methods: {
-    setParams (fName) {
+    setParams (fName, immediate = false) {
       this.args = []
       this.results = []
+
+      if (!immediate) {
+        this.$root.$emit('change-detected')
+      }
 
       if (fName) {
         const func = this.functions.find(({ ref }) => ref === fName)

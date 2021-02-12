@@ -137,7 +137,6 @@
         :item.sync="sidebar.item"
         :edges.sync="edges"
         @update-value="setValue($event)"
-        @change-config="configChangeDetected()"
       />
 
       <template
@@ -234,6 +233,11 @@ export default {
       type: Array,
       default: () => [],
     },
+
+    changeDetected: {
+      type: Boolean,
+      default: false,
+    }
   },
 
   data () {
@@ -251,7 +255,6 @@ export default {
       // edgeLayout: undefined,
 
       rendering: false,
-      changeDetected: false,
 
       sidebar: {
         item: undefined,
@@ -339,14 +342,40 @@ export default {
 
     sidebarClose () {
       this.sidebar.show = false
-      this.sidebar.item = undefined
-      this.sidebar.itemType = undefined
+      setTimeout(() => {
+        this.sidebar.item = undefined
+        this.sidebar.itemType = undefined
+      }, 300) 
     },
 
     sidebarDelete () {
       if (this.getSelectedItem) {
         this.graph.removeCells([this.getSelectedItem.node])
         this.sidebarClose()
+      }
+    },
+
+    sidebarReopen (item, itemType) {
+      // If not open, just open sidebar
+      if (!this.sidebar.show) {
+        this.sidebar.item = item
+        this.sidebar.itemType = itemType
+        this.sidebar.show = true
+      } else {
+        // If item already opened in sidebar, keep open
+        if (this.sidebar.item && item.node.id === this.sidebar.item.node.id) {
+          return
+        }
+
+        // Otherwise reopen completely
+        this.sidebar.show = false
+        if (!this.sidebar.show) {
+          setTimeout(() => {
+          this.sidebar.item = item
+          this.sidebar.itemType = itemType
+            this.sidebar.show = !this.sidebar.show
+          }, 300)
+        }
       }
     },
 
@@ -561,7 +590,7 @@ export default {
             this.addCellToVertices(cell)
             this.graph.setSelectionCells([cell])
             this.sidebar.show = true
-            this.reopenSidebar(this.vertices[cell.id], this.vertices[cell.id].config.kind)
+            this.sidebarReopen(this.vertices[cell.id], this.vertices[cell.id].config.kind)
           }
         }
       })
@@ -610,7 +639,7 @@ export default {
             if (cell != null) {
               const item = cell.edge ? this.edges[cell.id] : this.vertices[cell.id]
               const itemType = cell.edge ? 'edge' : this.vertices[cell.id].config.kind
-              this.reopenSidebar(item, itemType)
+              this.sidebarReopen(item, itemType)
             } else {
               this.sidebar.show = false
               if (this.getSelectedItem) {
@@ -663,13 +692,7 @@ export default {
 
       this.graph.model.addListener(mxEvent.CHANGE, (sender, evt) => {
         if (!this.rendering) {
-          this.changeDetected = true
-        }
-      })
-
-      this.graph.model.addListener('customChange', (sender, evt) => {
-        if (!this.rendering) {
-          this.changeDetected = true
+          this.$root.$emit('change-detected')
         }
       })
     },
@@ -825,27 +848,6 @@ export default {
       this.graph.model.setValue(this.sidebar.item.node, value)
     },
 
-    configChangeDetected () {
-      this.graph.model.fireEvent(new mxEventObject("customChange"))
-    },
-
-    reopenSidebar (item, itemType) {
-      if (!this.sidebar.show) {
-        this.sidebar.item = item
-        this.sidebar.itemType = itemType
-        this.sidebar.show = true
-      } else {
-        this.sidebar.show = false
-        if (!this.sidebar.show) {
-          setTimeout(() => {
-          this.sidebar.item = item
-          this.sidebar.itemType = itemType
-            this.sidebar.show = !this.sidebar.show
-          }, 300)
-        }
-      }
-    },
-
     render (workflow) {
       this.rendering = true
       this.graph.model.clear()
@@ -942,8 +944,8 @@ export default {
     },
 
     saveWorkflow () {
-      this.changeDetected = false
       this.$emit('save', this.getJsonModel())
+      this.sidebarClose()
     }
   },
 }

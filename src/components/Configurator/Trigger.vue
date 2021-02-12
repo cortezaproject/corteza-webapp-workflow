@@ -9,6 +9,7 @@
         <b-form-select
           v-model="item.triggers.resourceType"
           :options="resourceTypeOptions"
+          @input="$root.$emit('change-detected')"
         />
       </b-form-group>
 
@@ -19,12 +20,16 @@
         <b-form-select
           v-model="item.triggers.eventType"
           :options="eventTypeOptions"
+          @input="$root.$emit('change-detected')"
         />
       </b-form-group>
 
-      <b-form-group>
-      <b-form-checkbox
+      <b-form-group
+        class="mb-0"
+      >
+        <b-form-checkbox
           v-model="item.triggers.enabled"
+          @input="$root.$emit('change-detected')"
         >
           Enabled
         </b-form-checkbox>
@@ -80,6 +85,7 @@
               <b-form-select
                 v-model="c.name"
                 :options="constraintNameTypes"
+                @input="$root.$emit('change-detected')"
               />
             </b-form-group>
 
@@ -89,6 +95,7 @@
               <b-form-select
                 v-model="c.op"
                 :options="constraintOperatorTypes"
+                @input="$root.$emit('change-detected')"
               />
             </b-form-group>
 
@@ -116,6 +123,7 @@
                 <b-form-input
                   v-model="c.values[index]"
                   placeholder="Expression"
+                  @input="$root.$emit('change-detected')"
                 />
 
                 <b-button
@@ -313,10 +321,13 @@ export default {
         values: [''],
         _showDetails: true
       })
+
+      this.$root.$emit('change-detected')
     },
 
     removeConstraint (index) {
       this.item.triggers.constraints.splice(index, 1)
+      this.$root.$emit('change-detected')
     }
   }
 }
