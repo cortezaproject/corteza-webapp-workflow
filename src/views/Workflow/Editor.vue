@@ -72,32 +72,32 @@ export default {
           }).map(({ triggerID }) => {
             return this.$AutomationAPI.triggerDelete({ triggerID })
           })
-        )
+        ).then(async () => {
+          await Promise.all(triggers.map(t => {
+            // Update triggers that already have an ID
+            if (t.triggerID) {
+              return this.$AutomationAPI.triggerUpdate({
+                ...t,
+                workflowStepID: t.stepID,
+              })
+  
+            } else {
+              // Create the other triggers
+              return this.$AutomationAPI.triggerCreate({
+                ...t,
+                workflowID: this.workflow.workflowID,
+                workflowStepID: t.stepID,
+                ownedBy: this.userID,
+              })
+            }
+          }))
 
-        await Promise.all(triggers.map(t => {
-          // Update triggers that already have an ID
-          if (t.triggerID) {
-            return this.$AutomationAPI.triggerUpdate({
-              ...t,
-              workflowStepID: t.stepID,
+          return this.$AutomationAPI.workflowUpdate(this.workflow)
+            .then(wf => {
+              this.workflow = wf
+              this.raiseSuccessAlert('Workflow updated')
             })
-          } else {
-            // Create the other triggers
-            return this.$AutomationAPI.triggerCreate({
-              ...t,
-              workflowID: this.workflow.workflowID,
-              workflowStepID: t.stepID,
-              ownedBy: this.userID,
-            })
-          }
-        }))
-
-        this.$AutomationAPI.workflowUpdate(this.workflow)
-          .then(wf => {
-            this.workflow = wf
-            this.raiseSuccessAlert('Workflow updated')
-          })
-          .catch(this.defaultErrorHandler('Failed to save workflow'))
+        }).catch(this.defaultErrorHandler('Failed to save workflow'))
 
         await this.fetchTriggers()
       }
