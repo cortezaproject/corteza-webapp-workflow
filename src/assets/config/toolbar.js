@@ -5,34 +5,7 @@ export default [
         ref: 'swimlane'
     },
     {
-        kind: 'break'
-    },
-    {
-        kind: 'line'
-    },
-    {
-        title: 'Expressions',
-        kind: 'expressions',
-    },
-    {
-        kind: 'break'
-    },
-    {
-        title: 'Function',
-        kind: 'function'
-    },
-    {
-        kind: 'break'
-    },
-    {
-        title: 'Iterator',
-        kind: 'iterator'
-    },
-    {
-        kind: 'break'
-    },
-    {
-        kind: 'line'
+        kind: 'hr'
     },
     {
         title: 'Trigger (Start)',
@@ -40,17 +13,63 @@ export default [
         ref: 'start',
     },
     {
+        kind: 'nl'
+    },
+    {
+        title: 'Termination (End)',
+        kind: 'termination'
+    },
+    {
+        kind: 'hr'
+    },
+    {
+        title: 'Expressions',
+        kind: 'expressions',
+    },
+    {
+        kind: 'nl'
+    },
+    {
+        title: 'Function',
+        kind: 'function'
+    },
+    {
+        kind: 'hr'
+    },
+    {
+        title: 'Iterator',
+        kind: 'iterator'
+    },
+    {
+        kind: 'nl'
+    },
+    {
+        title: 'Break',
         kind: 'break'
     },
     {
-        title: 'Error',
+        kind: 'nl'
+    },
+    {
+        title: 'Continue',
+        kind: 'continue'
+    },
+    {
+        kind: 'hr'
+    },
+    {
+        title: 'Error Handler',
         kind: 'error-handler'
     },
     {
-        kind: 'break'
+        kind: 'nl'
     },
     {
-        kind: 'line'
+        title: 'Error',
+        kind: 'error'
+    },
+    {
+        kind: 'hr'
     },
     {
         title: 'Gateway (Exclusive)',

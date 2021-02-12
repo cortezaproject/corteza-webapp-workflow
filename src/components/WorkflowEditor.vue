@@ -413,9 +413,9 @@ export default {
       }
 
       toolbarConfig.forEach(cell => {
-        if (cell.kind === 'line') {
+        if (cell.kind === 'hr') {
           this.toolbar.addLine()
-        } else if (cell.kind === 'break') {
+        } else if (cell.kind === 'nl') {
           this.toolbar.addBreak()
         } else {
           const cellStyle = getStyleFromKind(cell)

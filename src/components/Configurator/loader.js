@@ -3,6 +3,7 @@ export { default as Expressions } from './Expressions'
 export { default as Function } from './Function'
 export { default as Iterator } from './Iterator'
 export { default as Trigger } from './Trigger'
+export { default as Error } from './Error'
 export { default as Gateway } from './Gateway'
 export { default as Edge } from './Edge'
 

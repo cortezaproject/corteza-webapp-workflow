@@ -39,6 +39,20 @@ const kindToStyle = {
     style: `iterator;image=${process.env.BASE_URL}icons/iterator.svg`
   },
 
+  break: {
+    width: 60,
+    height: 60,
+    icon: `${process.env.BASE_URL}icons/break.svg`,
+    style: `break;event;image=${process.env.BASE_URL}icons/break.svg`
+  },
+
+  continue: {
+    width: 60,
+    height: 60,
+    icon: `${process.env.BASE_URL}icons/continue.svg`,
+    style: `continue;event;image=${process.env.BASE_URL}icons/continue.svg`
+  },
+
   trigger: {
     width: 60,
     height: 60,
@@ -50,7 +64,21 @@ const kindToStyle = {
     width: 60,
     height: 60,
     icon: `${process.env.BASE_URL}icons/error-handler.svg`,
-    style: `error-handler;image=${process.env.BASE_URL}icons/error-handler.svg`
+    style: `error-handler;event;image=${process.env.BASE_URL}icons/error-handler.svg`
+  },
+
+  'error': {
+    width: 60,
+    height: 60,
+    icon: `${process.env.BASE_URL}icons/error.svg`,
+    style: `error;event;image=${process.env.BASE_URL}icons/error.svg`
+  },
+
+  'termination': {
+    width: 60,
+    height: 60,
+    icon: `${process.env.BASE_URL}icons/termination.svg`,
+    style: `termination;event;image=${process.env.BASE_URL}icons/termination.svg`
   },
 
   gatewayExcl: {
