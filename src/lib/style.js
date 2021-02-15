@@ -84,8 +84,29 @@ const kindToStyle = {
   gatewayExcl: {
     width: 80,
     height: 80,
-    icon: `${process.env.BASE_URL}icons/gatewayExcl.svg`,
-    style: `gatewayExclusive;gateway;image=${process.env.BASE_URL}icons/gatewayExcl.svg`
+    icon: `${process.env.BASE_URL}icons/gatewayExclusive.svg`,
+    style: `gatewayExclusive;gateway;image=${process.env.BASE_URL}icons/gatewayExclusive.svg`
+  },
+
+  gatewayIncl: {
+    width: 80,
+    height: 80,
+    icon: `${process.env.BASE_URL}icons/gatewayInclusive.svg`,
+    style: `gatewayInclusive;gateway;image=${process.env.BASE_URL}icons/gatewayInclusive.svg`
+  },
+
+  gatewayFork: {
+    width: 80,
+    height: 80,
+    icon: `${process.env.BASE_URL}icons/gatewayParallel.svg`,
+    style: `gatewayParallel;gateway;image=${process.env.BASE_URL}icons/gatewayParallel.svg`
+  },
+
+  gatewayJoin: {
+    width: 80,
+    height: 80,
+    icon: `${process.env.BASE_URL}icons/gatewayParallel.svg`,
+    style: `gatewayParallel;gateway;image=${process.env.BASE_URL}icons/gatewayParallel.svg`
   }
 }
 

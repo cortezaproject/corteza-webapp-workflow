@@ -3,22 +3,26 @@
     class="p-2"
   >
     <div
-      v-if="!gatewayEdges.length"
+      v-if="['incl', 'excl'].includes(gatewayKind)"
     >
-      Connect two paths to configure gateway
-    </div>
+      <var
+        v-if="!gatewayEdges.length"
+      >
+        Gateway must be source of at least two paths
+      </var>
 
-    <b-form-group
-      v-for="edge in gatewayEdges"
-      :key="edge.id"
-      :label="edge.value"
-    >
-      <b-form-input
-        v-model="edge.expr"
-        placeholder="Condition"
-        @input="updateEdge(edge.id, $event)"
-      />
-    </b-form-group>
+      <b-form-group
+        v-for="edge in gatewayEdges"
+        :key="edge.id"
+        :label="edge.value"
+      >
+        <b-form-input
+          v-model="edge.expr"
+          placeholder="Condition"
+          @input="updateEdge(edge.id, $event)"
+        />
+      </b-form-group>
+    </div>
   </div>
 </template>
 
@@ -29,9 +33,13 @@ export default {
   extends: base,
 
   computed: {
+    gatewayKind () {
+      return this.item.config.ref
+    },
+
     gatewayEdges () {
       const edges = []
-      if (this.item.config.ref === 'excl') {
+      if (['incl', 'excl'].includes(this.gatewayKind)) {
         if (this.item.node.edges) {
           this.item.node.edges.forEach(({ id, source, target, value = '' }) => {
             if (source.id === this.item.node.id) {

@@ -47,8 +47,8 @@ export default {
       this.changeDetected = true
     })
 
-    await this.fetchWorkflow()
     await this.fetchTriggers()
+    await this.fetchWorkflow()
 
     this.processing = false
   },
@@ -99,15 +99,12 @@ export default {
             }
           }))
 
-
-          await this.$AutomationAPI.workflowUpdate(this.workflow)
-            .then(wf => {
-              this.workflow = wf
-              this.changeDetected = false
-              this.raiseSuccessAlert('Workflow updated')
-            })
+          const wf = await this.$AutomationAPI.workflowUpdate(this.workflow)
 
           await this.fetchTriggers()
+          this.changeDetected = false
+          this.workflow = wf
+          this.raiseSuccessAlert('Workflow updated')
         }).catch(this.defaultErrorHandler('Failed to save workflow'))
       }
     },
@@ -117,6 +114,8 @@ export default {
         this.$AutomationAPI.workflowDelete(this.workflow)
           .then(() => {
             this.$router.push({ name: 'workflow.list' })
+
+            this.raiseSuccessAlert('Workflow deleted')
           })
           .catch(this.defaultErrorHandler('Failed to delete workflow'))
       }

@@ -149,7 +149,7 @@
           <div
             class="ml-auto"
           >
-            ID: <var>{{ getSelectedItem.config.stepID }}</var>
+            ID: <var>{{ getSelectedItem.node.id }}</var>
           </div>
         </div>
         <div>
@@ -199,6 +199,7 @@
       <workflow-configurator
         v-if="workflow.workflowID"
         :workflow="workflow"
+        @delete="$emit('delete')"
       />
     </b-modal>
 
@@ -211,7 +212,11 @@
         v-for="(issue, index) in workflow.issues"
         :key="index"
       >
-        <b>Position:</b> <var>{{ issue.culprit.step }}</var>
+        <b
+          v-if="workflow.steps[issue.culprit.step].stepID"
+        >
+          StepID:
+        </b> <var>{{ workflow.steps[issue.culprit.step].stepID }}</var>
         <p>
           <code>{{ issue.description[0].toUpperCase() + issue.description.slice(1).toLowerCase() }}</code>
         </p>
@@ -248,12 +253,10 @@ const {
   mxEdgeStyle,
   mxConnectionHandler,
   mxClipboard,
-  mxEventSource,
-  mxEventObject,
   mxParallelEdgeLayout,
   mxPoint,
-  mxCellEditor,
   mxCellMarker,
+  mxRectangle,
 } = mxgraph()
 
 export default {
@@ -356,9 +359,9 @@ export default {
       this.undoManager = new mxUndoManager()
       new mxRubberband(this.graph) // Enables multiple selection
 
-      this.initToolbar()
       this.setup()
 
+      this.initToolbar()
       this.initCellMarker()
 
       this.keys()
@@ -367,7 +370,14 @@ export default {
       this.styling()
       this.connectionHandler()
 
+      // const img = new mxImage(`${process.env.BASE_URL}icons/grid.svg`,1280 ,1024) // w:1280   h:1024
+      // this.graph.setBackgroundImage(img)
+      // this.graph.view.validate()
+
       this.graph.container.style.background = 'url("data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAwIDEwIEwgNDAgMTAgTSAxMCAwIEwgMTAgNDAgTSAwIDIwIEwgNDAgMjAgTSAyMCAwIEwgMjAgNDAgTSAwIDMwIEwgNDAgMzAgTSAzMCAwIEwgMzAgNDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2QwZDBkMCIgb3BhY2l0eT0iMC4yIiBzdHJva2Utd2lkdGg9IjEiLz48cGF0aCBkPSJNIDQwIDAgTCAwIDAgMCA0MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZDBkMGQwIiBzdHJva2Utd2lkdGg9IjEiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=")'
+
+      // this.graph.pageBreaksVisible = true
+      // this.graph.pageFormat = new mxRectangle(0, 0, this.graph.container.clientWidth, this.graph.container.clientHeight)
 
       this.render(this.workflow)
     } catch (e) {
@@ -386,7 +396,7 @@ export default {
       setTimeout(() => {
         this.sidebar.item = undefined
         this.sidebar.itemType = undefined
-      }, 300) 
+      }, 300)
     },
 
     sidebarDelete () {
@@ -420,14 +430,11 @@ export default {
       }
     },
 
-    showIssues () {
-      console.log('issues')
-    },
-
     setup() {
-      this.graph.setPanning(true)
       this.graph.zoomFactor = 1.1
 
+      this.graph.setTooltips(true)
+      this.graph.setPanning(true)
       this.graph.setConnectable(true)
       this.graph.setAllowDanglingEdges(false)
 
@@ -604,24 +611,27 @@ export default {
         const target = this.vertices[node.target.id]
         const outPaths = source.node.edges.filter(e => e.source.id === source.node.id) || []
 
+        if (target.config.kind === 'gateway') {
+          if (['join', 'fork'].includes(target.config.ref)) {
+            this.updateVertexConfig(target.node.id)
+          }
+        }
+
         if (source.config.kind === 'gateway') {
           if (['join', 'fork'].includes(source.config.ref)) {
             this.updateVertexConfig(source.node.id)
           }
-  
+
           if (source.config.ref === 'excl') {
             this.edges[node.id].node.value = `#${outPaths.length} - ${outPaths.length === 1 ? 'If' : 'Else (if)'}`
+          } else if (source.config.ref === 'incl') {
+            this.edges[node.id].node.value = `#${outPaths.length} - If`
           }
         } else if (source.config.kind === 'error-handler') {
           this.edges[node.id].node.value = `#${outPaths.length} - ${outPaths.length === 1 ? 'Catch' : 'Try'}`
         } else if (source.config.kind === 'iterator') {
           this.edges[node.id].node.value = `#${outPaths.length} - ${outPaths.length === 1 ? 'Loop body' : 'Loop end'}`
         }
-
-        // this.sidebar.item = this.edges[node.id]
-        // this.sidebar.itemType = 'edge'
-        // this.sidebar.show = true
-
 
         // this.edgeLayout.execute(this.graph.getDefaultParent())
         this.edgeConnected = true
@@ -825,8 +835,6 @@ export default {
     },
 
     connectionHandler() {
-      mxConstants.DEFAULT_HOTSPOT = 0
-
       new mxConnectionHandler(this.graph, (source, target, style) => {
         const edge = new mxCell('', new mxGeometry())
         edge.setEdge(true)
@@ -848,8 +856,16 @@ export default {
         const [newCell] = graph.importCells([vertex], 0, 0, cell)
        }
 
+      const dragElt = document.createElement('div')
+      dragElt.style.border = 'dashed black 1px'
+      dragElt.style.width = `${prototype.geometry.width}px`
+      dragElt.style.height = `${prototype.geometry.height}px`
+
       const img = toolbar.addMode(title, icon, funct)
-      mxUtils.makeDraggable(img, graph, funct)
+      const ds = mxUtils.makeDraggable(img, graph, funct, dragElt, null, null, this.graph.autoscroll, true)
+
+      // When dragged over toolbar it shows as img otherwise show border
+      ds.createDragElement = mxDragSource.prototype.createDragElement
     },
 
     addCellToVertices (cell) {

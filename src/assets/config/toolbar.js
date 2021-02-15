@@ -75,7 +75,23 @@ export default [
         title: 'Gateway (Exclusive)',
         kind: 'gateway',
         ref: 'excl',
-    }
+    },
+    {
+        kind: 'nl'
+    },
+    {
+        title: 'Gateway (Inclusive)',
+        kind: 'gateway',
+        ref: 'incl',
+    },
+    {
+        kind: 'nl'
+    },
+    {
+        title: 'Gateway (Fork/Join)',
+        kind: 'gateway',
+        ref: 'fork',
+    },
 ]
 
 // Disabled steps

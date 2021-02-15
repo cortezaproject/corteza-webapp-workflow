@@ -18,12 +18,22 @@
       />
     </b-form-group>
 
-    <b-form-checkbox
-      v-model="workflow.enabled"
-      @input="$root.$emit('change-detected')"
+    <b-form-group>
+      <b-form-checkbox
+        v-model="workflow.enabled"
+        @input="$root.$emit('change-detected')"
+      >
+        Enabled
+      </b-form-checkbox>
+    </b-form-group>
+
+    <c-input-confirm
+      size="md"
+      :borderless="false"
+      @confirmed="$emit('delete')"
     >
-      Enabled
-    </b-form-checkbox>
+      Delete
+    </c-input-confirm>
   </div>
 </template>
 
