@@ -257,6 +257,7 @@ const {
   mxPoint,
   mxCellMarker,
   mxRectangle,
+  mxLog,
 } = mxgraph()
 
 export default {
@@ -452,6 +453,9 @@ export default {
       // this.edgeLayout.isEdgeIgnored = (edge) => {
       //   return (edge.geometry.points || []).length
       // }
+
+      // Disables mxGraph console window
+      mxLog.setVisible = () => {}
 
       if (mxClient.IS_QUIRKS) {
         document.body.style.overflow = 'hidden'
