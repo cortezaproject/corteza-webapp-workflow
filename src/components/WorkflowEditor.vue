@@ -46,6 +46,11 @@
       </b-card-footer>
     </b-card>
 
+    <div
+      ref="tooltips"
+      class="mh-100"
+    />
+
     <b-card
       no-body
       class="w-100 h-100 border-0 shadow-sm rounded-lg ml-1"
@@ -227,10 +232,12 @@
 
 <script>
 import mxgraph from "mxgraph"
+import Vue from 'vue'
 import { encodeGraph } from "../lib/codec"
 import { getStyleFromKind, getKindFromStyle } from "../lib/style"
 import toolbarConfig from "../assets/config/toolbar.js"
 import Configurator from '../components/Configurator'
+import Tooltip from '../components/Tooltip.vue'
 import WorkflowConfigurator from '../components/Configurator/Workflow'
 
 const {
@@ -265,7 +272,8 @@ export default {
 
   components: {
     Configurator,
-    WorkflowConfigurator
+    WorkflowConfigurator,
+    Tooltip
   },
 
   props: {
@@ -866,7 +874,17 @@ export default {
       dragElt.style.height = `${prototype.geometry.height}px`
 
       const img = toolbar.addMode(title, icon, funct)
+
       const ds = mxUtils.makeDraggable(img, graph, funct, dragElt, null, null, this.graph.autoscroll, true)
+
+      // Init step tooltip
+      img.id = prototype.style.split(';')[0]
+      const TooltipComponent = Vue.extend(Tooltip)
+      const instance = new TooltipComponent({
+          propsData: { title, kind: img.id, img: icon }
+      })
+      instance.$mount()
+      this.$refs.tooltips.appendChild(instance.$el)
 
       // When dragged over toolbar it shows as img otherwise show border
       ds.createDragElement = mxDragSource.prototype.createDragElement
@@ -1019,12 +1037,6 @@ export default {
 <style scoped lang="scss">
 #graph {
   outline: none;
-}
-
-.wf-info {
-  position: absolute;
-  top: 0;
-  left: 0;
 }
 </style>
 
