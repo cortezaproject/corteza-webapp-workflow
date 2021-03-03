@@ -217,11 +217,12 @@
         v-for="(issue, index) in workflow.issues"
         :key="index"
       >
-        <b
+        <!-- <b
           v-if="workflow.steps[issue.culprit.step].stepID"
         >
           StepID:
-        </b> <var>{{ workflow.steps[issue.culprit.step].stepID }}</var>
+        </b> <var>{{ workflow.steps[issue.culprit.step].stepID }}</var> -->
+        Position: {{ issue.culprit.step }}
         <p>
           <code>{{ issue.description[0].toUpperCase() + issue.description.slice(1).toLowerCase() }}</code>
         </p>
@@ -265,6 +266,8 @@ const {
   mxCellMarker,
   mxRectangle,
   mxLog,
+  mxImage,
+  mxGraphView
 } = mxgraph()
 
 export default {
@@ -383,8 +386,6 @@ export default {
       // this.graph.setBackgroundImage(img)
       // this.graph.view.validate()
 
-      this.graph.container.style.background = 'url("data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAwIDEwIEwgNDAgMTAgTSAxMCAwIEwgMTAgNDAgTSAwIDIwIEwgNDAgMjAgTSAyMCAwIEwgMjAgNDAgTSAwIDMwIEwgNDAgMzAgTSAzMCAwIEwgMzAgNDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2QwZDBkMCIgb3BhY2l0eT0iMC4yIiBzdHJva2Utd2lkdGg9IjEiLz48cGF0aCBkPSJNIDQwIDAgTCAwIDAgMCA0MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZDBkMGQwIiBzdHJva2Utd2lkdGg9IjEiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=")'
-
       // this.graph.pageBreaksVisible = true
       // this.graph.pageFormat = new mxRectangle(0, 0, this.graph.container.clientWidth, this.graph.container.clientHeight)
 
@@ -441,6 +442,10 @@ export default {
 
     setup() {
       this.graph.zoomFactor = 1.1
+
+      // Sets a background image and restricts child movement to its bounds
+      this.graph.setBackgroundImage(new mxImage(`${process.env.BASE_URL}icons/grid.svg`, 4096, 4096))
+      this.graph.maximumGraphBounds = new mxRectangle(0, 0, 4096, 4096)
 
       this.graph.setTooltips(true)
       this.graph.setPanning(true)
@@ -656,8 +661,8 @@ export default {
           if (!this.rendering) {
             this.addCellToVertices(cell)
             this.graph.setSelectionCells([cell])
-            this.sidebar.show = true
-            this.sidebarReopen(this.vertices[cell.id], this.vertices[cell.id].config.kind)
+            // this.sidebar.show = true
+            // this.sidebarReopen(this.vertices[cell.id], this.vertices[cell.id].config.kind)
           }
         }
       })
