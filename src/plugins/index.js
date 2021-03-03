@@ -12,8 +12,8 @@ Vue.use(Router)
 Vue.use(BootstrapVue)
 Vue.use(BootstrapVueIcons)
 
+Vue.use(plugins.Auth(), { app: 'workflow' })
+
 Vue.use(plugins.CortezaAPI('system'))
 Vue.use(plugins.CortezaAPI('compose'))
 Vue.use(plugins.CortezaAPI('automation'))
-
-Vue.use(plugins.Auth(), { api: Vue.prototype.$SystemAPI })

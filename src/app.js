@@ -15,7 +15,25 @@ export default (options = {}) => {
   options = {
     el: '#app',
     name: 'workflow',
-    template: '<div id="workflow" class="h-100"><router-view/></div>',
+    template: '<div v-if="loaded" class="h-100"><router-view/></div>',
+
+    data: () => ({ loaded: false }),
+
+    async created () {
+      this.$auth.handle().then(({ accessTokenFn, user }) => {
+        this.loaded = true
+      })
+      .catch((err) => {
+        if (err instanceof Error && err.message === 'Unauthenticated') {
+          // user not logged-in,
+          // start with authentication flow
+          this.$auth.startAuthenticationFlow()
+          return
+        }
+
+        throw err
+      })
+    },
 
     router,
     i18n: i18n(),
