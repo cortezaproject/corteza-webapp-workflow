@@ -9,9 +9,36 @@ body {
   height: 100%;
 }
 
+:focus {
+  outline: none;
+}
+
 button:disabled {
   cursor: not-allowed;
   pointer-events: all !important;
+}
+
+.btn-link {
+  &:focus {
+    text-decoration: none;
+  }
+}
+
+.pointer {
+  cursor: pointer;
+}
+
+thead th,
+label,
+legend,
+strong,
+b,
+.font-weight-bold {
+  font-family: $bold;
+}
+
+th {
+  white-space: nowrap;
 }
 
 .vue-grid-layout {
@@ -22,27 +49,30 @@ button:disabled {
   transition: none !important;
   overflow-x: hidden;
   overflow-y: auto;
+}
 
-  .card-header {
-    border-bottom-width: 3px;
+.v-select {
+  min-width: 250px;
+
+  .vs__search {
+    margin: 0;
   }
 }
 
 .vs__dropdown-toggle {
-  border-radius: 0;
-  height: 35px;
-  padding-top: 6px;
-  padding-bottom: 6px;
+  padding: 0.375rem;
+  border-width: 2px;
+  border-color: $light;
 
   .vs__selected {
     margin: 0;
-    height: 100%;
   }
 }
 
 .vs__clear,
 .vs__open-indicator {
-  fill: $secondary;
+  fill: $gray-900;
+  display: inline-flex;
 }
 
 .ns-logo {
@@ -71,8 +101,28 @@ button:disabled {
   outline: none;
 }
 
+// Pagination
+.page-item {
+  &.disabled {
+    cursor: not-allowed;
+  }
+}
+
 // Rich text content styling
 .rt-content {
+  &.editor {
+    border-radius: 4px;
+    border: 2px solid $light;
+  }
+
+  .editor__content {
+    min-height: 200px;
+  }
+
+  .btn {
+    width: 60px;
+  }
+
   p {
     margin: 0;
     padding: 0;
@@ -153,14 +203,13 @@ fieldset.required {
     }
   }
 
-  legend::before {
+  legend::after {
     content: "*";
     display: inline-block;
-    color: $primary;
-    vertical-align: sub;
-    margin-right: -5px;
+    color: $danger;
     width: 10px;
-    height: 16px;
+    height: 18px;
+    margin-left: 5px;
     overflow: hidden;
   }
 }

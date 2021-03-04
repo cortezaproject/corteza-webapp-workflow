@@ -19,94 +19,94 @@ const kindToStyle = {
   },
 
   expressions: {
-    width: 80,
+    width: 200,
     height: 80,
     icon: `${process.env.BASE_URL}icons/expressions.svg`,
-    style: `expressions;image=${process.env.BASE_URL}icons/expressions.svg`
+    style: `expressions`
   },
 
   function: {
-    width: 80,
+    width: 200,
     height: 80,
     icon: `${process.env.BASE_URL}icons/function.svg`,
-    style: `function;image=${process.env.BASE_URL}icons/function.svg`
+    style: `function`
   },
 
   iterator: {
-    width: 80,
+    width: 200,
     height: 80,
     icon: `${process.env.BASE_URL}icons/iterator.svg`,
-    style: `iterator;image=${process.env.BASE_URL}icons/iterator.svg`
+    style: `iterator`
   },
 
   break: {
-    width: 60,
-    height: 60,
+    width: 200,
+    height: 80,
     icon: `${process.env.BASE_URL}icons/break.svg`,
-    style: `break;event;image=${process.env.BASE_URL}icons/break.svg`
+    style: `break;event`
   },
 
   continue: {
-    width: 60,
-    height: 60,
+    width: 200,
+    height: 80,
     icon: `${process.env.BASE_URL}icons/continue.svg`,
-    style: `continue;event;image=${process.env.BASE_URL}icons/continue.svg`
+    style: `continue;event`
   },
 
   trigger: {
-    width: 60,
-    height: 60,
+    width: 200,
+    height: 80,
     icon: `${process.env.BASE_URL}icons/trigger.svg`,
-    style: `trigger;event;image=${process.env.BASE_URL}icons/trigger.svg`
+    style: `trigger;`
   },
 
   'error-handler': {
-    width: 60,
-    height: 60,
+    width: 200,
+    height: 80,
     icon: `${process.env.BASE_URL}icons/error-handler.svg`,
-    style: `error-handler;event;image=${process.env.BASE_URL}icons/error-handler.svg`
+    style: `error-handler;event`
   },
 
   'error': {
-    width: 60,
-    height: 60,
+    width: 200,
+    height: 80,
     icon: `${process.env.BASE_URL}icons/error.svg`,
-    style: `error;event;image=${process.env.BASE_URL}icons/error.svg`
+    style: `error;event`
   },
 
   'termination': {
-    width: 60,
-    height: 60,
+    width: 200,
+    height: 80,
     icon: `${process.env.BASE_URL}icons/termination.svg`,
-    style: `termination;event;image=${process.env.BASE_URL}icons/termination.svg`
+    style: `termination;event`
   },
 
   gatewayExcl: {
-    width: 80,
+    width: 200,
     height: 80,
     icon: `${process.env.BASE_URL}icons/gatewayExclusive.svg`,
-    style: `gatewayExclusive;gateway;image=${process.env.BASE_URL}icons/gatewayExclusive.svg`
+    style: `gatewayExclusive;gateway`
   },
 
   gatewayIncl: {
-    width: 80,
+    width: 200,
     height: 80,
     icon: `${process.env.BASE_URL}icons/gatewayInclusive.svg`,
-    style: `gatewayInclusive;gateway;image=${process.env.BASE_URL}icons/gatewayInclusive.svg`
+    style: `gatewayInclusive;gateway`
   },
 
   gatewayFork: {
-    width: 80,
+    width: 200,
     height: 80,
     icon: `${process.env.BASE_URL}icons/gatewayParallel.svg`,
-    style: `gatewayParallel;gateway;image=${process.env.BASE_URL}icons/gatewayParallel.svg`
+    style: `gatewayParallel;gateway`
   },
 
   gatewayJoin: {
-    width: 80,
+    width: 200,
     height: 80,
     icon: `${process.env.BASE_URL}icons/gatewayParallel.svg`,
-    style: `gatewayParallel;gateway;image=${process.env.BASE_URL}icons/gatewayParallel.svg`
+    style: `gatewayParallel;gateway`
   }
 }
 

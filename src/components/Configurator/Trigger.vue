@@ -1,73 +1,88 @@
 <template>
   <div>
-    <b-form
-      class="p-2 shadow-sm"
-    >
-      <b-form-group
-        label="Resource*"
-      >
-        <b-form-select
-          v-model="item.triggers.resourceType"
-          :options="resourceTypeOptions"
-          @input="$root.$emit('change-detected')"
-        />
-      </b-form-group>
-
-      <b-form-group
-        v-if="item.triggers.resourceType"
-        label="Event*"
-      >
-        <b-form-select
-          v-model="item.triggers.eventType"
-          :options="eventTypeOptions"
-          @input="$root.$emit('change-detected')"
-        />
-      </b-form-group>
-
-      <b-form-group
-        class="mb-0"
-      >
-        <b-form-checkbox
-          v-model="item.triggers.enabled"
-          @input="$root.$emit('change-detected')"
-        >
-          Enabled
-        </b-form-checkbox>
-      </b-form-group>
-    </b-form>
-
     <b-card
-      no-body
-      class="w-100 h-100 border-top border-left-0 border-right-0 border-bottom-0 shadow-sm mt-3"
+      class="flex-grow-1 border-bottom border-light rounded-0"
     >
       <b-card-header
-        class="sticky-top h5 px-2"
-        header-bg-variant="white"
-        header-text-variant="primary"
+        header-tag="header"
+        class="bg-white p-0 mb-3"
       >
-        <div
-          class="d-flex"
+        <h5
+          class="mb-0"
+        >
+          Configuration
+        </h5>
+      </b-card-header>
+      <b-card-body
+        class="p-0"
+      >
+        <b-form-group
+          label="Resource*"
+          label-class="text-primary"
+        >
+          <b-form-select
+            v-model="item.triggers.resourceType"
+            :options="resourceTypeOptions"
+            @input="$root.$emit('change-detected')"
+          />
+        </b-form-group>
+
+        <b-form-group
+          v-if="item.triggers.resourceType"
+          label-class="text-primary"
+          label="Event*"
+        >
+          <b-form-select
+            v-model="item.triggers.eventType"
+            :options="eventTypeOptions"
+            @input="$root.$emit('change-detected')"
+          />
+        </b-form-group>
+
+        <b-form-group
+          class="mb-0"
+        >
+          <b-form-checkbox
+            v-model="item.triggers.enabled"
+            class="text-primary"
+            @input="$root.$emit('change-detected')"
+          >
+            Enabled
+          </b-form-checkbox>
+        </b-form-group>
+      </b-card-body>
+    </b-card>
+
+    <b-card
+      class="flex-grow-1 border-bottom border-light rounded-0"
+      body-class="p-0"
+    >
+      <b-card-header
+        header-tag="header"
+        class="d-flex align-items-center bg-white p-4"
+      >
+        <h5
+          class="mb-0"
         >
           Constraints
-          <b-button
-            variant="link"
-            class="align-top border-0 p-0 ml-auto"
-            @click="addConstraint()"
-          >
-            + Add
-          </b-button>
-        </div>
+        </h5>
+        <b-button
+          variant="primary"
+          class="align-top border-0 ml-3"
+          @click="addConstraint()"
+        >
+          + Add Constraints
+        </b-button>
       </b-card-header>
-
       <b-card-body
-        class="p-0 border-top border-primary"
+        class="p-0"
       >
         <b-table
           id="constraints"
-          outlined
           fixed
-          head-variant="light"
-          class="mb-0 border-left-0"
+          borderless
+          head-row-variant="secondary"
+          class="mb-4"
           :items="this.item.triggers.constraints"
           :fields="constraintFields"
           @row-clicked="item=>$set(item, '_showDetails', !item._showDetails)"
@@ -81,6 +96,7 @@
            <template #row-details="{ index, item: c }">
             <b-form-group
               label="Resource"
+              label-class="text-primary"
             >
               <b-form-select
                 v-model="c.name"
@@ -91,6 +107,7 @@
 
             <b-form-group
               label="Operator"
+              label-class="text-primary"
             >
               <b-form-select
                 v-model="c.op"
@@ -102,7 +119,7 @@
             <b-form-group>
               <template #label>
                 <div
-                  class="d-flex"
+                  class="d-flex text-primary"
                 >
                   Values
                   <b-button
@@ -154,26 +171,28 @@
 
     <b-card
       v-if="(eventType.properties || []).length"
-      no-body
-      class="w-100 h-100 border-top border-left-0 border-right-0 border-bottom-0 shadow-sm mt-3"
+      class="flex-grow-1 rounded-0"
+      body-class="p-0"
     >
       <b-card-header
-        class="sticky-top h5 px-2"
-        header-bg-variant="white"
-        header-text-variant="primary"
+        header-tag="header"
+        class="bg-white p-4"
       >
-        Initial scope
+        <h5
+          class="mb-0"
+        >
+          Initial Scope
+        </h5>
       </b-card-header>
-
       <b-card-body
-        class="p-0 border-top border-primary"
+        class="p-0"
       >
         <b-table
           id="variable"
-          outlined
           fixed
-          head-variant="light"
-          class="mb-0 border-left-0"
+          borderless
+          head-row-variant="secondary"
+          class="mb-4"
           :items="eventType.properties || []"
           :fields="scopeFields"
         >
@@ -233,18 +252,19 @@ export default {
       return [
         {
           key: 'name',
-          tdClass: 'border-top text-truncate pointer'
+          thClass: "pl-3 py-2",
+          tdClass: 'text-truncate pointer'
         },
         {
           key: 'op',
           label: 'Operator',
-          class: 'text-center',
-          tdClass: 'border-top text-truncate pointer'
+          thClass: "py-2",
+          tdClass: 'text-truncate pointer'
         },
         {
           key: 'values',
-          class: 'text-right',
-          tdClass: 'border-top text-truncate pointer'
+          thClass: "pr-3 py-2",
+          tdClass: 'text-truncate pointer'
         },
       ]
     },
@@ -253,17 +273,18 @@ export default {
       return [
         {
           key: 'name',
-          tdClass: 'border-top text-truncate'
+          thClass: "pl-3 py-2",
+          tdClass: 'text-truncate'
         },
         {
           key: 'type',
-          class: 'text-center',
-          tdClass: 'border-top text-truncate'
+          thClass: "pl-3 py-2",
+          tdClass: 'text-truncate'
         },
         {
           key: 'immutable',
-          class: 'text-right',
-          tdClass: 'border-top text-truncate'
+          thClass: "pl-3 py-2",
+          tdClass: 'text-truncate'
         },
       ]
     },

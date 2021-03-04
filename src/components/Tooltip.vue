@@ -5,7 +5,7 @@
     triggers="hover"
     placement="right"
     variant="light"
-    custom-class="ml-1"
+    custom-class="ml-2"
     noninteractive
     @hide="show = false"
     @show="show = true"
@@ -72,10 +72,17 @@ export default {
 </script>
 
 <style lang="scss">
-.tooltip > .tooltip-inner {
-  padding: 0.25rem;
+.tooltip.b-tooltip-light > .tooltip-inner {
+  padding: 0;
   max-width: 20rem;
   min-width: 20rem;
+  margin-left: 0.15rem;
+  background-color: transparent;
+  opacity: 1;
+}
+
+.tooltip.b-tooltip {
+  opacity: 1;
 }
 
 .fade-enter-active, .fade-leave-active {

@@ -13,9 +13,6 @@ export default [
         ref: 'start',
     },
     {
-        kind: 'nl'
-    },
-    {
         title: 'Termination (End)',
         kind: 'termination'
     },
@@ -25,9 +22,6 @@ export default [
     {
         title: 'Expressions',
         kind: 'expressions',
-    },
-    {
-        kind: 'nl'
     },
     {
         title: 'Function',
@@ -41,14 +35,8 @@ export default [
         kind: 'iterator'
     },
     {
-        kind: 'nl'
-    },
-    {
         title: 'Break',
         kind: 'break'
-    },
-    {
-        kind: 'nl'
     },
     {
         title: 'Continue',
@@ -60,9 +48,6 @@ export default [
     {
         title: 'Error Handler',
         kind: 'error-handler'
-    },
-    {
-        kind: 'nl'
     },
     {
         title: 'Error',
@@ -77,15 +62,9 @@ export default [
         ref: 'excl',
     },
     {
-        kind: 'nl'
-    },
-    {
         title: 'Gateway (Inclusive)',
         kind: 'gateway',
         ref: 'incl',
-    },
-    {
-        kind: 'nl'
     },
     {
         title: 'Gateway (Fork/Join)',

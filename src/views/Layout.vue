@@ -19,7 +19,7 @@ export default {
     CPermissionsModal,
   },
 
-  beforeCreate () {
+  created () {
     this.$root.$on('alert', this.displayToast)
   },
 
@@ -28,8 +28,9 @@ export default {
       this.$bvToast.toast(message, {
         title,
         variant,
+        solid: true,
         autoHideDelay: countdown,
-        toaster: 'b-toaster-bottom-left'
+        toaster: 'b-toaster-top-center'
       })
     }
   },
