@@ -5,6 +5,7 @@ import {
   faHome,
   faSave,
   faKeyboard,
+  faMouse,
   faCog,
   faChevronLeft,
   faChevronDown,
@@ -13,7 +14,8 @@ import {
 
 import {
   faEdit,
-  faTrashAlt
+  faTrashAlt,
+  faQuestionCircle,
 } from '@fortawesome/free-regular-svg-icons'
 
 library.add(
@@ -24,8 +26,10 @@ library.add(
   faHome,
   faSave,
   faKeyboard,
+  faMouse,
   faCog,
   faChevronLeft,
   faChevronDown,
-  faExclamationTriangle
+  faExclamationTriangle,
+  faQuestionCircle,
 )

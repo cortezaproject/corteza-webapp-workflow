@@ -2,32 +2,49 @@
   <div
     v-if="!processing"
   >
-    <div
-      class="p-2 mb-3 shadow-sm"
+    <b-card
+      class="flex-grow-1 border-bottom border-light rounded-0"
     >
-      <b-form-group
-        label="Type"
+      <b-card-header
+        header-tag="header"
+        class="bg-white p-0 mb-3"
       >
+        <h5
+          class="mb-0"
+        >
+          Configuration
+        </h5>
+      </b-card-header>
+      <b-card-body
+        class="p-0"
+      >
+        <b-form-group
+          label="Type*"
+          label-class="text-primary"
+        >
         <b-form-select
           v-model="item.config.ref"
           :options="functionTypes"
           @input="setParams"
         />
-      </b-form-group>
-    </div>
+        </b-form-group>
+      </b-card-body>
+    </b-card>
 
     <b-card
       v-if="args.length"
-      no-body
-      class="w-100 h-100 border-left-0 border-right-0 shadow-sm rounded-lg"
+      class="flex-grow-1 border-bottom border-light rounded-0"
+      body-class="p-0"
     >
       <b-card-header
-        class="sticky-top h5 px-2"
-        header-bg-variant="white"
-        header-text-variant="primary"
-        header-border-variant="primary"
+        header-tag="header"
+        class="d-flex align-items-center bg-white p-4"
       >
-        Arguments
+        <h5
+          class="mb-0"
+        >
+          Arguments
+        </h5>
       </b-card-header>
 
       <b-card-body
@@ -35,10 +52,10 @@
       >
         <b-table
           id="arguments"
-          outlined
           fixed
-          head-variant="light"
-          class="mb-0"
+          borderless
+          head-row-variant="secondary"
+          class="mb-4"
           :items="args"
           :fields="argumentFields"
           @row-clicked="item=>$set(item, '_showDetails', !item._showDetails)"
@@ -59,8 +76,9 @@
 
           <template #row-details="{ item: a }">
             <b-form-group
-              v-if="(paramTypes[item.config.ref][a.target] || []).length > 2"
+              v-if="(paramTypes[item.config.ref][a.target] || []).length > 1"
               label="Type"
+              label-class="text-primary"
               class="mb-0"
             >
               <b-form-select
@@ -72,9 +90,9 @@
               <hr>
             </b-form-group>
 
-
             <b-form-group
               label="Value type"
+              label-class="text-primary"
             >
               <b-form-radio-group
                 id="value-types"
@@ -82,31 +100,36 @@
                 :options="valueTypes"
                 button-variant="outline-primary"
                 buttons
-                class="bg-white"
+                class="w-100 bg-white"
                 @input="$root.$emit('change-detected')"
               />
             </b-form-group>
 
-            <b-form-input
-              v-if="a.valueType === 'value'"
-              v-model="a.value"
-              placeholder="Constant value"
-              @input="$root.$emit('change-detected')"
-            />
+            <b-form-group
+              label="Value"
+              label-class="text-primary"
+            >
+              <b-form-input
+                v-if="a.valueType === 'value'"
+                v-model="a.value"
+                placeholder="Constant value"
+                @input="$root.$emit('change-detected')"
+              />
 
-            <b-form-input
-              v-else-if="a.valueType === 'source'"
-              v-model="a.source"
-              placeholder="Copy from variable"
-              @input="$root.$emit('change-detected')"
-            />
+              <b-form-input
+                v-else-if="a.valueType === 'source'"
+                v-model="a.source"
+                placeholder="Copy from variable"
+                @input="$root.$emit('change-detected')"
+              />
 
-            <b-form-input
-              v-else-if="a.valueType === 'expr'"
-              v-model="a.expr"
-              placeholder="Expression"
-              @input="$root.$emit('change-detected')"
-            />
+              <b-form-input
+                v-else-if="a.valueType === 'expr'"
+                v-model="a.expr"
+                placeholder="Expression"
+                @input="$root.$emit('change-detected')"
+              />
+            </b-form-group>
           </template>
         </b-table>
       </b-card-body>
@@ -114,16 +137,18 @@
 
     <b-card
       v-if="results.length"
-      no-body
-      class="w-100 h-100 border-left-0 border-right-0 shadow-sm rounded-lg mt-3"
+      class="flex-grow-1 border-bottom border-light rounded-0"
+      body-class="p-0"
     >
       <b-card-header
-        class="sticky-top h5 px-2"
-        header-bg-variant="white"
-        header-text-variant="primary"
-        header-border-variant="primary"
+        header-tag="header"
+        class="d-flex align-items-center bg-white p-4"
       >
-        Results
+        <h5
+          class="mb-0"
+        >
+          Results
+        </h5>
       </b-card-header>
 
       <b-card-body
@@ -131,10 +156,10 @@
       >
         <b-table
           id="results"
-          outlined
           fixed
-          head-variant="light"
-          class="mb-0"
+          borderless
+          head-row-variant="secondary"
+          class="mb-4"
           :items="results"
           :fields="resultFields"
           @row-clicked="item=>$set(item, '_showDetails', !item._showDetails)"
@@ -150,6 +175,7 @@
           <template #row-details="{ item: a }">
             <b-form-group
               label="Target"
+              label-class="text-primary"
             >
               <b-form-input
                 v-model="a.target"
@@ -160,6 +186,7 @@
 
             <b-form-group
               label="Result (expression)"
+              label-class="text-primary"
               class="mb-0"
             >
               <b-form-input
@@ -207,17 +234,18 @@ export default {
         {
           key: 'target',
           label: 'Name',
-          tdClass: 'border-top text-truncate pointer'
+          thClass: "pl-3 py-2",
+          tdClass: 'text-truncate pointer'
         },
         {
           key: 'type',
-          class: 'text-center',
-          tdClass: 'border-top text-truncate pointer'
+          thClass: "py-2",
+          tdClass: 'text-truncate pointer'
         },
         {
           key: 'value',
-          class: 'text-right',
-          tdClass: 'border-top text-truncate pointer'
+          thClass: "pr-3 py-2",
+          tdClass: 'text-truncate pointer'
         },
       ]
     },
@@ -226,18 +254,19 @@ export default {
       return [
         {
           key: 'target',
-          tdClass: 'border-top text-truncate pointer'
+          thClass: "pl-3 py-2",
+          tdClass: 'text-truncate pointer'
         },
         {
           key: 'type',
-          class: 'text-center',
-          tdClass: 'border-top text-truncate pointer'
+          thClass: "py-2",
+          tdClass: 'text-truncate pointer'
         },
         {
           key: 'expr',
           label: 'Result',
-          class: 'text-right',
-          tdClass: 'border-top text-truncate pointer'
+          thClass: "pr-3 py-2",
+          tdClass: 'text-truncate pointer'
         },
       ]
     },

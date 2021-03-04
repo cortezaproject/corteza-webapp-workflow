@@ -9,17 +9,15 @@
 </template>
 
 <script>
-import WorkflowHeader from 'corteza-workflow/src/components/Header'
 import { components } from '@cortezaproject/corteza-vue'
 const { CPermissionsModal } = components
 
 export default {
   components: {
-    WorkflowHeader,
     CPermissionsModal,
   },
 
-  beforeCreate () {
+  created () {
     this.$root.$on('alert', this.displayToast)
   },
 
@@ -28,8 +26,9 @@ export default {
       this.$bvToast.toast(message, {
         title,
         variant,
+        solid: true,
         autoHideDelay: countdown,
-        toaster: 'b-toaster-bottom-left'
+        toaster: 'b-toaster-top-center'
       })
     }
   },

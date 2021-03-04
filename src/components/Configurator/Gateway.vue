@@ -1,28 +1,43 @@
 <template>
-  <div
-    class="p-2"
-  >
-    <div
+  <div>
+    <b-card
       v-if="['incl', 'excl'].includes(gatewayKind)"
+      class="flex-grow-1 border-bottom border-light rounded-0"
     >
-      <var
-        v-if="!gatewayEdges.length"
+      <b-card-header
+        header-tag="header"
+        class="bg-white p-0 mb-3"
       >
-        Gateway must be source of at least two paths
-      </var>
+        <h5
+          class="mb-0"
+        >
+          Configuration
+        </h5>
+      </b-card-header>
 
-      <b-form-group
-        v-for="edge in gatewayEdges"
-        :key="edge.id"
-        :label="edge.value"
+      <b-card-body
+        class="p-0"
       >
-        <b-form-input
-          v-model="edge.expr"
-          placeholder="Condition"
-          @input="updateEdge(edge.id, $event)"
-        />
-      </b-form-group>
-    </div>
+        <var
+          v-if="!gatewayEdges.length"
+        >
+          Gateway must be source of at least two paths
+        </var>
+
+        <b-form-group
+          v-for="edge in gatewayEdges"
+          :key="edge.id"
+          :label="edge.value"
+          label-class="text-primary"
+        >
+          <b-form-input
+            v-model="edge.expr"
+            placeholder="Condition"
+            @input="updateEdge(edge.id, $event)"
+          />
+        </b-form-group>
+      </b-card-body>
+    </b-card>
   </div>
 </template>
 

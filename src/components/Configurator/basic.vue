@@ -2,7 +2,7 @@
   <div>
     <b-form-group
       label="Label"
-      class="mb-0"
+      label-class="text-primary"
     >
       <b-form-input
         v-model="item.node.value"

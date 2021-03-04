@@ -3,16 +3,22 @@
     id="editor"
     class="h-100 d-flex p-1"
   >
+    <link rel="stylesheet" href="path/to/font-awesome/css/font-awesome.min.css">
     <b-card
       no-body
-      class="h-100 border-0 shadow-sm rounded-lg"
+      no-footer
+      class="h-100 border-right shadow-lg rounded-0"
     >
       <b-card-header
-        class="d-flex justify-content-center sticky-top h5 px-2"
+        class="d-flex flex-column justify-content-between align-items-center sticky-top h4 p-2"
         header-bg-variant="white"
         header-text-variant="white"
         header-border-variant="primary"
       >
+        <b-img
+          src="/favicon.ico"
+          class="mb-4"
+        />
         <router-link
           :to="{name: 'workflow.list'}"
         >
@@ -22,28 +28,28 @@
         </router-link>
       </b-card-header>
       <b-card-body
-        class="p-1"
+        class="d-flex flex-column p-1"
       >
         <div
           id="toolbar"
           ref="toolbar"
-          class="mt-1"
+          class="d-flex flex-column align-items-center mt-1"
         />
-      </b-card-body>
-      
-      <b-card-footer
-          class="d-flex justify-content-center"
-      >
-        <a
-          href="#"
-          class="h5 mb-0"
-          v-b-modal.keyboard
+
+        <div
+          class="d-flex flex-grow-1 align-items-start justify-content-center p-3"
         >
-          <font-awesome-icon
-            :icon="['fas', 'keyboard']"
-          />
-        </a>
-      </b-card-footer>
+          <a
+            href="#"
+            class="h4 mb-0"
+            v-b-modal.help
+          >
+            <font-awesome-icon
+              :icon="['far', 'question-circle']"
+            />
+          </a>
+        </div>
+      </b-card-body>
     </b-card>
 
     <div
@@ -53,72 +59,72 @@
 
     <b-card
       no-body
-      class="w-100 h-100 border-0 shadow-sm rounded-lg ml-1"
+      no-header
+      class="w-100 h-100 border-0 shadow-sm rounded-0"
       body-class="p-0"
     >
-      <b-card-header
-        class="sticky-top px-2"
-        header-bg-variant="white"
-        header-border-variant="primary"
-      >
-        <div
-          class="d-flex h5 mb-0"
-        >
-          {{ workflow.meta.name || workflow.handle }}
-          <a
-            href="#"
-            class="ml-2"
-            v-b-modal.workflow
-          >
-            <font-awesome-icon
-              :icon="['fas', 'cog']"
-            />
-          </a>
-
-          <b-button
-            v-if="changeDetected"
-            variant="warning"
-            class="p-0 px-1 ml-2 border-0"
-            @click="saveWorkflow()"
-          >
-            Changes detected. Click here to save.
-            <font-awesome-icon
-              :icon="['fas', 'save']"
-            />
-          </b-button>
-
-          <a
-            v-else
-            href="#"
-            class="ml-2"
-            @click="saveWorkflow()"
-          >
-            <font-awesome-icon
-              :icon="['fas', 'save']"
-            />
-          </a>
-
-          <b-button
-            v-if="(workflow.issues || []).length"
-            variant="danger"
-            class="p-0 px-1 ml-2 border-0"
-            v-b-modal.issues
-          >
-            Issues detected. Click here to view
-            <font-awesome-icon
-              :icon="['fas', 'exclamation-triangle']"
-            />
-          </b-button>
-        </div>
-        <p
-          class="mb-0"
-        >
-          {{ workflow.meta.description }}
-        </p>
-      </b-card-header>
       <b-card-body
         class="p-0"
       >
+        <div
+          class="position-absolute pl-3 pt-2"
+          style="z-index: 1;"
+        >
+          <div
+            class="d-flex align-items-center h1 mb-0"
+          >
+            <b>{{ workflow.meta.name || workflow.handle }}</b>
+            <a
+              href="#"
+              class="h4 mb-0 ml-2"
+              v-b-modal.workflow
+            >
+              <font-awesome-icon
+                :icon="['fas', 'cog']"
+              />
+            </a>
+
+            <!-- <a
+              href="#"
+              class="h4 mb-0 ml-2"
+              @click="saveWorkflow()"
+            >
+              <font-awesome-icon
+                :icon="['fas', 'save']"
+              />
+            </a> -->
+          </div>
+          <p
+            class="mb-0 text-truncate"
+            style="white-space: pre-line; max-width: 738px; max-height: 50px;"
+          >
+            {{ workflow.meta.description }}
+          </p>
+        </div>
+
+        <div
+          class="d-flex flex-column flex-shrink position-absolute fixed-bottom m-2"
+          style="z-index: 1; width: fit-content;"
+        >
+          <b-button
+            v-if="changeDetected"
+            variant="dark"
+            class="rounded-0 py-2 px-3"
+            @click="saveWorkflow()"
+          >
+            Changes detected. Click here to save.
+          </b-button>
+          <b-button
+            v-if="(workflow.issues || []).length"
+            variant="danger"
+            class="rounded-0 py-2 px-3"
+            :class="{ 'mt-3': changeDetected }"
+            v-b-modal.issues
+          >
+            Issues detected. Click here to view.
+          </b-button>
+        </div>
+
         <div
           id="graph"
           ref="graph"
@@ -128,37 +134,37 @@
     </b-card>
 
     <b-sidebar
-      v-if="getSelectedItem"
       v-model="sidebar.show"
       shadow
       right
       lazy
       no-enforce-focus
       width="500px"
-      header-class="bg-white border-bottom border-primary"
+      header-class="bg-white border-bottom border-light p-2"
       body-class="bg-white"
-      footer-class="bg-white p-2 border-top border-primary"
+      footer-class="bg-white border-top border-light p-1"
     >
       <template
         #header
       >
         <div
-          class="d-flex w-100 h5 mb-0"
+          v-if="sidebar.item"
+          class="d-flex align-items-center w-100 h5 mb-0 p-2"
         >
-          <h5
-            class="text-primary mb-0"
+          <b-img
+            :src="getSidebarItemIcon"
+          />
+          <h4
+            class="text-primary font-weight-bold ml-2 mb-0"
           >
-            {{ getSidebarItemType }}
-          </h5>
+            <b>{{ getSidebarItemType }}</b>
+          </h4>
 
           <div
             class="ml-auto"
           >
             ID: <var>{{ getSelectedItem.node.id }}</var>
           </div>
-        </div>
-        <div>
-          
         </div>
       </template>
 
@@ -172,33 +178,26 @@
       <template
         #footer
       >
-         <c-input-confirm
+        <div
+          class="d-flex m-2"
+        >
+          <c-input-confirm
             size="md"
+            variant="danger"
             :borderless="false"
             @confirmed="sidebarDelete()"
           >
             Delete
           </c-input-confirm>
+        </div>
       </template>
     </b-sidebar>
 
-    <b-modal
-      id="keyboard"
-      title="Keyboard shortcuts"
-      hide-footer
-    >
-      <b-table
-        :items="keyboardShortcuts"
-      />
-
-      <small>
-        If using a MAC keyboard, replace Ctrl with the CMD key
-      </small>
-    </b-modal>
 
     <b-modal
       id="workflow"
       title="Workflow configuration"
+      size="lg"
       hide-footer
     >
       <workflow-configurator
@@ -206,6 +205,17 @@
         :workflow="workflow"
         @delete="$emit('delete')"
       />
+    </b-modal>
+
+    <b-modal
+      id="help"
+      title="Help"
+      size="lg"
+      scrollable
+      hide-footer
+      body-class="p-0"
+    >
+      <help />
     </b-modal>
 
     <b-modal
@@ -236,10 +246,11 @@ import mxgraph from "mxgraph"
 import Vue from 'vue'
 import { encodeGraph } from "../lib/codec"
 import { getStyleFromKind, getKindFromStyle } from "../lib/style"
-import toolbarConfig from "../assets/config/toolbar.js"
+import toolbarConfig from "../lib/toolbar.js"
 import Configurator from '../components/Configurator'
 import Tooltip from '../components/Tooltip.vue'
 import WorkflowConfigurator from '../components/Configurator/Workflow'
+import Help from '../components/Help'
 
 const {
   mxClient,
@@ -267,8 +278,11 @@ const {
   mxRectangle,
   mxLog,
   mxImage,
-  mxGraphView
+  mxGraphView,
+  mxText,
 } = mxgraph()
+
+const originPoint = -2042
 
 export default {
   name: 'WorkflowEditor',
@@ -276,7 +290,8 @@ export default {
   components: {
     Configurator,
     WorkflowConfigurator,
-    Tooltip
+    Tooltip,
+    Help
   },
 
   props: {
@@ -317,20 +332,6 @@ export default {
         itemType: undefined,
         show: false,
       },
-
-      keyboardShortcuts: [
-        { action: 'Select all', shortcut: 'Ctrl + A'},
-        { action: 'Add to selection', shortcut: 'Ctrl + left mouse button'},
-        { action: 'Delete selected elements', shortcut: 'Delete or Backspace'},
-        { action: 'Zoom in(out) to mouse pointer', shortcut: 'Mouse wheel'},
-        { action: 'Reset view to starting point', shortcut: 'Ctrl + Space'},
-        { action: 'Undo', shortcut: 'Ctrl + Z'},
-        { action: 'Redo', shortcut: 'Ctrl + Shift + Z'},
-        { action: 'Cut', shortcut: 'Ctrl + X'},
-        { action: 'Copy', shortcut: 'Ctrl + C'},
-        { action: 'Paste', shortcut: 'Ctrl + V'},
-        { action: 'Save', shortcut: 'Ctrl + S'},
-      ]
     }
   },
 
@@ -343,6 +344,14 @@ export default {
       return itemType
     },
 
+    getSidebarItemIcon () {
+      const { item } = this.sidebar
+
+      if (item && item.config) {
+        return getStyleFromKind(item.config).icon
+      }
+    },
+
     getSelectedItem () {
       return this.sidebar.item ? this.sidebar.item : undefined
     },
@@ -350,10 +359,11 @@ export default {
 
   watch: {
     workflow: {
-      handler (newWorkflow) {
-        if (newWorkflow.workflowID) {
-          this.render(newWorkflow)
-        }
+      handler (workflow) {
+        if (!workflow.workflowID) return
+
+        // If worklow exist render it
+        this.render(workflow)
       }
     },
   },
@@ -365,7 +375,7 @@ export default {
       }
 
       mxEvent.disableContextMenu(this.$refs.graph)
-      this.graph = new mxGraph(this.$refs.graph)
+      this.graph = new mxGraph(this.$refs.graph, null, mxConstants.DIALECT_STRICTHTML)
       this.eventHandler = new mxGraphHandler(this.graph)
       this.keyHandler = new mxKeyHandler(this.graph)
       this.undoManager = new mxUndoManager()
@@ -381,13 +391,6 @@ export default {
 
       this.styling()
       this.connectionHandler()
-
-      // const img = new mxImage(`${process.env.BASE_URL}icons/grid.svg`,1280 ,1024) // w:1280   h:1024
-      // this.graph.setBackgroundImage(img)
-      // this.graph.view.validate()
-
-      // this.graph.pageBreaksVisible = true
-      // this.graph.pageFormat = new mxRectangle(0, 0, this.graph.container.clientWidth, this.graph.container.clientHeight)
 
       this.render(this.workflow)
     } catch (e) {
@@ -444,13 +447,13 @@ export default {
       this.graph.zoomFactor = 1.1
 
       // Sets a background image and restricts child movement to its bounds
-      this.graph.setBackgroundImage(new mxImage(`${process.env.BASE_URL}icons/grid.svg`, 4096, 4096))
-      this.graph.maximumGraphBounds = new mxRectangle(0, 0, 4096, 4096)
+      this.graph.setBackgroundImage(new mxImage(`${process.env.BASE_URL}icons/grid.svg`, 8192, 8192))
+      this.graph.maximumGraphBounds = new mxRectangle(0, 0, 8192, 8192)
 
-      this.graph.setTooltips(true)
       this.graph.setPanning(true)
       this.graph.setConnectable(true)
       this.graph.setAllowDanglingEdges(false)
+      this.graph.edgeLabelsMovable = false
 
       // Enables guides
       mxGraphHandler.prototype.guidesEnabled = true
@@ -462,6 +465,52 @@ export default {
 
       mxEdgeHandler.prototype.snapToTerminals = true
 
+      this.graph.isHtmlLabel  = cell => {
+        return true
+      }
+
+      this.graph.isWrapping = cell => {
+        return true
+      }
+
+      this.graph.getLabel = cell => {
+        let label = mxGraph.prototype.getLabel.apply(this, arguments)
+
+        if (cell.edge) {
+          if (cell.value) {
+            label = `<div class="text-nowrap py-1 px-3 h6 mb-0 rounded bg-white" style="border: 2px solid #A7D0E3; border-radius: 5px; color: #2D2D2D;">${cell.value}</div>`;
+          }
+        } else {
+          const vertex = this.vertices[cell.id]
+          if (vertex.config.kind !== 'visual') {
+            const icon = getStyleFromKind(vertex.config).icon
+            const cog = `${process.env.BASE_URL}icons/cog.svg`
+            const type = vertex.config.kind.charAt(0).toUpperCase() + vertex.config.kind.slice(1)
+            const shadow = 'shadow'// ((this.getSelectedItem || {}).node || {}).id === cell.id ? 'shadow-lg' : 'shadow'
+  
+            label = `<div class="d-flex flex-column bg-white rounded ${shadow} step" style="width: 200px; height: 80px;  border-radius: 5px;">`+ 
+                      `<div class="d-flex flex-row align-items-center text-primary px-2 my-1 h6 mb-0 font-weight-bold" style="height: 35px;">`+
+                        `<img src="${icon}" class="mr-2"/>${type}`+
+                        `<a href="#" class="hide ml-auto" style="text-decoration: none;">`+
+                          `<img id="openSidebar" src="${cog}" style="width: 16px;"/>`+
+                        `</a>`+
+                      `</div>`+
+                      `<div class="d-flex flex-row align-items-center border-top text-truncate px-2 mb-0 h6" style="height: 45px; color: #2D2D2D;">`+
+                        `<span class="d-inline-block text-truncate">${cell.value || '/'}</span>`+
+                      `</div>`+
+                    `</div>`;
+          } else {
+            label = `<div class="d-flex"><span class="d-inline-block h6 mb-0 text-truncate">${cell.value || ''}</span></div>`
+          }
+        }
+
+        return label
+      }
+
+      this.graph.isCellEditable = () => {
+        return false
+      }
+
       // this.edgeLayout = new mxParallelEdgeLayout(this.graph)
       // this.edgeLayout.isEdgeIgnored = (edge) => {
       //   return (edge.geometry.points || []).length
@@ -469,6 +518,8 @@ export default {
 
       // Disables mxGraph console window
       mxLog.setVisible = () => {}
+
+      mxGraph.prototype.expandedImage = undefined
 
       if (mxClient.IS_QUIRKS) {
         document.body.style.overflow = 'hidden'
@@ -499,7 +550,7 @@ export default {
         return cell
       }
 
-      const addCell = ({ title, icon, width = 60, height = 60, style }) => {
+      const addCell = ({ title, icon, tooltip = '', width = 60, height = 60, style }) => {
         const cell = new mxCell(
           null,
           new mxGeometry(0, 0, width, height),
@@ -507,7 +558,7 @@ export default {
         )
         cell.setVertex(true)
 
-        this.addToolbarItem(title, this.graph, this.toolbar, cell, icon)
+        this.addToolbarItem(title, this.graph, this.toolbar, cell, icon, tooltip)
       }
 
       toolbarConfig.forEach(cell => {
@@ -528,8 +579,7 @@ export default {
     },
 
     initCellMarker () {
-      this.cellMarker = new mxCellMarker(this.graph)
-      this.cellMarker.hotspot = 0.5
+      this.cellMarker = new mxCellMarker(this.graph, '#A7D0E3', 'red', 0.5)
 
       this.graph.addMouseListener({
         mouseDown: (a, b) => {},
@@ -608,7 +658,7 @@ export default {
       // Ctrl + Space, Resets view to original state (zoom = 1, x = 0, y = 0)
       this.keyHandler.controlKeys[32] = () => {
         this.graph.zoomTo(1)
-        this.graph.view.setTranslate(0, 0)
+        this.graph.view.setTranslate(originPoint, originPoint)
       }
     },
 
@@ -708,9 +758,9 @@ export default {
           if (mxEvent.isControlDown(event) || (mxClient.IS_MAC && mxEvent.isMetaDown(event))) {
             // Prevent sidebar opening/closing when CTRL(CMD) is pressed while clicking
           } else {
-            if (cell != null) {
+            if (cell != null && (((this.vertices[cell.id] || {}).config || {}).kind === 'visual' || cell.edge || event.target.id === 'openSidebar')) {
               const item = cell.edge ? this.edges[cell.id] : this.vertices[cell.id]
-              const itemType = cell.edge ? 'edge' : this.vertices[cell.id].config.kind
+              const itemType = cell.edge ? 'edge' : item.config.kind
               this.sidebarReopen(item, itemType)
             } else {
               this.sidebar.show = false
@@ -726,40 +776,23 @@ export default {
       })
 
       // Zoom event
-      mxEvent.addMouseWheelListener((evt, up) => {
-        if (mxEvent.isConsumed(evt)) {
+      mxEvent.addMouseWheelListener((event, up) => {
+        if (mxEvent.isConsumed(event)) {
           return
         }
 
-        if (mxEvent.isControlDown(evt)) {
+        if (mxEvent.isControlDown(event) || (mxClient.IS_MAC && mxEvent.isMetaDown(event))) {
           return
         }
 
-        let gridEnabled = this.graph.gridEnabled
-
-        this.graph.gridEnabled = false
-
-        let p1 = this.graph.getPointForEvent(evt, false)
-
-        if (up) {
+        if (up && this.graph.view.scale < 3) {
           this.graph.zoomIn()
-        } else {
+        } else if (!up && this.graph.view.scale > 0.1) {
           this.graph.zoomOut()
         }
 
-        let p2 = this.graph.getPointForEvent(evt, false)
-        let deltaX = p2.x - p1.x
-        let deltaY = p2.y - p1.y
-        let { translate } = this.graph.view
 
-        this.graph.view.setTranslate(
-          translate.x + deltaX,
-          translate.y + deltaY
-        )
-
-        this.graph.gridEnabled = gridEnabled
-
-        mxEvent.consume(evt)
+        mxEvent.consume(event)
       }, this.graph.container)
 
       this.graph.model.addListener(mxEvent.CHANGE, (sender, evt) => {
@@ -770,84 +803,99 @@ export default {
     },
 
     styling() {
+      // General
+      mxConstants.VERTEX_SELECTION_COLOR = '#A7D0E3'
+      mxConstants.VERTEX_SELECTION_STROKEWIDTH = 2
+      mxConstants.EDGE_SELECTION_COLOR = '#A7D0E3'
+
+      mxConstants.HANDLE_FILLCOLOR = '#2D2D2D'
+      mxConstants.CONNECT_HANDLE_FILLCOLOR = '#A7D0E3'
+
+      mxConstants.GUIDE_COLOR = '#2D2D2D'
+
       // Creates the default style for vertices
       let style = this.graph.getStylesheet().getDefaultVertexStyle()
       style[mxConstants.STYLE_SHAPE] = mxConstants.SHAPE_RECTANGLE
       style[mxConstants.STYLE_PERIMETER] = mxPerimeter.RectanglePerimeter
-      style[mxConstants.STYLE_STROKECOLOR] = '#568ba2'
-      style[mxConstants.STYLE_STROKEWIDTH] = 3
+      style[mxConstants.STYLE_STROKECOLOR] = 'none'
+      style[mxConstants.STYLE_STROKEWIDTH] = 0
       style[mxConstants.STYLE_ROUNDED] = true
+      style[mxConstants.STYLE_ARCSIZE] = 5
       style[mxConstants.STYLE_RESIZABLE] = false
-      style[mxConstants.STYLE_FILLCOLOR] = 'white'
-      style[mxConstants.STYLE_FONTCOLOR] = 'black'
+      style[mxConstants.STYLE_FILLCOLOR] = 'none'
+      style[mxConstants.STYLE_FONTCOLOR] = '#2D2D2D'
       style[mxConstants.STYLE_FONTSIZE] = 13
-      style[mxConstants.VERTEX_SELECTION_DASHED] = false
       this.graph.getStylesheet().putDefaultVertexStyle(style)
 
       // Creates the default style for edges
       style = this.graph.getStylesheet().getDefaultEdgeStyle()
-      style[mxConstants.STYLE_STROKECOLOR] = 'grey'
-      style[mxConstants.STYLE_LABEL_BACKGROUNDCOLOR] = 'white'
+      style[mxConstants.STYLE_STROKECOLOR] = '#A7D0E3'
       style[mxConstants.STYLE_EDGE] = mxEdgeStyle.ElbowConnector
       style[mxConstants.STYLE_ROUNDED] = true
-      style[mxConstants.STYLE_FONTCOLOR] = 'black'
-      style[mxConstants.STYLE_FONTSIZE] = 11
+      style[mxConstants.STYLE_FONTCOLOR] = '#2D2D2D'
+      style[mxConstants.STYLE_STROKEWIDTH] = 2
       style[mxConstants.STYLE_ENDSIZE] = 15
       style[mxConstants.STYLE_STARTSIZE] = 15
       this.graph.getStylesheet().putDefaultEdgeStyle(style)
 
-      // Symbol (custom shape) styling
-      style = mxUtils.clone(this.graph.getStylesheet().getDefaultVertexStyle())
-      style[mxConstants.STYLE_SHAPE] = mxConstants.SHAPE_IMAGE
-      style[mxConstants.STYLE_PERIMETER] = mxPerimeter.RectanglePerimeter
-      style[mxConstants.STYLE_FONTSIZE] = 13
-      style[mxConstants.STYLE_ALIGN] = mxConstants.ALIGN_CENTER
-      style[mxConstants.STYLE_VERTICAL_ALIGN] = mxConstants.ALIGN_TOP
-      style[mxConstants.STYLE_VERTICAL_LABEL_POSITION] = mxConstants.ALIGN_BOTTOM
-      this.graph.getStylesheet().putCellStyle('symbol', style)
+      // // Symbol (custom shape) styling
+      // style = mxUtils.clone(this.graph.getStylesheet().getDefaultVertexStyle())
+      // style[mxConstants.STYLE_SHAPE] = mxConstants.SHAPE_IMAGE
+      // style[mxConstants.STYLE_PERIMETER] = mxPerimeter.RectanglePerimeter
+      // style[mxConstants.STYLE_FONTSIZE] = 13
+      // style[mxConstants.STYLE_ALIGN] = mxConstants.ALIGN_CENTER
+      // style[mxConstants.STYLE_VERTICAL_ALIGN] = mxConstants.ALIGN_TOP
+      // style[mxConstants.STYLE_VERTICAL_LABEL_POSITION] = mxConstants.ALIGN_BOTTOM
+      // this.graph.getStylesheet().putCellStyle('symbol', style)
 
-      // Function
-      style = mxUtils.clone(this.graph.getStylesheet().getCellStyle('symbol'))
-      style[mxConstants.STYLE_ALIGN] = mxConstants.ALIGN_CENTER
-      style[mxConstants.STYLE_VERTICAL_ALIGN] = mxConstants.ALIGN_MIDDLE
-      style[mxConstants.STYLE_VERTICAL_LABEL_POSITION] = mxConstants.ALIGN_MIDDLE
-      this.graph.getStylesheet().putCellStyle('function', style)
+      // // Function
+      // style = mxUtils.clone(this.graph.getStylesheet().getCellStyle('symbol'))
+      // style[mxConstants.STYLE_ALIGN] = mxConstants.ALIGN_CENTER
+      // style[mxConstants.STYLE_VERTICAL_ALIGN] = mxConstants.ALIGN_MIDDLE
+      // style[mxConstants.STYLE_VERTICAL_LABEL_POSITION] = mxConstants.ALIGN_MIDDLE
+      // this.graph.getStylesheet().putCellStyle('function', style)
 
-      // Iterator
-      style = mxUtils.clone(this.graph.getStylesheet().getCellStyle('symbol'))
-      this.graph.getStylesheet().putCellStyle('iterator', style)
+      // // Iterator
+      // // style = mxUtils.clone(this.graph.getStylesheet().getCellStyle('symbol'))
+      // // this.graph.getStylesheet().putCellStyle('iterator', style)
 
-      // Event
-      style = mxUtils.clone(this.graph.getStylesheet().getCellStyle('symbol'))
-      style[mxConstants.STYLE_PERIMETER] = mxPerimeter.EllipsePerimeter
-      this.graph.getStylesheet().putCellStyle('event', style)
+      // // Event
+      // style = mxUtils.clone(this.graph.getStylesheet().getCellStyle('symbol'))
+      // style[mxConstants.STYLE_PERIMETER] = mxPerimeter.EllipsePerimeter
+      // style[mxConstants.STYLE_ALIGN] = mxConstants.ALIGN_CENTER
+      // style[mxConstants.STYLE_VERTICAL_ALIGN] = mxConstants.ALIGN_CENTER
+      // style[mxConstants.STYLE_VERTICAL_LABEL_POSITION] = mxConstants.ALIGN_MIDDLE
+      // this.graph.getStylesheet().putCellStyle('event', style)
 
-      // Error handler
-      style = mxUtils.clone(this.graph.getStylesheet().getCellStyle('event'))
-      this.graph.getStylesheet().putCellStyle('error-handler', style)
+      // // Error handler
+      // style = mxUtils.clone(this.graph.getStylesheet().getCellStyle('event'))
+      // this.graph.getStylesheet().putCellStyle('error-handler', style)
 
-      // Gateway
-      style = mxUtils.clone(this.graph.getStylesheet().getCellStyle('symbol'))
-      style[mxConstants.STYLE_PERIMETER] = mxPerimeter.RhombusPerimeter
-      style[mxConstants.STYLE_VERTICAL_LABEL_POSITION] = mxConstants.ALIGN_TOP
-      style[mxConstants.STYLE_VERTICAL_ALIGN] = mxConstants.ALIGN_BOTTOM
-      this.graph.getStylesheet().putCellStyle('gateway', style)
+      // // Gateway
+      // style = mxUtils.clone(this.graph.getStylesheet().getCellStyle('symbol'))
+      // style[mxConstants.STYLE_PERIMETER] = mxPerimeter.RhombusPerimeter
+      // style[mxConstants.STYLE_VERTICAL_LABEL_POSITION] = mxConstants.ALIGN_TOP
+      // style[mxConstants.STYLE_VERTICAL_ALIGN] = mxConstants.ALIGN_BOTTOM
+      // this.graph.getStylesheet().putCellStyle('gateway', style)
 
-      // Expression
-      style = mxUtils.clone(this.graph.getStylesheet().getCellStyle('symbol'))
-      this.graph.getStylesheet().putCellStyle('expressions', style)
+      // // Expression
+      // style = mxUtils.clone(this.graph.getStylesheet().getCellStyle('symbol'))
+      // this.graph.getStylesheet().putCellStyle('expressions', style)
 
       // Swimlane
-      style = mxUtils.clone(this.graph.getStylesheet().getDefaultVertexStyle())
-      style[mxConstants.STYLE_ROUNDED] = false
+      style = {}
+      style[mxConstants.STYLE_ROUNDED] = true
+      style[mxConstants.STYLE_ARCSIZE] = 5
       style[mxConstants.STYLE_RESIZABLE] = true
       style[mxConstants.STYLE_SHAPE] = mxConstants.SHAPE_SWIMLANE
       style[mxConstants.STYLE_FONTSIZE] = 15
       style[mxConstants.STYLE_HORIZONTAL] = false
       style[mxConstants.STYLE_VERTICAL_LABEL_POSITION] = mxConstants.ALIGN_MIDDLE
       style[mxConstants.STYLE_VERTICAL_ALIGN] = mxConstants.ALIGN_MIDDLE
+      style[mxConstants.STYLE_FILLCOLOR] = 'white'
+      style[mxConstants.STYLE_STROKECOLOR] = '#A7D0E3'
+      style[mxConstants.STYLE_STROKEWIDTH] = 0
       style[mxConstants.STYLE_STROKEWIDTH] = 2
-      delete style[mxConstants.STYLE_FILLCOLOR]
       this.graph.getStylesheet().putCellStyle('swimlane', style)
     },
 
@@ -861,7 +909,7 @@ export default {
       })
     },
 
-    addToolbarItem(title, graph, toolbar, prototype, icon) {
+    addToolbarItem(title, graph, toolbar, prototype, icon, tooltip) {
       const funct = (graph, evt, cell) => {
         graph.stopEditing(false)
 
@@ -886,7 +934,7 @@ export default {
       img.id = prototype.style.split(';')[0]
       const TooltipComponent = Vue.extend(Tooltip)
       const instance = new TooltipComponent({
-          propsData: { title, kind: img.id, img: icon }
+        propsData: { title, kind: img.id, img: icon, text: tooltip }
       })
       instance.$mount()
       this.$refs.tooltips.appendChild(instance.$el)
@@ -938,6 +986,10 @@ export default {
 
     render (workflow) {
       this.rendering = true
+
+      const { x = originPoint, y = originPoint } = this.graph.view.translate
+      const { scale } = this.graph.view
+
       this.graph.model.clear()
 
       if (!this.workflow.steps) {
@@ -1007,6 +1059,8 @@ export default {
         Object.keys(this.vertices).forEach(vID => this.updateVertexConfig(vID))
       } finally {
         // this.edgeLayout.execute(this.graph.getDefaultParent())
+        this.graph.view.scale = scale
+        this.graph.view.setTranslate(x || originPoint, y || originPoint)
 
         this.graph.getModel().endUpdate() // Updates the display
 
@@ -1046,15 +1100,14 @@ export default {
 </style>
 
 <style>
-.b-sidebar {
-  padding-top: 0.25rem !important;
+.hide {
+  display: none;
 }
-
-.b-sidebar > .b-sidebar-header {
-  padding: 0.75rem 0.5rem !important;
+.step:hover .hide {
+  display: block;
 }
-
 #toolbar > hr {
   margin: 0.5rem 0 0.5rem 0 !important;
+  align-self: stretch;
 }
 </style>

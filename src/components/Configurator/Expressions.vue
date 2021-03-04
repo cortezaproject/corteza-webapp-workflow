@@ -1,26 +1,25 @@
 <template>
   <b-card
-    no-body
-    class="w-100 h-100 border-0 shadow-sm rounded-lg"
+    class="flex-grow-1 border-bottom border-light rounded-0"
+    body-class="p-0"
   >
-    <b-card-header
-      class="sticky-top h5 px-2"
-      header-bg-variant="white"
-      header-text-variant="primary"
-    >
-      <div
-        class="d-flex"
+      <b-card-header
+        header-tag="header"
+        class="d-flex align-items-center bg-white py-4"
       >
-        Arguments
+        <h5
+          class="mb-0"
+        >
+          Arguments
+        </h5>
         <b-button
-          variant="link"
-          class="align-top border-0 p-0 ml-auto"
+          variant="primary"
+          class="align-top border-0 ml-3"
           @click="addArgument()"
         >
-          + Add
+          + Add Argument
         </b-button>
-      </div>
-    </b-card-header>
+      </b-card-header>
 
     <b-card-body
       v-if="item.config.arguments.length"
@@ -28,10 +27,10 @@
     >
       <b-table
         id="arguments"
-        outlined
         fixed
-        head-variant="light"
-        class="mb-0"
+        borderless
+        head-row-variant="secondary"
+        class="mb-4"
         :items="item.config.arguments"
         :fields="argumentFields"
         @row-clicked="item=>$set(item, '_showDetails', !item._showDetails)"
@@ -47,6 +46,7 @@
         <template #row-details="{ index, item: a }">
           <b-form-group
             label="Target"
+            label-class="text-primary"
           >
             <b-form-input
               v-model="a.target"
@@ -57,6 +57,7 @@
 
           <b-form-group
             label="Type"
+            label-class="text-primary"
           >
             <b-form-select
               v-model="a.type"
@@ -67,6 +68,7 @@
 
           <b-form-group
             label="Expression"
+            label-class="text-primary"
           >
             <b-form-input
               v-model="a.expr"
@@ -109,18 +111,19 @@ export default {
       return [
         {
           key: 'target',
-          label: 'Name',
-          tdClass: 'border-top text-truncate pointer'
+          thClass: "pl-3 py-2",
+          tdClass: 'text-truncate pointer'
         },
         {
           key: 'type',
-          class: 'text-center',
-          tdClass: 'border-top text-truncate pointer'
+          thClass: "py-2",
+          tdClass: 'text-truncate pointer'
         },
         {
           key: 'value',
-          class: 'text-right',
-          tdClass: 'border-top text-truncate pointer'
+          label: 'Expression',
+          thClass: "pr-3 py-2",
+          tdClass: 'text-truncate pointer'
         },
       ]
     },
