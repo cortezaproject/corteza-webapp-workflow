@@ -16,7 +16,7 @@
         header-border-variant="primary"
       >
         <b-img
-          src="/favicon.ico"
+          :src="getLogo"
           class="mb-4"
         />
         <router-link
@@ -336,6 +336,10 @@ export default {
   },
 
   computed: {
+    getLogo () {
+      return `${process.env.BASE_URL}favicon.ico`
+    },
+
     getSidebarItemType () {
       const { itemType } = this.sidebar
       if (itemType) {
