@@ -54,6 +54,7 @@
     </b-card>
 
     <b-card
+      v-if="item.triggers.resourceType && item.triggers.eventType"
       class="flex-grow-1 border-bottom border-light rounded-0"
       body-class="p-0"
     >

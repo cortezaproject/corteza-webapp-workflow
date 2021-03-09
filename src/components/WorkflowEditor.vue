@@ -807,6 +807,8 @@ export default {
       mxConstants.VERTEX_SELECTION_COLOR = '#A7D0E3'
       mxConstants.VERTEX_SELECTION_STROKEWIDTH = 2
       mxConstants.EDGE_SELECTION_COLOR = '#A7D0E3'
+      mxConstants.EDGE_SELECTION_STROKEWIDTH = 2
+
 
       mxConstants.HANDLE_FILLCOLOR = '#2D2D2D'
       mxConstants.CONNECT_HANDLE_FILLCOLOR = '#A7D0E3'
