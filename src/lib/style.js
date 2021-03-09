@@ -64,7 +64,7 @@ const kindToStyle = {
     height: 80,
     icon: `${process.env.BASE_URL}icons/trigger.svg`,
     tooltip: 'Trigger the workflow execution based on configuration',
-    style: `trigger;`
+    style: `trigger`
   },
 
   'error-handler': {

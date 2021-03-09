@@ -278,8 +278,11 @@ const {
   mxRectangle,
   mxLog,
   mxImage,
-  mxGraphView,
-  mxText,
+  mxConstraintHandler,
+  mxConnectionConstraint,
+  mxCellState,
+  mxRectangleShape,
+  mxEllipse,
 } = mxgraph()
 
 const originPoint = -2042
@@ -382,19 +385,20 @@ export default {
       this.graph = new mxGraph(this.$refs.graph, null, mxConstants.DIALECT_STRICTHTML)
       this.eventHandler = new mxGraphHandler(this.graph)
       this.keyHandler = new mxKeyHandler(this.graph)
-      this.undoManager = new mxUndoManager()
       new mxRubberband(this.graph) // Enables multiple selection
 
       this.setup()
 
       this.initToolbar()
       this.initCellMarker()
+      this.initUndoManager()
 
       this.keys()
       this.events()
 
       this.styling()
       this.connectionHandler()
+
 
       this.render(this.workflow)
     } catch (e) {
@@ -453,6 +457,7 @@ export default {
       // Sets a background image and restricts child movement to its bounds
       this.graph.setBackgroundImage(new mxImage(`${process.env.BASE_URL}icons/grid.svg`, 8192, 8192))
       this.graph.maximumGraphBounds = new mxRectangle(0, 0, 8192, 8192)
+      this.graph.gridSize = 8
 
       this.graph.setPanning(true)
       this.graph.setConnectable(true)
@@ -583,7 +588,7 @@ export default {
     },
 
     initCellMarker () {
-      this.cellMarker = new mxCellMarker(this.graph, '#A7D0E3', 'red', 0.5)
+      this.cellMarker = new mxCellMarker(this.graph, 'none', 'none', 0.5)
 
       this.graph.addMouseListener({
         mouseDown: (a, b) => {},
@@ -670,6 +675,7 @@ export default {
       // Edge connect event
       this.graph.connectionHandler.addListener(mxEvent.CONNECT, (sender, evt) => {
         const node = evt.getProperty('cell')
+
         this.edges[node.id] = {
           node,
           config: {
@@ -813,11 +819,13 @@ export default {
       mxConstants.EDGE_SELECTION_COLOR = '#A7D0E3'
       mxConstants.EDGE_SELECTION_STROKEWIDTH = 2
 
-
-      mxConstants.HANDLE_FILLCOLOR = '#2D2D2D'
-      mxConstants.CONNECT_HANDLE_FILLCOLOR = '#A7D0E3'
+      mxConstants.HANDLE_FILLCOLOR = '#4D7281'
+      mxConstants.HANDLE_STROKECOLOR = 'none'
+      mxConstants.CONNECT_HANDLE_FILLCOLOR = '#4D7281'
+      mxConstants.VALID_COLOR = '#A7D0E3'
 
       mxConstants.GUIDE_COLOR = '#2D2D2D'
+      mxConstants.GUIDE_STROKEWIDTH = 1
 
       // Creates the default style for vertices
       let style = this.graph.getStylesheet().getDefaultVertexStyle()
@@ -836,13 +844,33 @@ export default {
       // Creates the default style for edges
       style = this.graph.getStylesheet().getDefaultEdgeStyle()
       style[mxConstants.STYLE_STROKECOLOR] = '#A7D0E3'
-      style[mxConstants.STYLE_EDGE] = mxEdgeStyle.ElbowConnector
+      style[mxConstants.STYLE_EDGE] = mxEdgeStyle.OrthConnector
       style[mxConstants.STYLE_ROUNDED] = true
+      style[mxConstants.STYLE_ORTHOGONAL] = true
+      style[mxConstants.STYLE_MOVABLE] = false
       style[mxConstants.STYLE_FONTCOLOR] = '#2D2D2D'
       style[mxConstants.STYLE_STROKEWIDTH] = 2
       style[mxConstants.STYLE_ENDSIZE] = 15
       style[mxConstants.STYLE_STARTSIZE] = 15
+      style[mxConstants.STYLE_SOURCE_JETTY_SIZE] = 30
+      style[mxConstants.STYLE_TARGET_JETTY_SIZE] = 30
       this.graph.getStylesheet().putDefaultEdgeStyle(style)
+
+      // Swimlane
+      style = {}
+      style[mxConstants.STYLE_ROUNDED] = true
+      style[mxConstants.STYLE_ARCSIZE] = 5
+      style[mxConstants.STYLE_RESIZABLE] = true
+      style[mxConstants.STYLE_SHAPE] = mxConstants.SHAPE_SWIMLANE
+      style[mxConstants.STYLE_FONTSIZE] = 15
+      style[mxConstants.STYLE_HORIZONTAL] = false
+      style[mxConstants.STYLE_VERTICAL_LABEL_POSITION] = mxConstants.ALIGN_MIDDLE
+      style[mxConstants.STYLE_VERTICAL_ALIGN] = mxConstants.ALIGN_MIDDLE
+      style[mxConstants.STYLE_FILLCOLOR] = 'white'
+      style[mxConstants.STYLE_STROKECOLOR] = '#2D2D2D'
+      style[mxConstants.STYLE_STROKEWIDTH] = 0
+      style[mxConstants.STYLE_STROKEWIDTH] = 2
+      this.graph.getStylesheet().putCellStyle('swimlane', style)
 
       // // Symbol (custom shape) styling
       // style = mxUtils.clone(this.graph.getStylesheet().getDefaultVertexStyle())
@@ -888,31 +916,112 @@ export default {
       // style = mxUtils.clone(this.graph.getStylesheet().getCellStyle('symbol'))
       // this.graph.getStylesheet().putCellStyle('expressions', style)
 
-      // Swimlane
-      style = {}
-      style[mxConstants.STYLE_ROUNDED] = true
-      style[mxConstants.STYLE_ARCSIZE] = 5
-      style[mxConstants.STYLE_RESIZABLE] = true
-      style[mxConstants.STYLE_SHAPE] = mxConstants.SHAPE_SWIMLANE
-      style[mxConstants.STYLE_FONTSIZE] = 15
-      style[mxConstants.STYLE_HORIZONTAL] = false
-      style[mxConstants.STYLE_VERTICAL_LABEL_POSITION] = mxConstants.ALIGN_MIDDLE
-      style[mxConstants.STYLE_VERTICAL_ALIGN] = mxConstants.ALIGN_MIDDLE
-      style[mxConstants.STYLE_FILLCOLOR] = 'white'
-      style[mxConstants.STYLE_STROKECOLOR] = '#A7D0E3'
-      style[mxConstants.STYLE_STROKEWIDTH] = 0
-      style[mxConstants.STYLE_STROKEWIDTH] = 2
-      this.graph.getStylesheet().putCellStyle('swimlane', style)
     },
 
     connectionHandler() {
-      new mxConnectionHandler(this.graph, (source, target, style) => {
-        const edge = new mxCell('', new mxGeometry())
-        edge.setEdge(true)
-        edge.setStyle(style)
-        edge.geometry.relative = true
-        return edge
-      })
+      mxConstraintHandler.prototype.intersects = function(icon, point, source, existingEdge) {
+        return (!source || existingEdge) || mxUtils.intersects(icon.bounds, point)
+      }
+
+      // const mxConnectionHandlerUpdateEdgeState = mxConnectionHandler.prototype.updateEdgeState
+      // mxConnectionHandler.prototype.updateEdgeState = function(pt, constraint) {
+      //   if (pt != null && this.previous != null) {
+      //     const constraints = this.graph.getAllConnectionConstraints(this.previous)
+      //     let nearestConstraint = null
+      //     let dist = null
+
+      //     for (let i = 0; i < constraints.length; i++) {
+      //       const cp = this.graph.getConnectionPoint(this.previous, constraints[i])
+
+      //       if (cp != null) {
+      //         const tmp = (cp.x - pt.x) * (cp.x - pt.x) + (cp.y - pt.y) * (cp.y - pt.y)
+
+      //         if (dist == null || tmp < dist) {
+      //           nearestConstraint = constraints[i]
+      //           dist = tmp
+      //         }
+      //       }
+      //     }
+          
+      //     if (nearestConstraint != null) {
+      //       this.sourceConstraint = nearestConstraint
+      //     }
+          
+      //     // In case the edge style must be changed during the preview:
+      //     // this.edgeState.style['edgeStyle'] = 'orthogonalEdgeStyle';
+      //     // And to use the new edge style in the new edge inserted into the graph,
+      //     // update the cell style as follows:
+      //     // this.edgeState.cell.style = mxUtils.setStyle(this.edgeState.cell.style, 'edgeStyle', this.edgeState.style['edgeStyle']);
+      //   }
+      
+      //   mxConnectionHandlerUpdateEdgeState.apply(this, arguments)
+      // }
+
+      if (this.graph.connectionHandler.connectImage === null) {
+        this.graph.connectionHandler.isConnectableCell = function(cell) {
+          return false
+        }
+        mxEdgeHandler.prototype.isConnectableCell = function(cell) {
+          return this.graph.connectionHandler.isConnectableCell(cell)
+        }
+      }
+
+      this.graph.getAllConnectionConstraints = function(terminal) {
+        if (terminal != null && this.model.isVertex(terminal.cell) && !terminal.cell.style.includes('swimlane')) {
+          return [
+            new mxConnectionConstraint(new mxPoint(0, 0), true),
+            new mxConnectionConstraint(new mxPoint(0.25, 0), true),
+            new mxConnectionConstraint(new mxPoint(0.5, 0), true),
+            new mxConnectionConstraint(new mxPoint(0.75, 0), true),
+            new mxConnectionConstraint(new mxPoint(1, 0), true),
+            new mxConnectionConstraint(new mxPoint(1, 0.25), true),
+            new mxConnectionConstraint(new mxPoint(1, 0.5), true),
+            new mxConnectionConstraint(new mxPoint(1, 0.75), true),
+            new mxConnectionConstraint(new mxPoint(1, 1), true),
+            new mxConnectionConstraint(new mxPoint(0.75, 1), true),
+            new mxConnectionConstraint(new mxPoint(0.5, 1), true),
+            new mxConnectionConstraint(new mxPoint(0.25, 1), true),
+            new mxConnectionConstraint(new mxPoint(0, 1), true),
+            new mxConnectionConstraint(new mxPoint(0, 0.75), true),
+            new mxConnectionConstraint(new mxPoint(0, 0.5), true),
+            new mxConnectionConstraint(new mxPoint(0, 0.25), true),
+          ]
+        }
+
+        return null
+      }
+
+      // mxConnectionHandler.prototype.waypointsEnabled = true
+
+      mxConstraintHandler.prototype.pointImage = new mxImage(`${process.env.BASE_URL}icons/connectionPoint.svg`, 8, 8)
+
+      mxConstraintHandler.prototype.createHighlightShape = function() {
+        var hl = new mxEllipse(null, '#A7D0E3', '#A7D0E3', 1)
+
+        return hl
+      }
+
+
+      // Connect preview - bugged
+      mxConnectionHandler.prototype.createEdgeState = function(me) {
+        const edge = this.graph.createEdge(null, null, null, null, null)
+        console.log(this.graph.getCellStyle(edge))
+        return new mxCellState(this.graph.view, edge, this.graph.getStylesheet().getDefaultEdgeStyle())
+      }
+    },
+
+    initUndoManager () {
+      this.undoManager = new mxUndoManager()
+      // Register UNDO and REDO
+      const listener = (sender, evt) => {
+        this.undoManager.undoableEditHappened(evt.getProperty('edit'))
+      }
+
+      this.graph.getModel().addListener(mxEvent.UNDO, listener)
+      this.graph.getView().addListener(mxEvent.UNDO, listener)
+
+      this.graph.getModel().addListener(mxEvent.REDO, listener)
+      this.graph.getView().addListener(mxEvent.REDO, listener)
     },
 
     addToolbarItem(title, graph, toolbar, prototype, icon, tooltip) {
@@ -928,7 +1037,7 @@ export default {
        }
 
       const dragElt = document.createElement('div')
-      dragElt.style.border = 'dashed black 1px'
+      dragElt.style.border = 'dashed #A7D0E3 2px'
       dragElt.style.width = `${prototype.geometry.width}px`
       dragElt.style.height = `${prototype.geometry.height}px`
 
@@ -996,7 +1105,6 @@ export default {
       const { x = originPoint, y = originPoint } = this.graph.view.translate
       const { scale } = this.graph.view
 
-      this.graph.model.clear()
 
       if (!this.workflow.steps) {
         this.workflow.steps = []
@@ -1026,6 +1134,8 @@ export default {
       this.vertices = {}
       this.edges = {}
 
+      this.graph.getModel().clear()
+
       this.graph.getModel().beginUpdate() // Adds cells to the model in a single step
 
       try {
@@ -1048,8 +1158,10 @@ export default {
           const edge = (meta || {}).visual
           if (edge) {
             edge.parent = this.graph.model.getCell(edge.parent) || root
+            edge.source = config.parentID || edge.source
+            edge.target = config.childID || edge.target
 
-            const newEdge = this.graph.insertEdge(edge.parent, edge.id, edge.value, this.vertices[edge.source].node, this.vertices[edge.target].node)
+            const newEdge = this.graph.insertEdge(edge.parent, edge.id, edge.value, this.vertices[edge.source].node, this.vertices[edge.target].node, edge.style)
             newEdge.geometry.points = (edge.points || []).map(({ x, y }) => {
               return new mxPoint(x, y)
             })
@@ -1069,19 +1181,6 @@ export default {
         this.graph.view.setTranslate(x || originPoint, y || originPoint)
 
         this.graph.getModel().endUpdate() // Updates the display
-
-        // Register UNDO and REDO
-        const listener = (sender, evt) => {
-          this.undoManager.undoableEditHappened(evt.getProperty('edit'))
-        }
-
-        this.undoManager.clear()
-
-        this.graph.getModel().addListener(mxEvent.UNDO, listener)
-        this.graph.getView().addListener(mxEvent.UNDO, listener)
-
-        this.graph.getModel().addListener(mxEvent.REDO, listener)
-        this.graph.getView().addListener(mxEvent.REDO, listener)
 
         this.rendering = false
       }

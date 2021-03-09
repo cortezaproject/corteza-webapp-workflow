@@ -19,7 +19,7 @@ export function encodeGraph (model, vertices, edges) {
           cell.geometry.height || 0,
         ],
         parent: cell.parent.id,
-        edges: (cell.edges || []).forEach(({ id, value, parent, source, target, geometry }) => {
+        edges: (cell.edges || []).forEach(({ id, value, parent, source, target, geometry, style }) => {
           const edge = {
             ...((edges[id] || {}).config || {}),
             parentID: source.id,
@@ -33,7 +33,8 @@ export function encodeGraph (model, vertices, edges) {
                 parent: parent.id,
                 source: source.id,
                 target: target.id,
-                points: geometry.points
+                points: geometry.points,
+                style
               }
             }
           }
