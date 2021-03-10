@@ -497,15 +497,15 @@ export default {
             const type = vertex.config.kind.charAt(0).toUpperCase() + vertex.config.kind.slice(1)
             const shadow = 'shadow'// ((this.getSelectedItem || {}).node || {}).id === cell.id ? 'shadow-lg' : 'shadow'
   
-            label = `<div class="d-flex flex-column bg-white rounded ${shadow} step" style="width: 200px; height: 80px;  border-radius: 5px;">`+ 
+            label = `<div class="d-flex flex-column bg-white rounded ${shadow} step" style="width: 200px; height: 80px; border-radius: 5px;">`+ 
                       `<div class="d-flex flex-row align-items-center text-primary px-2 my-1 h6 mb-0 font-weight-bold" style="height: 35px;">`+
                         `<img src="${icon}" class="mr-2"/>${type}`+
                         `<a href="#" class="hide ml-auto" style="text-decoration: none;">`+
                           `<img id="openSidebar" src="${cog}" style="width: 16px;"/>`+
                         `</a>`+
                       `</div>`+
-                      `<div class="d-flex flex-row align-items-center border-top text-truncate px-2 mb-0 h6" style="height: 45px; color: #2D2D2D;">`+
-                        `<span class="d-inline-block text-truncate">${cell.value || '/'}</span>`+
+                      `<div class="d-flex flex-row align-items-center hover-untruncate border-top px-2 mb-0 h6" style="height: 45px; color: #2D2D2D;">`+
+                        `<span class="d-inline-block bg-white hover-untruncate py-2 pr-2">${cell.value || '/'}</span>`+
                       `</div>`+
                     `</div>`;
           } else {
@@ -1215,6 +1215,15 @@ export default {
 }
 .step:hover .hide {
   display: block;
+}
+.hover-untruncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.step:hover .hover-untruncate {
+  overflow: visible;
+  text-overflow: initial;
 }
 #toolbar > hr {
   margin: 0.5rem 0 0.5rem 0 !important;
