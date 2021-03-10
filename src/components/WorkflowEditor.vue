@@ -399,6 +399,12 @@ export default {
       this.styling()
       this.connectionHandler()
 
+      this.$root.$on('trigger-updated', trigger => {
+        const cellState = this.graph.view.states.map[trigger.mxObjectId]
+        if (cellState) {
+          this.graph.cellRenderer.redrawLabel(cellState)
+        }
+      })
 
       this.render(this.workflow)
     } catch (e) {
@@ -496,8 +502,9 @@ export default {
             const cog = `${process.env.BASE_URL}icons/cog.svg`
             const type = vertex.config.kind.charAt(0).toUpperCase() + vertex.config.kind.slice(1)
             const shadow = 'shadow'// ((this.getSelectedItem || {}).node || {}).id === cell.id ? 'shadow-lg' : 'shadow'
+            const opacity = vertex.config.kind === 'trigger' && !vertex.triggers.enabled ? 'opacity: 0.7;' : ''
   
-            label = `<div class="d-flex flex-column bg-white rounded ${shadow} step" style="width: 200px; height: 80px; border-radius: 5px;">`+ 
+            label = `<div class="d-flex flex-column bg-white rounded ${shadow} step" style="width: 200px; height: 80px; border-radius: 5px;${opacity}">`+ 
                       `<div class="d-flex flex-row align-items-center text-primary px-2 my-1 h6 mb-0 font-weight-bold" style="height: 35px;">`+
                         `<img src="${icon}" class="mr-2"/>${type}`+
                         `<a href="#" class="hide ml-auto" style="text-decoration: none;">`+

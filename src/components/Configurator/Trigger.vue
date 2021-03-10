@@ -226,7 +226,13 @@ export default {
       handler () {
         this.item.triggers.eventType = null
       }
-    }
+    },
+
+    'item.triggers.enabled': {
+      handler () {
+        this.$root.$emit('trigger-updated', this.item.node)
+      }
+    },
   },
 
   computed: {
