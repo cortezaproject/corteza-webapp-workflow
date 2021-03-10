@@ -97,7 +97,9 @@ export default {
                 ownedBy: this.userID,
               })
             }
-          }))
+          })).catch(() => {
+            throw new Error('Make sure all trigger steps are properly configured')
+          })
 
           const wf = await this.$AutomationAPI.workflowUpdate(this.workflow)
 

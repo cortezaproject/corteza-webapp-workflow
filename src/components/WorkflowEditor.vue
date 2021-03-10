@@ -1086,8 +1086,12 @@ export default {
         this.vertices[cell.id].config.results = config.results
       }
 
-      if (triggers) {
-        this.vertices[cell.id].triggers = triggers
+      if (triggers || cell.style === 'trigger') {
+        this.vertices[cell.id].triggers = triggers || {
+          resourceType: null,
+          eventType: null,
+          constraints: [],
+        }
       }
     },
 
