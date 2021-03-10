@@ -10,14 +10,14 @@
         <h5
           class="mb-0"
         >
-          Arguments
+          Expressions
         </h5>
         <b-button
           variant="primary"
           class="align-top border-0 ml-3"
           @click="addArgument()"
         >
-          + Add Argument
+          + Add Expression
         </b-button>
       </b-card-header>
 
