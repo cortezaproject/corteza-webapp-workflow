@@ -768,14 +768,15 @@ export default {
           if (mxEvent.isControlDown(event) || (mxClient.IS_MAC && mxEvent.isMetaDown(event))) {
             // Prevent sidebar opening/closing when CTRL(CMD) is pressed while clicking
           } else {
-            if (cell != null && (((this.vertices[cell.id] || {}).config || {}).kind === 'visual' || cell.edge || event.target.id === 'openSidebar')) {
+            if (cell && (((this.vertices[cell.id] || {}).config || {}).kind === 'visual' || cell.edge || event.target.id === 'openSidebar')) {
               const item = cell.edge ? this.edges[cell.id] : this.vertices[cell.id]
               const itemType = cell.edge ? 'edge' : item.config.kind
               this.sidebarReopen(item, itemType)
-            } else {
+            } else if (!cell && !event.defaultPrevented) {
+              // If click is on background and is not multiple selection, deselect all selected cells
+              this.graph.getSelectionModel().clear()
               this.sidebar.show = false
               if (this.getSelectedItem) {
-                this.graph.getSelectionModel().removeCell(this.getSelectedItem.node)
                 this.sidebarClose()
               }
             }

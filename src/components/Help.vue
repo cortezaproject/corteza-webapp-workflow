@@ -57,7 +57,7 @@ export default {
       basicControls: [
         { action: 'Select', shortcut: 'Left click'},
         { action: 'Select multiple', shortcut: 'Left click & drag'},
-        { action: 'Deselect', shortcut: 'Right click'},
+        { action: 'Deselect', shortcut: 'Left click on background'},
         { action: 'Pan', shortcut: 'Right click & drag'},
         { action: 'Zoom in/out', shortcut: 'Mouse wheel'},
       ],
