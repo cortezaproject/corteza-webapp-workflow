@@ -954,45 +954,12 @@ export default {
         return (!source || existingEdge) || mxUtils.intersects(icon.bounds, point)
       }
 
-      // const mxConnectionHandlerUpdateEdgeState = mxConnectionHandler.prototype.updateEdgeState
-      // mxConnectionHandler.prototype.updateEdgeState = function(pt, constraint) {
-      //   if (pt != null && this.previous != null) {
-      //     const constraints = this.graph.getAllConnectionConstraints(this.previous)
-      //     let nearestConstraint = null
-      //     let dist = null
-
-      //     for (let i = 0; i < constraints.length; i++) {
-      //       const cp = this.graph.getConnectionPoint(this.previous, constraints[i])
-
-      //       if (cp != null) {
-      //         const tmp = (cp.x - pt.x) * (cp.x - pt.x) + (cp.y - pt.y) * (cp.y - pt.y)
-
-      //         if (dist == null || tmp < dist) {
-      //           nearestConstraint = constraints[i]
-      //           dist = tmp
-      //         }
-      //       }
-      //     }
-          
-      //     if (nearestConstraint != null) {
-      //       this.sourceConstraint = nearestConstraint
-      //     }
-          
-      //     // In case the edge style must be changed during the preview:
-      //     // this.edgeState.style['edgeStyle'] = 'orthogonalEdgeStyle';
-      //     // And to use the new edge style in the new edge inserted into the graph,
-      //     // update the cell style as follows:
-      //     // this.edgeState.cell.style = mxUtils.setStyle(this.edgeState.cell.style, 'edgeStyle', this.edgeState.style['edgeStyle']);
-      //   }
-      
-      //   mxConnectionHandlerUpdateEdgeState.apply(this, arguments)
-      // }
-
+      // Removes default connect logic (from center of cell)
       if (this.graph.connectionHandler.connectImage === null) {
-        this.graph.connectionHandler.isConnectableCell = function(cell) {
+        this.graph.connectionHandler.isConnectableCell = () => {
           return false
         }
-        mxEdgeHandler.prototype.isConnectableCell = function(cell) {
+        mxEdgeHandler.prototype.isConnectableCell = cell => {
           return this.graph.connectionHandler.isConnectableCell(cell)
         }
       }
@@ -1022,22 +989,42 @@ export default {
         return null
       }
 
-      // mxConnectionHandler.prototype.waypointsEnabled = true
+      // Connect preview
+      mxConnectionHandler.prototype.createEdgeState = function(me) {
+        const edge = this.graph.createEdge(null, null, null, null, null)
+        return new mxCellState(this.graph.view, edge, this.graph.getStylesheet().getDefaultEdgeStyle())
+      }
 
+      // Resets control points when related cells are moved
+      this.graph.resetEdgesOnMove = true
+      mxGraph.prototype.resetEdges = function(cells) {
+        if (cells != null) {
+          this.model.beginUpdate()
+          try {
+            cells.forEach(cell => {
+              const edges = this.model.getEdges(cell)
+              if (edges != null) {
+                edges.forEach(edge => {
+                  this.resetEdge(edge)
+                })
+              }
+
+              this.resetEdges(this.model.getChildren(cell))
+            })
+          } finally {
+            this.model.endUpdate()
+          }
+        }
+      }
+
+      // Image for fixed point
       mxConstraintHandler.prototype.pointImage = new mxImage(`${process.env.BASE_URL}icons/connectionPoint.svg`, 8, 8)
 
+      // On hover outline for fixed point
       mxConstraintHandler.prototype.createHighlightShape = function() {
         var hl = new mxEllipse(null, '#A7D0E3', '#A7D0E3', 1)
 
         return hl
-      }
-
-
-      // Connect preview - bugged
-      mxConnectionHandler.prototype.createEdgeState = function(me) {
-        const edge = this.graph.createEdge(null, null, null, null, null)
-        console.log(this.graph.getCellStyle(edge))
-        return new mxCellState(this.graph.view, edge, this.graph.getStylesheet().getDefaultEdgeStyle())
       }
     },
 
