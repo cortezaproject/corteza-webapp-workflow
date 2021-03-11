@@ -28,11 +28,14 @@ export default {
   extends: base,
 
   watch: {
-    // Used to detect changes in node value
+    // Used to detect changes in node value(label)
     valueID: {
       handler (newValueID, oldValueID) {
-        const [nID, nValue] = newValueID.split('-')
-        const [oID, oValue] = oldValueID.split('-')
+        // get ID and label value
+        let [nID, ...nValue] = newValueID.split('-')
+        let [oID, ...oValue] = oldValueID.split('-')
+        nValue = nValue.join('-')
+        oValue = oValue.join('-')
         if (nID === oID) {
           if (nValue !== oValue) {
             this.$emit('update-value', this.item.node.value)
