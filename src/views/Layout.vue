@@ -28,7 +28,7 @@ export default {
         variant,
         solid: true,
         autoHideDelay: countdown,
-        toaster: 'b-toaster-top-center'
+        toaster: 'b-toaster-bottom-right'
       })
     }
   },
