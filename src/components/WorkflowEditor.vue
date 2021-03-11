@@ -732,7 +732,7 @@ export default {
           if (source.config.ref === 'excl') {
             this.edges[node.id].node.value = `#${outPaths.length} - ${outPaths.length === 1 ? 'If' : 'Else (if)'}`
           } else if (source.config.ref === 'incl') {
-            this.edges[node.id].node.value = `#${outPaths.length} - If`
+            this.edges[node.id].node.value = `If`
           }
         } else if (source.config.kind === 'error-handler') {
           this.edges[node.id].node.value = `#${outPaths.length} - ${outPaths.length === 1 ? 'Catch' : 'Try'}`
@@ -764,8 +764,20 @@ export default {
             source = this.vertices[source.id]
             target = this.vertices[target.id]
 
+            // If exlusive gateway, update edge indexes (#n)
             if (source.config.kind === 'gateway') {
-              this.graph.removeCells(source.node.edges.filter(e => e.source.id === source.node.id))
+              if (source.config.ref === 'excl') {
+                source.node.edges.filter(e => e.source.id === source.node.id).forEach((edge, index) => {
+                  const [edgeID, ...rest] = edge.value.split(' - ')
+  
+                  this.edges[edge.id].node.value = `#${index + 1} - ${rest.join(' - ')}`
+                  const edgeState = this.graph.view.states.map[edge.mxObjectId]
+                  if (edgeState) {
+                    this.graph.cellRenderer.redrawLabel(edgeState)
+                  }
+                })
+              }
+
               if (['join', 'fork'].includes(target.config.ref)) {
                 this.updateVertexConfig(source.node.id)
               }

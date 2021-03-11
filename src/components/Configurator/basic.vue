@@ -5,7 +5,7 @@
       label-class="text-primary"
     >
       <b-form-input
-        v-model="item.node.value"
+        v-model="label"
       />
     </b-form-group>
 
@@ -46,6 +46,36 @@ export default {
   },
 
   computed: {
+    // Ignores exclusiveGateway indexes (#n)
+    label: {
+      get () {
+        if (this.isExclusiveGateway) {
+          const [edgeID, ...rest] = this.item.node.value.split(' - ')
+          return rest.join(' - ')
+        }
+
+        return this.item.node.value
+      },
+
+      set (label) {
+        if (this.isExclusiveGateway) {
+          const [edgeID, ...rest] = this.item.node.value.split(' - ')
+          const newLabel = [edgeID]
+          if (label) {
+            newLabel.push(label)
+          }
+          label = newLabel.join(' - ')
+        }
+
+        this.item.node.value = label
+      }
+    },
+
+    isExclusiveGateway () {
+      const { source } = this.item.node
+      return source && source.style === 'gatewayExclusive'
+    },
+
     // Used to detect changes in node value
     valueID () {
       return `${this.item.node.id || '0'}-${this.item.node.value || undefined}`
