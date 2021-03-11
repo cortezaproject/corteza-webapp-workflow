@@ -275,7 +275,6 @@ const {
   mxClipboard,
   mxParallelEdgeLayout,
   mxPoint,
-  mxCellMarker,
   mxRectangle,
   mxLog,
   mxImage,
@@ -324,7 +323,6 @@ export default {
       vertices: {},
       edges: {},
       toolbar: undefined,
-      cellMarker: undefined,
 
       edgeConnected: false,
       // edgeLayout: undefined,
@@ -391,7 +389,6 @@ export default {
       this.setup()
 
       this.initToolbar()
-      this.initCellMarker()
       this.initUndoManager()
 
       this.keys()
@@ -592,18 +589,6 @@ export default {
             })
           }
         }
-      })
-    },
-
-    initCellMarker () {
-      this.cellMarker = new mxCellMarker(this.graph, 'none', 'none', 0.5)
-
-      this.graph.addMouseListener({
-        mouseDown: (a, b) => {},
-        mouseMove: (sender, me) => {
-          this.cellMarker.process(me)
-        },
-        mouseUp: () => {}
       })
     },
 
