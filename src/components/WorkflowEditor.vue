@@ -676,6 +676,43 @@ export default {
         this.graph.zoomTo(1)
         this.graph.view.setTranslate(originPoint, originPoint)
       }
+
+
+      // Nudge
+      const nudge = keyCode => {
+        if (!this.graph.isSelectionEmpty()) {
+          let dx = 0
+          let dy = 0
+          if (keyCode === 37) {
+            dx = -1
+          } else if (keyCode === 38) {
+            dy = -1
+          } else if (keyCode === 39) {
+            dx = 1
+          } else if (keyCode === 40) {
+            dy = 1
+          }
+
+          this.graph.moveCells(this.graph.getSelectionCells(), dx, dy)
+        }
+      }
+
+      // Move cells with arrow keys
+      this.keyHandler.bindKey(37, () => {
+        nudge(37)
+      })
+
+      this.keyHandler.bindKey(38, () => {
+        nudge(38)
+      })
+
+      this.keyHandler.bindKey(39, () => {
+        nudge(39)
+      })
+
+      this.keyHandler.bindKey(40, () => {
+        nudge(40)
+      })
     },
 
     events() {
