@@ -33,7 +33,8 @@
         <div
           id="toolbar"
           ref="toolbar"
-          class="d-flex flex-column align-items-center mt-1"
+          class="d-flex flex-column align-items-center mt-1 overflow-auto"
+          style="min-width: 60px;"
         />
 
         <div

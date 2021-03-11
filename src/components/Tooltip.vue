@@ -6,6 +6,7 @@
     placement="right"
     variant="light"
     custom-class="ml-2"
+    boundary="window"
     noninteractive
     @hide="show = false"
     @show="show = true"
