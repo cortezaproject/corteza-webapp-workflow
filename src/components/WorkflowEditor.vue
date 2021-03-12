@@ -505,7 +505,7 @@ export default {
             label = `<div class="d-flex flex-column bg-white rounded ${shadow} step" style="width: 200px; height: 80px; border-radius: 5px;${opacity}">`+ 
                       `<div class="d-flex flex-row align-items-center text-primary px-2 my-1 h6 mb-0 font-weight-bold" style="height: 35px;">`+
                         `<img src="${icon}" class="mr-2"/>${type}`+
-                        `<a href="#" class="hide ml-auto" style="text-decoration: none;">`+
+                        `<a href="#" class="d-flex hide ml-auto" style="text-decoration: none;">`+
                           `<img id="openSidebar" src="${cog}" style="width: 16px;"/>`+
                         `</a>`+
                       `</div>`+
@@ -895,8 +895,8 @@ export default {
       style[mxConstants.STYLE_STROKEWIDTH] = 2
       style[mxConstants.STYLE_ENDSIZE] = 15
       style[mxConstants.STYLE_STARTSIZE] = 15
-      style[mxConstants.STYLE_SOURCE_JETTY_SIZE] = 30
-      style[mxConstants.STYLE_TARGET_JETTY_SIZE] = 30
+      style[mxConstants.STYLE_SOURCE_JETTY_SIZE] = 40
+      style[mxConstants.STYLE_TARGET_JETTY_SIZE] = 40
       this.graph.getStylesheet().putDefaultEdgeStyle(style)
 
       // Swimlane
