@@ -19,19 +19,142 @@
         class="p-0"
       >
         <b-form-group
-          label="Message"
+          label="Type*"
           label-class="text-primary"
-          class="mb-0"
         >
-          <b-form-input
-            v-model="item.config.arguments[0].value"
-            placeholder="Prompt message"
-            @input="$root.$emit('change-detected')"
+          <b-form-select
+            v-model="item.config.ref"
+            :options="promptTypes"
+            @input="setParams"
           />
         </b-form-group>
       </b-card-body>
     </b-card>
+
     <b-card
+      v-if="args.length"
+      class="flex-grow-1 border-bottom border-light rounded-0"
+      body-class="p-0"
+    >
+      <b-card-header
+        header-tag="header"
+        class="d-flex align-items-center bg-white p-4"
+      >
+        <h5
+          class="mb-0"
+        >
+          Arguments
+        </h5>
+      </b-card-header>
+
+      <b-card-body
+        class="p-0"
+      >
+        <b-table
+          id="arguments"
+          fixed
+          borderless
+          head-row-variant="secondary"
+          class="mb-4"
+          :items="args"
+          :fields="argumentFields"
+          @row-clicked="item=>$set(item, '_showDetails', !item._showDetails)"
+        >
+          <template #cell(target)="{ item: a }">
+            <samp>
+              {{ `${a.target}${a.required ? '*' : ''}` }}
+            </samp>
+          </template>
+
+          <template #cell(type)="{ item: a }">
+            <var>{{ a.type }}</var>
+          </template>
+
+          <template #cell(value)="{ item: a }">
+            <samp>{{ a[a.valueType] }}</samp>
+          </template>
+
+          <template #row-details="{ item: a }">
+            <div
+              v-if="a.name === 'type'"
+            >
+              <b-form-group
+                label="Input type"
+                label-class="text-primary"
+              >
+                <b-form-select
+                  v-model="a.value"
+                  :options="getInputType(a.options)"
+                />
+              </b-form-group>
+            </div>
+
+            <div
+              v-else
+            >
+              <b-form-group
+                v-if="(paramTypes[item.config.ref][a.target] || []).length > 1"
+                label="Type"
+                label-class="text-primary"
+                class="mb-0"
+              >
+                <b-form-select
+                  v-model="a.type"
+                  :options="(paramTypes[item.config.ref][a.target] || [])"
+                  :disabled="(paramTypes[item.config.ref][a.target] || []).length <= 1"
+                  @input="$root.$emit('change-detected')"
+                />
+                <hr>
+              </b-form-group>
+
+              <b-form-group
+                label="Value type"
+                label-class="text-primary"
+              >
+                <b-form-radio-group
+                  id="value-types"
+                  v-model="a.valueType"
+                  :options="valueTypes"
+                  button-variant="outline-primary"
+                  buttons
+                  class="w-100 bg-white"
+                  @input="$root.$emit('change-detected')"
+                />
+              </b-form-group>
+
+              <b-form-group
+                label="Value"
+                label-class="text-primary"
+              >
+                <b-form-input
+                  v-if="a.valueType === 'value'"
+                  v-model="a.value"
+                  placeholder="Constant value"
+                  @input="$root.$emit('change-detected')"
+                />
+
+                <b-form-input
+                  v-else-if="a.valueType === 'source'"
+                  v-model="a.source"
+                  placeholder="Copy from variable"
+                  @input="$root.$emit('change-detected')"
+                />
+
+                <b-form-input
+                  v-else-if="a.valueType === 'expr'"
+                  v-model="a.expr"
+                  placeholder="Expression"
+                  @input="$root.$emit('change-detected')"
+                />
+              </b-form-group>
+            </div>
+          </template>
+        </b-table>
+      </b-card-body>
+    </b-card>
+
+    <b-card
+      v-if="results.length"
       class="flex-grow-1 border-bottom border-light rounded-0"
       body-class="p-0"
     >
@@ -55,12 +178,16 @@
           borderless
           head-row-variant="secondary"
           class="mb-4"
-          :items="item.config.results"
+          :items="results"
           :fields="resultFields"
           @row-clicked="item=>$set(item, '_showDetails', !item._showDetails)"
         >
-          <template #cell(result)="{ item: a }">
-            <samp>{{ a.source }}</samp>
+          <template #cell(type)="{ item: a }">
+            <var>{{ a.type }}</var>
+          </template>
+
+          <template #cell(value)="{ item: a }">
+            <samp>{{ a.expr }}</samp>
           </template>
 
           <template #row-details="{ item: a }">
@@ -74,6 +201,18 @@
                 @input="$root.$emit('change-detected')"
               />
             </b-form-group>
+
+            <b-form-group
+              label="Result (expression)"
+              label-class="text-primary"
+              class="mb-0"
+            >
+              <b-form-input
+                v-model="a.expr"
+                placeholder="Expression"
+                @input="$root.$emit('change-detected')"
+              />
+            </b-form-group>
           </template>
         </b-table>
       </b-card-body>
@@ -83,11 +222,53 @@
 
 <script>
 import base from './base'
+import { prompts } from '@cortezaproject/corteza-vue'
 
 export default {
   extends: base,
 
+  data () {
+    return {
+      processing: true,
+
+      prompts: [],
+      args: [],
+      results: [],
+
+      paramTypes: {},
+      resultTypes: {},
+    }
+  },
+
   computed: {
+    promptTypes () {
+      return [
+        { value: '', text: 'Select prompt', disabled: true },
+        ...this.prompts.map(({ ref, meta }) => ({ value: ref, text: meta.short })),
+      ]
+    },
+
+    argumentFields () {
+      return [
+        {
+          key: 'target',
+          label: 'Name',
+          thClass: "pl-3 py-2",
+          tdClass: 'text-truncate pointer'
+        },
+        {
+          key: 'type',
+          thClass: "py-2",
+          tdClass: 'text-truncate pointer'
+        },
+        {
+          key: 'value',
+          thClass: "pr-3 py-2",
+          tdClass: 'text-truncate pointer'
+        },
+      ]
+    },
+
     resultFields () {
       return [
         {
@@ -96,40 +277,166 @@ export default {
           tdClass: 'text-truncate pointer'
         },
         {
-          key: 'result',
+          key: 'type',
+          thClass: "py-2",
+          tdClass: 'text-truncate pointer'
+        },
+        {
+          key: 'expr',
+          label: 'Result',
           thClass: "pr-3 py-2",
           tdClass: 'text-truncate pointer'
         },
       ]
     },
+
+    valueTypes () {
+      return [
+        { text: 'Constant value', value: 'value' },
+        { text: 'Copy from variable', value: 'source' },
+        { text: 'Expression', value: 'expr' },
+      ]
+    }
   },
 
-   watch: {
+  watch: {
     'item.node.id': {
       immediate: true,
       async handler () {
         this.processing = true
 
-        this.$set(this.item.config, 'arguments', this.item.config.arguments || [{
-          target: 'message',
-          type: 'String',
-          value: ''
-        }])
+        this.$set(this.item.config, 'arguments', this.item.config.arguments || [])
+        this.$set(this.item.config, 'results', this.item.config.results || [])
 
-        this.$set(this.item.config, 'results', this.item.config.results || [{
-          target: '',
-          source: 'message'
-        }])
+        this.getPromptTypes()
+        await this.getTypes()
+
+        this.setParams(this.item.config.ref, true)
 
         this.processing = false
       }
     },
+
+    args: {
+      deep: true,
+      handler (args) {
+        this.item.config.arguments = args.filter(({ value, source, expr }) => value || source || expr)
+          .map(arg => {
+            const argMapped = {
+              target: arg.target,
+              type: arg.type
+            }
+
+            argMapped[arg.valueType] = arg[arg.valueType]
+
+            return argMapped
+          })
+      }
+    },
+
+    results: {
+      deep: true,
+      handler (res) {
+        this.item.config.results = res.filter(({ target }) => target).map(({ target, expr }) => ({ target, expr }))
+      }
+    }
   },
+
+  methods: {
+    setParams (fName, immediate = false) {
+      this.args = []
+      this.results = []
+
+      if (!immediate) {
+        this.$root.$emit('change-detected')
+      }
+
+      if (fName) {
+        const prompt = this.prompts.find(({ ref }) => ref === fName)
+
+        // Set parameters
+        if (!this.paramTypes[prompt.ref]) {
+          this.paramTypes[prompt.ref] = {}
+          prompt.parameters?.forEach(({ name, types }) => {
+            this.paramTypes[prompt.ref][name] = types || []
+          })
+        }
+
+        this.args = prompt.parameters?.map(param => {
+          const arg = this.item.config.arguments.find(({ target }) => target === param.name) || {}
+          return {
+            name: param.name,
+            target: param.name,
+            type: arg.type || this.paramTypes[prompt.ref][param.name][0],
+            valueType: this.getValueType(arg),
+            value: arg.value || '',
+            source: arg.source || '',
+            expr: arg.expr || '',
+            required: param.required || false,
+            options: param.name === 'type' ? (param.meta.visual || {}).options : undefined
+          }
+        }) || []
+
+        // Set results
+        if (!this.resultTypes[prompt.ref]) {
+          this.resultTypes[prompt.ref] = {}
+          prompt.results?.forEach(({ name, types }) => {
+            this.resultTypes[prompt.ref][name] = types || []
+          })
+        }
+
+        this.results = prompt.results?.map(result => {
+          const res = this.item.config.results.find(({ expr }) => expr === result.name) || {}
+          return {
+            name: result.name,
+            valueType: 'expr',
+            target: res.target || '',
+            type: this.resultTypes[prompt.ref][result.name][0],
+            expr: res.expr || result.name
+          }
+        }) || []
+      }
+    },
+
+    getInputType (options) {
+      return [
+        { value: '', text: 'Select input type', disabled: true },
+        ...options.map(o => ({ value: o, text: o.charAt(0).toUpperCase() + o.slice(1) })),
+      ]
+    },
+
+    getPromptTypes () {
+      return this.prompts = prompts.prompts
+    },
+
+    async getTypes () {
+      return this.$AutomationAPI.typeList()
+        .then(({ set }) => this.types = set)
+        .catch(this.defaultErrorHandler('Failed to fetch types'))
+    },
+
+    getValueType (item) {
+      let type = 'value'
+
+      if (item.source) {
+        type = 'source'
+      } else if (item.expr) {
+        type = 'expr'
+      }
+
+      return type
+    }
+  }
 }
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .pointer {
   cursor: pointer;
+}
+
+.b-table-details {
+  padding: 0;
+  background-color: #e9ecef
 }
 </style>

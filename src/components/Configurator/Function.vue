@@ -22,11 +22,11 @@
           label="Type*"
           label-class="text-primary"
         >
-        <b-form-select
-          v-model="item.config.ref"
-          :options="functionTypes"
-          @input="setParams"
-        />
+          <b-form-select
+            v-model="item.config.ref"
+            :options="functionTypes"
+            @input="setParams"
+          />
         </b-form-group>
       </b-card-body>
     </b-card>
