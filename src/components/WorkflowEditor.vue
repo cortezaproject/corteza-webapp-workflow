@@ -390,6 +390,7 @@ export default {
 
       this.initToolbar()
       this.initUndoManager()
+      this.initClipboard()
 
       this.keys()
       this.events()
@@ -397,11 +398,8 @@ export default {
       this.styling()
       this.connectionHandler()
 
-      this.$root.$on('trigger-updated', trigger => {
-        const cellState = this.graph.view.states.map[trigger.mxObjectId]
-        if (cellState) {
-          this.graph.cellRenderer.redrawLabel(cellState)
-        }
+      this.$root.$on('trigger-updated', ({ mxObjectId }) => {
+        this.redrawLabel(mxObjectId)
       })
 
       this.render(this.workflow)
@@ -495,7 +493,7 @@ export default {
           }
         } else {
           const vertex = this.vertices[cell.id]
-          if (vertex.config.kind !== 'visual') {
+          if (vertex && vertex.config.kind !== 'visual') {
             const icon = getStyleFromKind(vertex.config).icon
             const cog = `${process.env.BASE_URL}icons/cog.svg`
             const type = vertex.config.kind.charAt(0).toUpperCase() + vertex.config.kind.slice(1)
@@ -505,7 +503,7 @@ export default {
             label = `<div class="d-flex flex-column bg-white rounded ${shadow} step" style="width: 200px; height: 80px; border-radius: 5px;${opacity}">`+ 
                       `<div class="d-flex flex-row align-items-center text-primary px-2 my-1 h6 mb-0 font-weight-bold" style="height: 35px;">`+
                         `<img src="${icon}" class="mr-2"/>${type}`+
-                        `<a href="#" class="d-flex hide ml-auto" style="text-decoration: none;">`+
+                        `<a href="#" class="hide ml-auto" style="text-decoration: none;">`+
                           `<img id="openSidebar" src="${cog}" style="width: 16px;"/>`+
                         `</a>`+
                       `</div>`+
@@ -590,6 +588,140 @@ export default {
           }
         }
       })
+    },
+
+    makeCellCopy ({ edge, id }) {
+      let cell = edge ? this.edges[id] : this.vertices[id]
+      let node = cell.node
+
+      if (cell.node.children) {
+        node = this.graph.model.cloneCell(cell.node, false)
+        node.id = cell.node.id
+      }
+
+      const cellCopy = {
+        node
+      }
+
+      // Need to use JSON.parse to remove references
+      if (cell.config) {
+        cellCopy.config = JSON.parse(JSON.stringify(cell.config))
+      }
+
+      if (cell.triggers) {
+        let triggers = {
+          enabled: cell.triggers.enabled,
+          constraints: cell.triggers.constraints,
+          eventType: cell.triggers.eventType,
+          resourceType: cell.triggers.resourceType
+        }
+
+        cellCopy.triggers = JSON.parse(JSON.stringify(triggers))
+      }
+
+      return cellCopy
+    },
+
+    initClipboard () {
+      // TODO cutting swimlanes doesn't respect geometry
+      // TODO Nested swimlanes copy doesn't work properly
+      mxClipboard.copy = (graph, cells) => {
+        let exportableCells = graph.getExportableCells(graph.model.getTopmostCells(cells || graph.getSelectionCells()))
+
+        cells = {}
+        exportableCells.forEach(cell => {
+          if (!cells[cell.parent.id]) {
+            cells[cell.parent.id] = []
+          }
+
+          cells[cell.parent.id].push(this.makeCellCopy(cell))
+
+          if (cell.children) {
+            if (!cells[cell.id]) {
+              cells[cell.id] = []
+            }
+            cell.children.forEach(cc => {
+              cells[cc.parent.id].push(this.makeCellCopy(cc))
+            })
+          }
+        })
+
+        mxClipboard.insertCount = 1
+        mxClipboard.setCells(cells)
+
+        return cells
+      }
+
+      mxClipboard.cut = (graph, cells) => {
+        cells = mxClipboard.copy(graph, cells)
+        let cutCells = []
+        Object.entries(cells).forEach(([parentID, children]) => {
+          cutCells = [...cutCells, ...children.map(({ node }) => {
+            if (node.style.includes('swimlane')) {
+              return this.graph.model.getCell(node.id)
+            } else {
+              return node
+            }
+          })]
+        })
+
+        mxClipboard.insertCount = 0
+        mxClipboard.removeCells(graph, cutCells)
+
+        return cells
+      }
+
+      mxClipboard.paste = (graph) => {
+        let cells = []
+
+        if (!mxClipboard.isEmpty()) {
+          const delta = mxClipboard.insertCount * mxClipboard.STEPSIZE
+          const defaultParent = graph.getDefaultParent()
+          const newCellIDs = {}
+          const allCells = []
+          cells = mxClipboard.getCells()
+          if (cells) {
+            Object.entries(cells).forEach(([parentID, children]) => {
+              let tmpParent = newCellIDs[parentID]
+              tmpParent = graph.model.contains(tmpParent) ? tmpParent : defaultParent
+
+              const configs = []
+              let nodes = []
+
+              children.forEach(({ node, ...rest }) => {
+                nodes.push(node)
+                configs.push(rest)
+              })
+
+              graph.importCells(graph.getImportableCells(nodes),  delta, delta, tmpParent).forEach((node, index) => {
+                if (node) {
+                  const rest = JSON.parse(JSON.stringify(configs[index]))
+                  // Remap ID's and Create edges/vertices entry
+
+                  if (node.edge) {
+                    rest.config.parentID = node.source.id
+                    rest.config.childID = node.target.id
+                    this.edges[node.id] = { node, ...rest }
+                  } else {
+                    newCellIDs[rest.config.stepID] = node
+                    rest.config.stepID = node.id
+                    this.vertices[node.id] = { node, ...rest }
+                  }
+                  this.redrawLabel(node.mxObjectId)
+                }
+
+                allCells.push(node)
+              })
+            })
+          }
+
+          mxClipboard.insertCount++
+          graph.setSelectionCells(allCells)
+          cells = allCells
+        }
+
+        return cells
+      }
     },
 
     keys() {
@@ -746,35 +878,34 @@ export default {
 
 
       this.graph.addListener(mxEvent.CELLS_ADDED, (sender, evt) => {
-        const [cell] = evt.getProperty('cells')
-        if (cell && cell.vertex) {
-          if (!this.rendering) {
-            this.addCellToVertices(cell)
-            this.graph.setSelectionCells([cell])
-            // this.sidebar.show = true
-            // this.sidebarReopen(this.vertices[cell.id], this.vertices[cell.id].config.kind)
-          }
+        if (!this.rendering) {
+          const cells = evt.getProperty('cells')
+          cells.forEach(cell => {
+            if (cell && cell.vertex) {
+              if (!this.rendering) {
+                this.addCellToVertices(cell)
+                this.graph.setSelectionCells([cell])
+              }
+            }
+          })
         }
       })
 
       this.graph.addListener(mxEvent.CELLS_REMOVED, (sender, evt) => {
         const cells = evt.getProperty('cells') || []
-        cells.filter(({ edge }) => edge)
-          .forEach(({ source, target }) => {
-            source = this.vertices[source.id]
-            target = this.vertices[target.id]
+        cells.forEach(cell => {
+          if (cell.edge) {
+            let source = this.vertices[cell.source.id]
+            let target = this.vertices[cell.target.id]
 
             // If exlusive gateway, update edge indexes (#n)
             if (source.config.kind === 'gateway') {
               if (source.config.ref === 'excl') {
                 source.node.edges.filter(e => e.source.id === source.node.id).forEach((edge, index) => {
                   const [edgeID, ...rest] = edge.value.split(' - ')
-  
+
                   this.edges[edge.id].node.value = `#${index + 1} - ${rest.join(' - ')}`
-                  const edgeState = this.graph.view.states.map[edge.mxObjectId]
-                  if (edgeState) {
-                    this.graph.cellRenderer.redrawLabel(edgeState)
-                  }
+                  this.redrawLabel(edge.mxObjectId)
                 })
               }
 
@@ -792,7 +923,8 @@ export default {
                 this.updateVertexConfig(target.node.id)
               }
             }
-          })
+          }
+        })
       })
 
       // Click event
@@ -1133,6 +1265,15 @@ export default {
       this.graph.model.setValue(this.sidebar.item.node, value)
     },
 
+    redrawLabel (id = '') {
+      if (id) {
+        const state = this.graph.view.states.map[id]
+        if (state) {
+          this.graph.cellRenderer.redrawLabel(state)
+        }
+      }
+    },
+
     render (workflow) {
       this.rendering = true
 
@@ -1243,7 +1384,7 @@ export default {
   display: none;
 }
 .step:hover .hide {
-  display: block;
+  display: flex;
 }
 .hover-untruncate {
   overflow: hidden;
