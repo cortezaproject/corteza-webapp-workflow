@@ -402,7 +402,8 @@ export default {
         this.redrawLabel(mxObjectId)
       })
 
-      this.render(this.workflow)
+      this.render(this.workflow, true)
+
     } catch (e) {
       console.error(e)
     }
@@ -588,6 +589,22 @@ export default {
           }
         }
       })
+    },
+
+    initUndoManager () {
+      this.undoManager = new mxUndoManager()
+      // Register UNDO and REDO
+      const listener = (sender, evt) => {
+        if (!this.rendering) {
+          this.undoManager.undoableEditHappened(evt.getProperty('edit'))
+        }
+      }
+
+      this.graph.getModel().addListener(mxEvent.UNDO, listener)
+      this.graph.getView().addListener(mxEvent.UNDO, listener)
+
+      this.graph.getModel().addListener(mxEvent.REDO, listener)
+      this.graph.getView().addListener(mxEvent.REDO, listener)
     },
 
     makeCellCopy ({ edge, id }) {
@@ -1172,20 +1189,6 @@ export default {
       }
     },
 
-    initUndoManager () {
-      this.undoManager = new mxUndoManager()
-      // Register UNDO and REDO
-      const listener = (sender, evt) => {
-        this.undoManager.undoableEditHappened(evt.getProperty('edit'))
-      }
-
-      this.graph.getModel().addListener(mxEvent.UNDO, listener)
-      this.graph.getView().addListener(mxEvent.UNDO, listener)
-
-      this.graph.getModel().addListener(mxEvent.REDO, listener)
-      this.graph.getView().addListener(mxEvent.REDO, listener)
-    },
-
     addToolbarItem(title, graph, toolbar, prototype, icon, tooltip) {
       const funct = (graph, evt, cell) => {
         graph.stopEditing(false)
@@ -1274,7 +1277,7 @@ export default {
       }
     },
 
-    render (workflow) {
+    render (workflow, initial = false) {
       this.rendering = true
 
       const { x = originPoint, y = originPoint } = this.graph.view.translate
@@ -1354,6 +1357,10 @@ export default {
         // this.edgeLayout.execute(this.graph.getDefaultParent())
         this.graph.view.scale = scale
         this.graph.view.setTranslate(x || originPoint, y || originPoint)
+
+        if (this.undoManager && initial) {
+          this.undoManager.clear()
+        }
 
         this.graph.getModel().endUpdate() // Updates the display
 
