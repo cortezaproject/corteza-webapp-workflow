@@ -557,17 +557,17 @@ export default {
 
         if (cell.edge) {
           if (cell.value) {
-            label = `<div class="text-nowrap py-1 px-3 h6 mb-0 rounded bg-white" style="border: 2px solid #A7D0E3; border-radius: 5px; color: #2D2D2D;">${cell.value}</div>`;
+            label = `<div id="openSidebar" class="text-nowrap py-1 px-3 h6 mb-0 rounded bg-white pointer" style="border: 2px solid #A7D0E3; border-radius: 5px; color: #2D2D2D;">${cell.value}</div>`
           }
         } else {
           const vertex = this.vertices[cell.id]
           if (vertex && vertex.config.kind !== 'visual') {
             const icon = getStyleFromKind(vertex.config).icon
-            const cog = `${process.env.BASE_URL}icons/cog.svg`
             const type = vertex.config.kind.charAt(0).toUpperCase() + vertex.config.kind.slice(1)
             const shadow = 'shadow'// ((this.getSelectedItem || {}).node || {}).id === cell.id ? 'shadow-lg' : 'shadow'
+            const cog = `${process.env.BASE_URL}icons/cog.svg`
             const opacity = vertex.config.kind === 'trigger' && !vertex.triggers.enabled ? 'opacity: 0.7;' : ''
-  
+
             label = `<div class="d-flex flex-column bg-white rounded ${shadow} step" style="width: 200px; height: 80px; border-radius: 5px;${opacity}">`+ 
                       `<div class="d-flex flex-row align-items-center text-primary px-2 my-1 h6 mb-0 font-weight-bold" style="height: 35px;">`+
                         `<img src="${icon}" class="mr-2"/>${type}`+
@@ -1022,13 +1022,13 @@ export default {
         }
 
         const event = evt.getProperty('event')
-        const cell = evt.getProperty('cell') // cell may be null
+        const cell = evt.getProperty('cell')
 
         if (event) {
           if (mxEvent.isControlDown(event) || (mxClient.IS_MAC && mxEvent.isMetaDown(event))) {
             // Prevent sidebar opening/closing when CTRL(CMD) is pressed while clicking
           } else {
-            if (cell && (((this.vertices[cell.id] || {}).config || {}).kind === 'visual' || cell.edge || event.target.id === 'openSidebar')) {
+            if (cell && (((this.vertices[cell.id] || {}).config || {}).kind === 'visual' || event.target.id === 'openSidebar')) {
               const item = cell.edge ? this.edges[cell.id] : this.vertices[cell.id]
               const itemType = cell.edge ? 'edge' : item.config.kind
               this.sidebarReopen(item, itemType)
@@ -1040,6 +1040,20 @@ export default {
                 this.sidebarClose()
               }
             }
+          }
+        }
+
+        evt.consume()
+      })
+
+      this.graph.addListener(mxEvent.DOUBLE_CLICK, (sender, evt) => {
+        const event = evt.getProperty('event')
+        if (event) {
+          const cell = evt.getProperty('cell')
+          if (cell && cell.edge) {
+            const item = this.edges[cell.id]
+            const itemType = 'edge'
+            this.sidebarReopen(item, itemType)
           }
         }
 
