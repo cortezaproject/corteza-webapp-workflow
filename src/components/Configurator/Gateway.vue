@@ -19,23 +19,27 @@
         class="p-0"
       >
         <var
-          v-if="!gatewayEdges.length"
+          v-if="outEdges < 2"
         >
           Gateway must be source of at least two paths
         </var>
 
-        <b-form-group
-          v-for="edge in gatewayEdges"
-          :key="edge.id"
-          :label="edge.value"
-          label-class="text-primary"
+        <div
+          v-else
         >
-          <b-form-input
-            v-model="edge.expr"
-            placeholder="Condition"
-            @input="updateEdge(edge.id, $event)"
-          />
-        </b-form-group>
+          <b-form-group
+            v-for="edge in gatewayEdges"
+            :key="edge.id"
+            :label="edge.value"
+            label-class="text-primary"
+          >
+            <b-form-input
+              v-model="edge.expr"
+              placeholder="Condition"
+              @input="updateEdge(edge.id, $event)"
+            />
+          </b-form-group>
+        </div>
       </b-card-body>
     </b-card>
   </div>
@@ -55,7 +59,7 @@ export default {
     gatewayEdges () {
       const edges = []
       if (['incl', 'excl'].includes(this.gatewayKind)) {
-        if (this.item.node.edges) {
+        if (this.outEdges) {
           this.item.node.edges.forEach(({ id, source, target, value = '' }) => {
             if (source.id === this.item.node.id) {
               edges.push({

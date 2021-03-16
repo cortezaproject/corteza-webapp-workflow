@@ -173,6 +173,7 @@
         v-if="sidebar.item"
         :item.sync="sidebar.item"
         :edges.sync="edges"
+        :out-edges="sidebar.outEdges"
         @update-value="setValue($event)"
       />
 
@@ -332,6 +333,7 @@ export default {
       sidebar: {
         item: undefined,
         itemType: undefined,
+        outEdges: 0,
         show: false,
       },
     }
@@ -452,6 +454,7 @@ export default {
           }, 300)
         }
       }
+      this.sidebar.outEdges = (this.sidebar.item.node.edges || []).length
     },
 
     setup() {
@@ -883,6 +886,8 @@ export default {
           } else if (source.config.ref === 'incl') {
             this.edges[node.id].node.value = `If`
           }
+
+          this.sidebar.outEdges = (source.node.edges || []).length
         } else if (source.config.kind === 'error-handler') {
           this.edges[node.id].node.value = `#${outPaths.length} - ${outPaths.length === 1 ? 'Catch' : 'Try'}`
         } else if (source.config.kind === 'iterator') {

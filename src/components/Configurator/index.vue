@@ -28,8 +28,9 @@
     <component
       v-if="stepComponent"
       :is="stepComponent"
-      :item="item"
-      :edges="edges"
+      :item.sync="item"
+      :edges.sync="edges"
+      :out-edges="outEdges"
     />
   </div>
 </template>
