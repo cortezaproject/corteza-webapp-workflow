@@ -544,6 +544,8 @@ export default {
 
       mxEdgeHandler.prototype.snapToTerminals = true
 
+      mxGraph.prototype.minFitScale = 0.5
+
       this.graph.isHtmlLabel  = cell => {
         return true
       }
@@ -875,8 +877,13 @@ export default {
 
       // Ctrl + Space, Resets view to original state (zoom = 1, x = 0, y = 0)
       this.keyHandler.controlKeys[32] = () => {
-        this.resetZoom()
-        this.graph.view.setTranslate(originPoint, originPoint)
+        if (this.graph.model.getChildCount(this.graph.getDefaultParent())) {
+          this.graph.fit()
+          this.graph.view.setTranslate(this.graph.view.translate.x + 79, this.graph.view.translate.y + 160)
+        } else {
+          this.resetZoom()
+          this.graph.view.setTranslate(originPoint, originPoint)
+        }
       }
 
 
@@ -1403,6 +1410,10 @@ export default {
       this.vertices = {}
       this.edges = {}
 
+      if (initial) {
+        this.graph.view.rendering = false
+      }
+
       this.graph.getModel().clear()
 
       this.graph.getModel().beginUpdate() // Adds cells to the model in a single step
@@ -1454,6 +1465,14 @@ export default {
         }
 
         this.graph.getModel().endUpdate() // Updates the display
+
+        if (initial) {
+          this.graph.fit()
+          this.graph.view.rendering = true
+          this.graph.refresh()
+
+          this.graph.view.setTranslate(this.graph.view.translate.x + 79, this.graph.view.translate.y + 160)
+        }
 
         this.rendering = false
       }
