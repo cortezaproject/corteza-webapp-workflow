@@ -122,7 +122,7 @@
             :class="{ 'mt-3': changeDetected }"
             v-b-modal.issues
           >
-            Issues detected. Click here to view.
+            Issues detected in saved workflow. Click here to view.
           </b-button>
         </div>
 
