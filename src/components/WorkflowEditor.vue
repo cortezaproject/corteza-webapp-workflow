@@ -897,9 +897,9 @@ export default {
 
           this.sidebar.outEdges = (source.node.edges || []).length
         } else if (source.config.kind === 'error-handler') {
-          this.edges[node.id].node.value = `#${outPaths.length} - ${outPaths.length === 1 ? 'Catch' : 'Try'}`
+          this.edges[node.id].node.value = `${outPaths.length === 1 ? 'Catch' : 'Try'}`
         } else if (source.config.kind === 'iterator') {
-          this.edges[node.id].node.value = `#${outPaths.length} - ${outPaths.length === 1 ? 'Loop body' : 'Loop end'}`
+          this.edges[node.id].node.value = `${outPaths.length === 1 ? 'Body' : 'End'}`
         }
 
         // this.edgeLayout.execute(this.graph.getDefaultParent())

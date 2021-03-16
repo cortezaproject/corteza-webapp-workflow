@@ -49,31 +49,38 @@ export default {
     // Ignores exclusiveGateway indexes (#n)
     label: {
       get () {
-        if (this.isExclusiveGateway) {
-          const [edgeID, ...rest] = this.item.node.value.split(' - ')
-          return rest.join(' - ')
+        if (this.getSourceType) {
+          if (this.getSourceType === 'gatewayExclusive') {
+            const [edgeID, ...rest] = this.item.node.value.split(' - ')
+            return rest.join(' - ')
+          }
         }
 
         return this.item.node.value
       },
 
       set (label) {
-        if (this.isExclusiveGateway) {
-          const [edgeID, ...rest] = this.item.node.value.split(' - ')
-          const newLabel = [edgeID]
-          if (label) {
-            newLabel.push(label)
+        if (this.getSourceType) {
+          if (this.getSourceType === 'gatewayExclusive') {
+            const [edgeID, ...rest] = this.item.node.value.split(' - ')
+            const newLabel = [edgeID]
+            if (label) {
+              newLabel.push(label)
+            }
+            label = newLabel.join(' - ')
           }
-          label = newLabel.join(' - ')
         }
 
         this.item.node.value = label
       }
     },
 
-    isExclusiveGateway () {
+    getSourceType () {
       const { source } = this.item.node
-      return source && source.style === 'gatewayExclusive'
+      if (source && source.style) {
+        return source.style
+      }
+      return undefined
     },
 
     // Used to detect changes in node value
