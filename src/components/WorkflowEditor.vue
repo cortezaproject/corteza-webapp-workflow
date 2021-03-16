@@ -347,6 +347,9 @@ export default {
     getSidebarItemType () {
       const { itemType } = this.sidebar
       if (itemType) {
+        if (itemType === 'edge') {
+          return 'Connector'
+        }
         return itemType.charAt(0).toUpperCase() + itemType.slice(1)
       }
       return itemType
