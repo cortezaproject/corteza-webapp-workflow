@@ -886,13 +886,13 @@ export default {
           let dx = 0
           let dy = 0
           if (keyCode === 37) {
-            dx = -1
+            dx = -2
           } else if (keyCode === 38) {
-            dy = -1
+            dy = -2
           } else if (keyCode === 39) {
-            dx = 1
+            dx = 2
           } else if (keyCode === 40) {
-            dy = 1
+            dy = 2
           }
 
           this.graph.moveCells(this.graph.getSelectionCells(), dx, dy)
