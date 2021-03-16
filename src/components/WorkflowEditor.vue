@@ -478,6 +478,11 @@ export default {
         return mxEvent.isAltDown(evt.getEvent())
       }
 
+      const mxGraphHandlerIsValidDropTarget = mxGraphHandler.prototype.isValidDropTarget
+      mxGraphHandler.prototype.isValidDropTarget = function(target, me) {
+        return mxGraphHandlerIsValidDropTarget.apply(this, arguments) && !target.edge
+      }
+
       mxEdgeHandler.prototype.snapToTerminals = true
 
       this.graph.isHtmlLabel  = cell => {
