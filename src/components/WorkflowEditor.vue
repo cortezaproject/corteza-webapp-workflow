@@ -202,6 +202,18 @@
       size="lg"
       hide-footer
     >
+      <template #modal-title>
+        {{ workflow.meta.name || workflow.handle }}
+
+        <c-permissions-button
+          v-if="workflow.canGrant"
+          :title="workflow.meta.name || workflow.handle"
+          :target="workflow.meta.name || workflow.handle"
+          :resource="`automation:workflow:${workflow.workflowID}`"
+          link
+          class="ml-2"
+        />
+      </template>
       <workflow-configurator
         v-if="workflow.workflowID"
         :workflow="workflow"

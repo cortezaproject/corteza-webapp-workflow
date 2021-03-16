@@ -41,7 +41,7 @@
             class="d-flex justify-content-end"
           >
             <c-permissions-button
-              v-if="true"
+              v-if="canGrant"
               resource="automation:workflow:*"
               link
             />
@@ -59,31 +59,39 @@
           responsive
         >
 
-          <template v-slot:cell(label)="{ item: m }">
-            {{ m.meta.name || m.handle }}
+          <template v-slot:cell(label)="{ item: w }">
+            {{ w.meta.name || w.handle }}
           </template>
-          <template v-slot:cell(enabled)="{ item: m }">
+          <template v-slot:cell(enabled)="{ item: w }">
             <font-awesome-icon
-              :icon="['fas', m.enabled ? 'check' : 'times']"
+              :icon="['fas', w.enabled ? 'check' : 'times']"
             />
           </template>
-          <template v-slot:cell(steps)="{ item: m }">
-            {{ (m.steps || []).length }}
+          <template v-slot:cell(steps)="{ item: w }">
+            {{ (w.steps || []).length }}
           </template>
-          <template v-slot:cell(updatedAt)="{ item: m }">
-            {{ new Date(m.updatedAt || m.createdAt).toLocaleDateString('en-US') }}
+          <template v-slot:cell(updatedAt)="{ item: w }">
+            {{ new Date(w.updatedAt || w.createdAt).toLocaleDateString('en-US') }}
           </template>
-          <template v-slot:cell(actions)="{ item: m }">
+          <template v-slot:cell(actions)="{ item: w }">
             <span>
               <router-link
-                :to="{name: 'workflow.edit', params: { workflowID: m.workflowID }}"
-                class="mr-2 text-dark"
+                :to="{name: 'workflow.edit', params: { workflowID: w.workflowID }}"
+                class="text-dark"
               >
                 <font-awesome-icon
                   :icon="['far', 'edit']"
                 />
               </router-link>
             </span>
+            <c-permissions-button
+              v-if="w.canGrant"
+              :title="w.meta.name || w.handle"
+              :target="w.meta.name || w.handle"
+              :resource="`automation:workflow:${w.workflowID}`"
+              link
+              class="ml-2"
+            />
           </template>
         </b-table>
       </b-card>
@@ -99,6 +107,8 @@ export default {
 
   data () {
     return {
+      canGrant: false,
+
       workflows: [],
 
       newWorkflow: new automation.Workflow({
@@ -151,10 +161,19 @@ export default {
   },
 
   created () {
+    this.fetchPermissions()
     this.fetchWorkflows()
   },
 
   methods: {
+    fetchPermissions () {
+      this.$AutomationAPI.permissionsEffective()
+        .then(rules => {
+          this.canGrant = rules.find(({ resource, operation, allow }) => resource === 'automation' && operation === 'grant').allow
+        })
+        .catch(this.defaultErrorHandler('Failed to fetch automation permissions'))
+    },
+
     fetchWorkflows () {
       this.$AutomationAPI.workflowList({ disabled: 1 })
         .then(({ set = [], filter = {} }) => {
