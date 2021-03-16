@@ -104,6 +104,44 @@
         </div>
 
         <div
+          class="bg-white position-absolute m-2 zoom"
+          style="z-index: 1; width: fit-content;"
+        >
+          <div
+            class="d-flex align-items-center p-2"
+          >
+            {{ getZoomPercent }}
+            <b-button
+              variant="link"
+              class="ml-4 p-0"
+              @click="zoom(false)"
+            >
+              <font-awesome-icon
+                :icon="['fas', 'search-minus']"
+              />
+            </b-button>
+            <b-button
+              variant="link"
+              class="ml-1 p-0"
+              @click="zoom()"
+            >
+              <font-awesome-icon
+                :icon="['fas', 'search-plus']"
+                class="pointer"
+                @click="zoom()"
+              />
+            </b-button>
+            <b-button
+              variant="link"
+              class="ml-2 p-0 text-decoration-none"
+              @click="resetZoom()"
+            >
+              Reset
+            </b-button>
+          </div>
+        </div>
+
+        <div
           class="d-flex flex-column flex-shrink position-absolute fixed-bottom m-2"
           style="z-index: 1; width: fit-content;"
         >
@@ -348,6 +386,8 @@ export default {
         outEdges: 0,
         show: false,
       },
+
+      zoomLevel: 1,
     }
   },
 
@@ -377,6 +417,10 @@ export default {
 
     getSelectedItem () {
       return this.sidebar.item ? this.sidebar.item : undefined
+    },
+
+    getZoomPercent () {
+      return `${Math.floor(this.zoomLevel * 100).toFixed(0)}%`
     },
   },
 
@@ -473,7 +517,7 @@ export default {
     },
 
     setup() {
-      this.graph.zoomFactor = 1.1
+      this.graph.zoomFactor = 1.2
 
       // Sets a background image and restricts child movement to its bounds
       this.graph.setBackgroundImage(new mxImage(`${process.env.BASE_URL}icons/grid.svg`, 8192, 8192))
@@ -831,7 +875,7 @@ export default {
 
       // Ctrl + Space, Resets view to original state (zoom = 1, x = 0, y = 0)
       this.keyHandler.controlKeys[32] = () => {
-        this.graph.zoomTo(1)
+        this.resetZoom()
         this.graph.view.setTranslate(originPoint, originPoint)
       }
 
@@ -1012,13 +1056,7 @@ export default {
           return
         }
 
-        if (up && this.graph.view.scale < 3) {
-          this.graph.zoomIn()
-        } else if (!up && this.graph.view.scale > 0.1) {
-          this.graph.zoomOut()
-        }
-
-
+        this.zoom(up)
         mxEvent.consume(event)
       }, this.graph.container)
 
@@ -1293,6 +1331,20 @@ export default {
       this.graph.model.setValue(this.sidebar.item.node, value)
     },
 
+    zoom(up = true) {
+      if (up && this.graph.view.scale < 3) {
+        this.graph.zoomIn()
+      } else if (!up && this.graph.view.scale > 0.1) {
+        this.graph.zoomOut()
+      }
+      this.zoomLevel = this.graph.view.scale
+    },
+
+    resetZoom () {
+      this.graph.zoomTo(1)
+      this.zoomLevel = this.graph.view.scale
+    },
+
     redrawLabel (id = '') {
       if (id) {
         const state = this.graph.view.states.map[id]
@@ -1408,6 +1460,11 @@ export default {
 <style scoped lang="scss">
 #graph {
   outline: none;
+}
+
+.zoom {
+  right: 0;
+  bottom: 0;
 }
 </style>
 

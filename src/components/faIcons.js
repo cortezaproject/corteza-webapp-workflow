@@ -9,7 +9,9 @@ import {
   faCog,
   faChevronLeft,
   faChevronDown,
-  faExclamationTriangle
+  faExclamationTriangle,
+  faSearchPlus,
+  faSearchMinus,
 } from '@fortawesome/free-solid-svg-icons'
 
 import {
@@ -32,4 +34,6 @@ library.add(
   faChevronDown,
   faExclamationTriangle,
   faQuestionCircle,
+  faSearchPlus,
+  faSearchMinus,
 )
