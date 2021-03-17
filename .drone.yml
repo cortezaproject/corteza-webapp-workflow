@@ -3,10 +3,10 @@ name: "Test & Build"
 type: docker
 
 steps:
-  # - name: "Quality Control"
-  #   image: cortezaproject/corteza-webapp-builder
-  #   commands:
-  #   - make dep # test
+  - name: "Quality Control"
+    image: cortezaproject/corteza-webapp-builder
+    commands:
+     - make dep # test
 
   - name: "Build release (tag)"
     image: cortezaproject/corteza-webapp-builder
@@ -14,7 +14,7 @@ steps:
       RELEASE_SFTP_KEY: { from_secret: RELEASE_SFTP_KEY }
       RELEASE_SFTP_URI: { from_secret: RELEASE_SFTP_URI }
     commands:
-    - make build release upload BUILD_VERSION=${DRONE_TAG}
+     - make build release upload BUILD_VERSION=${DRONE_TAG}
     when:
       event: [ tag ]
       ref:
