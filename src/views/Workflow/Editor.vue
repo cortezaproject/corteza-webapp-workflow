@@ -101,6 +101,10 @@ export default {
             throw new Error('Make sure all trigger steps are properly configured')
           })
 
+          this.workflow.handle = this.workflow.meta.name.trim(' ').split(' ').map(s => {
+            return s[0].toUpperCase() + s.slice(1).toLowerCase()
+          }).join('')
+
           const wf = await this.$AutomationAPI.workflowUpdate(this.workflow)
 
           await this.fetchTriggers()

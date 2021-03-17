@@ -5,7 +5,7 @@
     >
       <b-form-input
         v-model="workflow.meta.name"
-        @input="setHandle"
+        @input="$root.$emit('change-detected')"
       />
     </b-form-group>
 
@@ -45,15 +45,5 @@ export default {
       default: () => {},
     },
   },
-
-  methods: {
-    setHandle (handle = '') {
-      this.workflow.handle = handle.trim(' ').split(' ').map(s => {
-        return s[0].toUpperCase() + s.slice(1).toLowerCase()
-      }).join('')
-
-      this.$root.$emit('change-detected')
-    }
-  }
 }
 </script>
