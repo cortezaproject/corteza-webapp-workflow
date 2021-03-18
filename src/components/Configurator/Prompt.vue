@@ -21,6 +21,7 @@
         <b-form-group
           label="Type*"
           label-class="text-primary"
+          class="mb-0"
         >
           <b-form-select
             v-model="item.config.ref"
@@ -28,6 +29,13 @@
             @input="setParams"
           />
         </b-form-group>
+
+        <p
+          v-if="promptDescription"
+          class="mt-3 mb-0"
+        >
+          {{ promptDescription }}
+        </p>
       </b-card-body>
     </b-card>
 
@@ -284,7 +292,11 @@ export default {
         { text: 'Copy from variable', value: 'source' },
         { text: 'Expression', value: 'expr' },
       ]
-    }
+    },
+
+    promptDescription () {
+      return (this.functions.find(({ ref }) => ref === this.item.config.ref) || { meta: {} }).meta.description
+    },
   },
 
   watch: {
