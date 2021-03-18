@@ -183,18 +183,6 @@
                 @input="$root.$emit('change-detected')"
               />
             </b-form-group>
-
-            <b-form-group
-              label="Result (expression)"
-              label-class="text-primary"
-              class="mb-0"
-            >
-              <b-form-input
-                v-model="a.expr"
-                placeholder="Expression"
-                @input="$root.$emit('change-detected')"
-              />
-            </b-form-group>
           </template>
         </b-table>
       </b-card-body>
