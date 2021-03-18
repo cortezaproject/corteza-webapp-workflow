@@ -544,7 +544,7 @@ export default {
 
       mxEdgeHandler.prototype.snapToTerminals = true
 
-      mxGraph.prototype.minFitScale = 0.5
+      mxGraph.prototype.minFitScale = 0.9
 
       this.graph.isHtmlLabel  = cell => {
         return true
