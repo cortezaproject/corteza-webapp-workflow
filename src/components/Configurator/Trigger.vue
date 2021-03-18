@@ -89,7 +89,12 @@
           @row-clicked="item=>$set(item, '_showDetails', !item._showDetails)"
         >
           <template #cell(name)="{ item: c }">
-            <samp>{{ c.name[0].toUpperCase() + c.name.slice(1).toLowerCase() }}</samp>
+            <samp v-if="c.name">
+              {{ c.name.split('.').map(s => {
+                  return s[0].toUpperCase() + s.slice(1).toLowerCase()
+                }).join(' ') 
+              }}
+            </samp>
           </template>
           <template #cell(values)="{ item: c }">
             <samp>{{ c.values.join(' or ') }}</samp>
@@ -140,7 +145,6 @@
               >
                 <b-form-input
                   v-model="c.values[index]"
-                  placeholder="Expression"
                   @input="$root.$emit('change-detected')"
                 />
 
@@ -225,6 +229,13 @@ export default {
     'item.triggers.resourceType': {
       handler () {
         this.item.triggers.eventType = null
+        this.item.triggers.constraints = []
+      }
+    },
+
+    'item.triggers.eventType': {
+      handler () {
+        this.item.triggers.constraints = []
       }
     },
 
@@ -252,7 +263,7 @@ export default {
     },
 
     eventType () {
-      return this.eventTypes.find(et => et.resourceType === this.item.triggers.resourceType && et.eventType === this.item.triggers.eventType) || {}
+      return this.eventTypes.find(({ resourceType, eventType }) => resourceType === this.item.triggers.resourceType && eventType === this.item.triggers.eventType) || {}
     },
 
     constraintFields () {
@@ -285,21 +296,26 @@ export default {
         },
         {
           key: 'type',
-          thClass: "pl-3 py-2",
-          tdClass: 'text-truncate'
-        },
-        {
-          key: 'immutable',
-          thClass: "pl-3 py-2",
+          thClass: "pr-3 py-2",
           tdClass: 'text-truncate'
         },
       ]
     },
 
     constraintNameTypes () {
-     return [
+      const constraints = this.eventType.constraints || []
+
+      return [
         { value: null, text: 'Select constraint type', disabled: true },
-        { value: 'module', text: 'Module' },
+        ...constraints.reduce((cons, { name }) => {
+          if (!name.includes('*')) {
+            cons.push({ value: name, text: name.split('.').map(s => {
+              return s[0].toUpperCase() + s.slice(1).toLowerCase()
+            }).join(' ')})
+          }
+
+          return cons
+        }, [])
       ]
     },
 
@@ -345,7 +361,7 @@ export default {
 
     addConstraint () {
       this.item.triggers.constraints.push({
-        name: 'module',
+        name: null,
         op: '=',
         values: [''],
         _showDetails: true
