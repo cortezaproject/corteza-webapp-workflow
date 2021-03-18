@@ -321,6 +321,7 @@ export default {
         resourceType: null,
         eventType: null,
         constraints: [],
+        enabled: true,
       })
     }
 
