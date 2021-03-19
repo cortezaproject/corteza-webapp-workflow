@@ -1263,7 +1263,7 @@ export default {
       }
 
       // Image for fixed point
-      mxConstraintHandler.prototype.pointImage = new mxImage(`${process.env.BASE_URL}icons/connectionPoint.svg`, 8, 8)
+      mxConstraintHandler.prototype.pointImage = new mxImage(`${process.env.BASE_URL}icons/connection-point.svg`, 8, 8)
 
       // On hover outline for fixed point
       mxConstraintHandler.prototype.createHighlightShape = function() {

@@ -94,7 +94,7 @@ const kindToStyle = {
   gatewayExcl: {
     width: 200,
     height: 80,
-    icon: `${process.env.BASE_URL}icons/gatewayExclusive.svg`,
+    icon: `${process.env.BASE_URL}icons/gateway-exclusive.svg`,
     tooltip: 'Workflow execution can continue on first path that fits condition',
     style: `gatewayExclusive`
   },
@@ -102,7 +102,7 @@ const kindToStyle = {
   gatewayIncl: {
     width: 200,
     height: 80,
-    icon: `${process.env.BASE_URL}icons/gatewayInclusive.svg`,
+    icon: `${process.env.BASE_URL}icons/gateway-inclusive.svg`,
     tooltip: 'Workflow execution can continue on all paths that fit condition',
     style: `gatewayInclusive`
   },
@@ -110,7 +110,7 @@ const kindToStyle = {
   gatewayFork: {
     width: 200,
     height: 80,
-    icon: `${process.env.BASE_URL}icons/gatewayParallel.svg`,
+    icon: `${process.env.BASE_URL}icons/gateway-parallel.svg`,
     tooltip: 'Splits workflow execution into two parralel paths or merges multiple paths into one',
     style: `gatewayParallel`
   },
@@ -118,7 +118,7 @@ const kindToStyle = {
   gatewayJoin: {
     width: 200,
     height: 80,
-    icon: `${process.env.BASE_URL}icons/gatewayParallel.svg`,
+    icon: `${process.env.BASE_URL}icons/gateway-parallel.svg`,
     tooltip: 'Splits workflow execution into two parralel paths or merges multiple paths into one',
     style: `gatewayParallel`
   },
