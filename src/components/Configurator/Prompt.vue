@@ -288,9 +288,9 @@ export default {
 
     valueTypes () {
       return [
+        { text: 'Expression', value: 'expr' },
         { text: 'Constant value', value: 'value' },
         { text: 'Copy from variable', value: 'source' },
-        { text: 'Expression', value: 'expr' },
       ]
     },
 
@@ -416,12 +416,12 @@ export default {
     },
 
     getValueType (item) {
-      let type = 'value'
+      let type = 'expr'
 
-      if (item.source) {
+      if (item.value) {
+        type = 'value'
+      } else if (item.source) {
         type = 'source'
-      } else if (item.expr) {
-        type = 'expr'
       }
 
       return type
