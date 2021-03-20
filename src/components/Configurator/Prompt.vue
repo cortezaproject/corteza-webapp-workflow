@@ -218,7 +218,7 @@
 
 <script>
 import base from './base'
-import { prompts } from '@cortezaproject/corteza-vue'
+import { components } from '@cortezaproject/corteza-vue'
 
 export default {
   extends: base,
@@ -227,7 +227,6 @@ export default {
     return {
       processing: true,
 
-      prompts: [],
       args: [],
       results: [],
 
@@ -242,6 +241,10 @@ export default {
         { value: '', text: 'Select prompt', disabled: true },
         ...this.prompts.map(({ ref, meta }) => ({ value: ref, text: meta.short })),
       ]
+    },
+
+    prompts () {
+      return components.promptDefinitions
     },
 
     argumentFields () {
@@ -295,7 +298,7 @@ export default {
     },
 
     promptDescription () {
-      return (this.functions.find(({ ref }) => ref === this.item.config.ref) || { meta: {} }).meta.description
+      return (this.prompts.find(({ ref }) => ref === this.item.config.ref) || { meta: {} }).meta.description
     },
   },
 
@@ -308,7 +311,6 @@ export default {
         this.$set(this.item.config, 'arguments', this.item.config.arguments || [])
         this.$set(this.item.config, 'results', this.item.config.results || [])
 
-        this.getPromptTypes()
         await this.getTypes()
 
         this.setParams(this.item.config.ref, true)
@@ -403,10 +405,6 @@ export default {
         { value: '', text: 'Select input type', disabled: true },
         ...options.map(o => ({ value: o, text: o.charAt(0).toUpperCase() + o.slice(1) })),
       ]
-    },
-
-    getPromptTypes () {
-      return this.prompts = prompts.prompts
     },
 
     async getTypes () {
