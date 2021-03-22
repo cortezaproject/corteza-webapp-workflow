@@ -104,11 +104,11 @@
         </div>
 
         <div
-          class="bg-white position-absolute m-2 zoom"
+          class="bg-white position-absolute m-2 zoom border border-secondary"
           style="z-index: 1; width: fit-content;"
         >
           <div
-            class="d-flex align-items-center p-2"
+            class="d-flex align-items-baseline p-2"
           >
             {{ getZoomPercent }}
             <b-button
@@ -154,7 +154,7 @@
             Changes detected. Click here to save.
           </b-button>
           <b-button
-            v-if="(workflow.issues || []).length"
+            v-if="hasIssues"
             variant="danger"
             class="rounded-0 py-2 px-3"
             :class="{ 'mt-3': changeDetected }"
@@ -229,6 +229,15 @@
           >
             Delete
           </c-input-confirm>
+
+          <b-button
+            v-if="canTest"
+            variant="success"
+            class="ml-auto"
+            @click="setTestInput()"
+          >
+            Test workflow
+          </b-button>
         </div>
       </template>
     </b-sidebar>
@@ -290,6 +299,26 @@
         </p>
       </div>
     </b-modal>
+
+    <!-- <b-modal
+      v-model="dryRun.show"
+      id="dry-run"
+      title="Initial scope"
+      ok-only
+      ok-title="Run"
+      ok-variant="success"
+      @ok="testWorkflow"
+    >
+      <b-form-group
+        v-for="(property, index) in dryRun.initialScope"
+        :key="index"
+        :label="property.label"
+      >
+        <b-form-input
+          v-model="property.value"
+        />
+      </b-form-group>
+    </b-modal> -->
   </div>
 </template>
 
@@ -334,6 +363,8 @@ const {
   mxCellState,
   mxRectangleShape,
   mxEllipse,
+  mxCellOverlay,
+  mxCellHighlight,
 } = mxgraph()
 
 const originPoint = -2042
@@ -371,8 +402,10 @@ export default {
       eventHandler: undefined,
       keyHandler: undefined,
       undoManager: undefined,
+
       vertices: {},
       edges: {},
+
       toolbar: undefined,
 
       edgeConnected: false,
@@ -384,6 +417,11 @@ export default {
         item: undefined,
         itemType: undefined,
         outEdges: 0,
+        show: false,
+      },
+
+      dryRun: {
+        constraints: [],
         show: false,
       },
 
@@ -422,6 +460,17 @@ export default {
     getZoomPercent () {
       return `${Math.floor(this.zoomLevel * 100).toFixed(0)}%`
     },
+
+    canTest () {
+      if (this.sidebar.item) {
+        return this.sidebar.item.triggers && this.sidebar.item.triggers.triggerID && this.sidebar.item.triggers.eventType === 'onManual'
+      }
+      return false
+    },
+
+    hasIssues () {
+      return (this.workflow.issues || []).length
+    }
   },
 
   watch: {
@@ -455,6 +504,7 @@ export default {
 
       this.keys()
       this.events()
+      this.cellOverlay()
 
       this.styling()
       this.connectionHandler()
@@ -527,6 +577,7 @@ export default {
       this.graph.setPanning(true)
       this.graph.setConnectable(true)
       this.graph.setAllowDanglingEdges(false)
+      this.graph.setTooltips(true)
       this.graph.edgeLabelsMovable = false
 
       // Enables guides
@@ -1194,6 +1245,10 @@ export default {
 
     },
 
+    cellOverlay () {
+      mxCellOverlay.prototype.defaultOverlap = 1.2
+    },
+
     connectionHandler() {
       mxConstraintHandler.prototype.intersects = function(icon, point, source, existingEdge) {
         return (!source || existingEdge) || mxUtils.intersects(icon.bounds, point)
@@ -1374,6 +1429,154 @@ export default {
           this.graph.cellRenderer.redrawLabel(state)
         }
       }
+    },
+
+    async setTestInput () {
+      // Can only test saved workflow
+      if (this.changeDetected) {
+        this.raiseWarningAlert('Save workflow first to test it', 'Test failed')
+        return
+      }
+
+      // Can only test valid workflow
+      if (this.hasIssues) {
+        this.raiseWarningAlert('Resolve issues to test workflow', 'Test failed')
+        return
+      }
+
+      this.testWorkflow()
+
+      // Assume trigger is valid since workflow is saved and has no issues
+      // const { resourceType, eventType } = this.sidebar.item.triggers
+      // await this.$AutomationAPI.eventTypesList()
+      //   .then(({ set }) => {
+      //     const et = (set.find(et => resourceType === et.resourceType && eventType === et.eventType ) || {}).properties
+      //     if (et) {
+      //       this.dryRun.initialScope = et.map(p => {
+      //         return { label: p.name, value: undefined }
+      //       })
+
+      //       this.dryRun.show = true
+      //     } else {
+      //       this.raiseWarningAlert('Event type not found', 'Test failed')
+      //     }
+      //     if (this.dryRun.initialScope) {
+      //       this.dryRun.initialScope.map
+      //     }
+      //   })
+      //   .catch(this.defaultErrorHandler('Failed to fetch event types'))
+    },
+
+    async testWorkflow () {
+      const testParams = {
+        workflowID: this.workflow.workflowID,
+        stepID: this.sidebar.item.triggers.stepID,
+        trace: true,
+        wait: true,
+        async: true,
+      }
+
+      const cells = {}
+
+      this.raiseInfoAlert('Workflow test started', 'Test in progress')
+      this.$AutomationAPI.workflowExec(testParams)
+        .then(({ error = false, trace }) => {
+          if (trace) {
+            // Build cells object for easier drawing of overlay
+            trace.forEach(({ stepID, parentID, stepTime, error = false }, index) => {
+              const cell = {
+                index,
+                stepID,
+                parentID,
+                stepTime,
+                error
+              }
+
+              if (cells[stepID]) {
+                cells[stepID].push(cell)
+              } else {
+                cells[stepID] = [cell]
+              }
+            })
+
+            // Handle first cell & edge
+            new mxCellHighlight(this.graph, '#719430', 3).highlight(this.graph.view.getState(this.graph.model.getCell(this.sidebar.item.node.id)))
+            const firstEdge = this.graph.model.getEdgesBetween(this.graph.model.getCell(this.sidebar.item.node.id), this.graph.model.getCell(testParams.stepID), true)[0]
+            if (firstEdge) {
+              new mxCellHighlight(this.graph, '#719430', 3).highlight(this.graph.view.getState(firstEdge))
+            }
+
+            // Handle others
+            Object.entries(cells).forEach(([stepID, frames]) => {
+              let error = frames[0].error
+              let log = `#${frames[0].index + 1} - ${frames[0].stepTime}ms${error ? ' - ERROR: ' + error : ''}`
+              if (frames.length < 2) {
+                const [cell] = frames
+                // If first cell, dont paint parent edge
+                if (cell && cell.index !== 0) {
+                  this.graph.model.getEdgesBetween(this.graph.model.getCell(cell.parentID), this.graph.model.getCell(stepID), true)
+                    .forEach(edge => {
+                      new mxCellHighlight(this.graph, '#719430', 3).highlight(this.graph.view.getState(edge))
+                    })
+                }
+              } else {
+                // If step is visited multiple times, keep track of execution info
+                const time = {
+                  min: frames[0].stepTime,
+                  max: frames[0].stepTime,
+                  avg: 0,
+                  sum: 0.
+                }
+
+                error = ''
+
+                frames.forEach(({ index, parentID, stepTime, error }, i) => {
+                  if (i !== 0) {
+                    if (stepTime < time.min) {
+                      time.min = stepTime
+                    }
+  
+                    if (stepTime > time.max) {
+                      time.max = stepTime
+                    }
+
+                    log = `${log}<br>#${index + 1} - ${stepTime}ms${error ? ' - ERROR: ' + error : ''}`
+                  }
+
+                  time.sum += stepTime
+                  this.graph.model.getEdgesBetween(this.graph.model.getCell(parentID), this.graph.model.getCell(stepID), true)
+                    .forEach(edge => {
+                      new mxCellHighlight(this.graph, '#719430', 3).highlight(this.graph.view.getState(edge))
+                    })
+                })
+
+                time.avg = time.sum ? (time.sum / frames.length).toFixed(2) : time.sum
+                log = `${log}<br><br>MIN: ${time.min}<br>MAX: ${time.max}<br>AVG: ${time.avg}<br>SUM: ${time.sum}`
+              }
+
+              // Set info overlay
+              const time = new mxCellOverlay(new mxImage(`${process.env.BASE_URL}icons/clock-${error ? 'danger' : 'success'}.svg`, 16, 16), `<span>${log}</span>`)
+              this.graph.addCellOverlay(this.graph.model.getCell(stepID), time)
+
+              // Highlight cell based on error
+              if (error) {
+                new mxCellHighlight(this.graph, '#E54122', 3).highlight(this.graph.view.getState(this.graph.model.getCell(stepID)))
+              } else {
+                new mxCellHighlight(this.graph, '#719430', 3).highlight(this.graph.view.getState(this.graph.model.getCell(stepID)))
+              }
+            })
+
+            // Check for trace error
+            if (error) {
+              throw new Error(error)
+            } else {
+              this.raiseSuccessAlert('Workflow test completed', 'Test completed')
+            }
+          } else {
+            this.raiseWarningAlert('Trace not avaliable', 'Test failed')
+          }
+        })
+        .catch(this.defaultErrorHandler('Test failed'))
     },
 
     render (workflow, initial = false) {

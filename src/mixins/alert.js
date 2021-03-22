@@ -1,6 +1,7 @@
 const success = { title: 'Success', variant: 'success', countdown: 3000 }
 const danger = { title: 'Error', variant: 'danger', countdown: 10000 }
 const warning = { title: 'Warning', variant: 'warning', countdown: 5000 }
+const info = { title: 'Info', variant: 'info', countdown: 5000 }
 
 export default {
   methods: {
@@ -25,6 +26,14 @@ export default {
         ...warning,
         message,
         title: title || warning.title
+      })
+    },
+
+    raiseInfoAlert (message, title) {
+      this.raiseAlert({
+        ...info,
+        message,
+        title: title || info.title
       })
     },
 
