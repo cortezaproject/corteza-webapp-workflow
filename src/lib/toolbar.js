@@ -88,6 +88,13 @@ export default [
     {
         kind: 'hr'
     },
+    {
+        title: 'Debug',
+        kind: 'debug',
+    },
+    {
+        kind: 'hr'
+    },
 ]
 
 // Disabled steps

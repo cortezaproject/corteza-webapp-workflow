@@ -138,6 +138,14 @@ const kindToStyle = {
     tooltip: 'Delays workflow execution',
     style: `delay`
   },
+
+  debug: {
+    width: 200,
+    height: 80,
+    icon: `${process.env.BASE_URL}icons/debug.svg`,
+    tooltip: 'Logs current workflow scope',
+    style: `debug`
+  },
 }
 
 
