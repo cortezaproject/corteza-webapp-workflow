@@ -244,7 +244,7 @@ export default {
     },
 
     prompts () {
-      return components.promptDefinitions
+      return components.promptDefinitions || []
     },
 
     argumentFields () {

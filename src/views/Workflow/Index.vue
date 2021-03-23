@@ -133,7 +133,8 @@ export default {
     tableFields () {
       return [
         {
-          key: 'label',
+          key: 'handle',
+          label: 'Name',
           sortable: true,
         },
         {
