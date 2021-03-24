@@ -63,9 +63,11 @@
           fixed
           borderless
           head-row-variant="secondary"
+          details-td-class="bg-white"
           class="mb-4"
           :items="args"
           :fields="argumentFields"
+          :tbody-tr-class="rowClass"
           @row-clicked="item=>$set(item, '_showDetails', !item._showDetails)"
         >
           <template #cell(target)="{ item: a }">
@@ -83,61 +85,61 @@
           </template>
 
           <template #row-details="{ item: a }">
-            <b-form-group
-              v-if="(paramTypes[item.config.ref][a.target] || []).length > 1"
-              label="Type"
-              label-class="text-primary"
-              class="mb-0"
+            <div class="arrow-up"/>
+
+            <b-card
+              class="bg-light"
             >
-              <b-form-select
-                v-model="a.type"
-                :options="(paramTypes[item.config.ref][a.target] || [])"
-                :disabled="(paramTypes[item.config.ref][a.target] || []).length <= 1"
-                @input="$root.$emit('change-detected')"
-              />
-              <hr>
-            </b-form-group>
+              <b-form-group
+                v-if="(paramTypes[item.config.ref][a.target] || []).length > 1"
+                label="Type"
+                label-class="text-primary"
+                class="mb-0"
+              >
+                <b-form-select
+                  v-model="a.type"
+                  :options="(paramTypes[item.config.ref][a.target] || [])"
+                  :disabled="(paramTypes[item.config.ref][a.target] || []).length <= 1"
+                  @input="$root.$emit('change-detected')"
+                />
+                <hr>
+              </b-form-group>
 
-            <b-form-group
-              label="Value type"
-              label-class="text-primary"
-            >
-              <b-form-radio-group
-                id="value-types"
-                v-model="a.valueType"
-                :options="valueTypes"
-                button-variant="outline-primary"
-                buttons
-                class="w-100 bg-white"
-                @input="$root.$emit('change-detected')"
-              />
-            </b-form-group>
+              <b-form-group
+                label="Value type"
+                label-class="text-primary"
+              >
+                <b-form-radio-group
+                  id="value-types"
+                  v-model="a.valueType"
+                  :options="valueTypes"
+                  button-variant="outline-primary"
+                  buttons
+                  class="w-100 bg-white"
+                  @input="$root.$emit('change-detected')"
+                />
+              </b-form-group>
 
-            <b-form-group
-              label="Value"
-              label-class="text-primary"
-            >
-              <b-form-input
-                v-if="a.valueType === 'value'"
-                v-model="a.value"
-                placeholder="Constant value"
-                @input="$root.$emit('change-detected')"
-              />
+              <b-form-group
+                label="Value"
+                label-class="text-primary"
+                class="mb-0"
+              >
+                <b-form-input
+                  v-if="a.valueType === 'value'"
+                  v-model="a.value"
+                  placeholder="Constant"
+                  @input="$root.$emit('change-detected')"
+                />
 
-              <b-form-input
-                v-else-if="a.valueType === 'source'"
-                v-model="a.source"
-                placeholder="Copy from variable"
-                @input="$root.$emit('change-detected')"
-              />
-
-              <b-form-input
-                v-else-if="a.valueType === 'expr'"
-                v-model="a.expr"
-                placeholder="Expression"
-                @input="$root.$emit('change-detected')"
-              />
-            </b-form-group>
+                <b-form-input
+                  v-else-if="a.valueType === 'expr'"
+                  v-model="a.expr"
+                  placeholder="Expression"
+                  @input="$root.$emit('change-detected')"
+                />
+              </b-form-group>
+            </b-card>
           </template>
         </b-table>
       </b-card-body>
@@ -167,9 +169,11 @@
           fixed
           borderless
           head-row-variant="secondary"
+          details-td-class="bg-white"
           class="mb-4"
           :items="results"
           :fields="resultFields"
+          :tbody-tr-class="rowClass"
           @row-clicked="item=>$set(item, '_showDetails', !item._showDetails)"
         >
           <template #cell(type)="{ item: a }">
@@ -181,16 +185,22 @@
           </template>
 
           <template #row-details="{ item: a }">
-            <b-form-group
-              label="Target"
-              label-class="text-primary"
+            <div class="arrow-up"/>
+
+            <b-card
+              class="bg-light"
             >
-              <b-form-input
-                v-model="a.target"
-                placeholder="Target"
-                @input="$root.$emit('change-detected')"
-              />
-            </b-form-group>
+              <b-form-group
+                label="Target"
+                label-class="text-primary"
+              >
+                <b-form-input
+                  v-model="a.target"
+                  placeholder="Target"
+                  @input="$root.$emit('change-detected')"
+                />
+              </b-form-group>
+            </b-card>
           </template>
         </b-table>
       </b-card-body>
@@ -270,8 +280,7 @@ export default {
     valueTypes () {
       return [
         { text: 'Expression', value: 'expr' },
-        { text: 'Constant value', value: 'value' },
-        { text: 'Copy from variable', value: 'source' },
+        { text: 'Constant', value: 'value' },
       ]
     },
 
@@ -351,8 +360,7 @@ export default {
             type: arg.type || this.paramTypes[func.ref][param.name][0],
             valueType: this.getValueType(arg),
             value: arg.value || undefined,
-            source: arg.source || undefined,
-            expr: arg.expr || undefined,
+            expr: arg.expr || arg.source  || undefined,
             required: param.required || false
           }
         }) || []
@@ -391,27 +399,45 @@ export default {
     },
 
     getValueType (item) {
-      let type = 'expr'
+      return item.value ? 'value' : 'expr'
+    },
 
-      if (item.value) {
-        type = 'value'
-      } else if (item.source) {
-        type = 'source'
-      }
-
-      return type
+    rowClass (item, type) {
+      return item._showDetails && type === 'row' ? 'border-thick' : 'border-thick-transparent'
     }
   }
 }
 </script>
 
 <style lang="scss">
-.pointer {
-  cursor: pointer;
+.border-thick {
+  border-left: 4px solid $primary;
 }
 
-.b-table-details {
-  padding: 0;
-  background-color: #e9ecef
+.border-thick-transparent {
+  border-left: 4px solid transparent;
+}
+
+tr.b-table-details > td {
+  padding-top: 0;
+}
+</style>
+
+<style lang="scss" scoped>
+.trash {
+  right: 0;
+  left: 1;
+  top: 0;
+  bottom: 0;
+}
+
+.arrow-up {
+  width: 0; 
+  height: 0;
+  margin: 0 auto;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  
+  border-bottom: 10px solid $light;
 }
 </style>
