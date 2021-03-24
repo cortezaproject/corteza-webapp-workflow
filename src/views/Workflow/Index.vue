@@ -1,5 +1,5 @@
 <template>
-  <div class="py-3">
+  <div class="h-100 py-3 flex-grow-1 overflow-auto">
     <b-container>
       <b-card
         class="mb-2"
@@ -54,24 +54,20 @@
         <b-table
           :fields="tableFields"
           :items="workflows"
+          :sort-by.sync="sortBy"
+          :sort-desc="sortDesc"
           striped
           borderless
           responsive
         >
 
-          <template v-slot:cell(label)="{ item: w }">
+          <template v-slot:cell(handle)="{ item: w }">
             {{ w.meta.name || w.handle }}
           </template>
           <template v-slot:cell(enabled)="{ item: w }">
             <font-awesome-icon
               :icon="['fas', w.enabled ? 'check' : 'times']"
             />
-          </template>
-          <template v-slot:cell(steps)="{ item: w }">
-            {{ (w.steps || []).length }}
-          </template>
-          <template v-slot:cell(updatedAt)="{ item: w }">
-            {{ new Date(w.updatedAt || w.createdAt).toLocaleDateString('en-US') }}
           </template>
           <template v-slot:cell(actions)="{ item: w }">
             <span>
@@ -111,6 +107,9 @@ export default {
 
       workflows: [],
 
+      sortBy: 'createdAt',
+      sortDesc: true,
+
       newWorkflow: new automation.Workflow({
         ownedBy: this.userID,
         runAs: this.userID,
@@ -145,12 +144,20 @@ export default {
         {
           key: 'steps',
           sortable: true,
+          sortByFormatted: true,
           class: 'text-center',
+          formatter: steps => {
+            return (steps || []).length
+          },
         },
         {
-          key: 'updatedAt',
+          key: 'createdAt',
           sortable: true,
+          sortByFormatted: true,
           class: 'text-right',
+          formatter: createdAt => {
+            return new Date(createdAt).toLocaleDateString('en-US')
+          }
         },
         {
           key: 'actions',
