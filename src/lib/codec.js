@@ -31,8 +31,6 @@ export function encodeGraph (model, vertices, edges) {
                 id,
                 value,
                 parent: parent.id,
-                source: source.id,
-                target: target.id,
                 points: geometry.points,
                 style
               }

@@ -3,7 +3,6 @@
     id="editor"
     class="h-100 d-flex p-1"
   >
-    <link rel="stylesheet" href="path/to/font-awesome/css/font-awesome.min.css">
     <b-card
       no-body
       no-footer
@@ -101,6 +100,16 @@
           >
             {{ workflow.meta.description }}
           </p>
+          <h5
+            v-if="!workflow.enabled"
+            class="ml-1 mb-0"
+          >
+            <b-badge
+              variant="danger"
+            >
+              Disabled
+            </b-badge>
+          </h5>
         </div>
 
         <div
@@ -522,7 +531,9 @@ export default {
 
   methods: {
     deleteSelectedCells () {
-      this.sidebarClose()
+      if (this.graph.getSelectionCells().map(({ id }) => id).includes(this.sidebar.item.node.id)) {
+        this.sidebarClose()
+      }
       this.graph.removeCells()
     },
 
@@ -544,6 +555,7 @@ export default {
     sidebarReopen (item, itemType) {
       // If not open, just open sidebar
       if (!this.sidebar.show) {
+        this.sidebar.outEdges = (item.node.edges || []).length
         this.sidebar.item = item
         this.sidebar.itemType = itemType
         this.sidebar.show = true
@@ -555,6 +567,7 @@ export default {
 
         // Otherwise reopen completely
         this.sidebar.show = false
+        this.sidebar.outEdges = (item.node.edges || []).length
         if (!this.sidebar.show) {
           setTimeout(() => {
           this.sidebar.item = item
@@ -563,7 +576,6 @@ export default {
           }, 300)
         }
       }
-      this.sidebar.outEdges = (this.sidebar.item.node.edges || []).length
     },
 
     setup() {

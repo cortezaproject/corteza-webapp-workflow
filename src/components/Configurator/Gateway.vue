@@ -59,7 +59,7 @@ export default {
     gatewayEdges () {
       const edges = []
       if (['incl', 'excl'].includes(this.gatewayKind)) {
-        if (this.outEdges) {
+        if (this.outEdges && this.item.node.edges) {
           this.item.node.edges.forEach(({ id, source, target, value = '' }) => {
             if (source.id === this.item.node.id) {
               edges.push({

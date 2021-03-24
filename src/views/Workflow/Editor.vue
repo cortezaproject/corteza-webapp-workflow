@@ -43,14 +43,36 @@ export default {
   },
 
   async mounted () {
+    window.onbeforeunload = null
+
     this.$root.$on('change-detected', () => {
+      if (!this.changeDetected) {
+        window.onbeforeunload = () => {
+          return true
+        }
+      }
+
       this.changeDetected = true
     })
+
 
     await this.fetchTriggers()
     await this.fetchWorkflow()
 
     this.processing = false
+  },
+
+  beforeRouteLeave (to, from, next) {
+    if (this.changeDetected){
+      next(window.confirm('You have unsaved changes, are you sure you want to exit?'))
+    } else {
+      window.onbeforeunload = null
+      next()
+    }
+  },
+
+  beforeDestroy () {
+    window.onbeforeunload = null
   },
 
   methods: {
@@ -109,6 +131,8 @@ export default {
 
           await this.fetchTriggers()
           this.changeDetected = false
+          window.onbeforeunload = null
+
           this.workflow = wf
           this.raiseSuccessAlert('Workflow updated')
         }).catch(this.defaultErrorHandler('Failed to save workflow'))
