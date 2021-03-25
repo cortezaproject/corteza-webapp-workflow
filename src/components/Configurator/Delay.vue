@@ -26,7 +26,7 @@
           <b-form-input
             v-model="item.config.arguments[0].value"
             placeholder="10s"
-            @input="$root.$emit('change-detected')"
+            @change="$root.$emit('change-detected')"
           />
         </b-form-group>
       </b-card-body>

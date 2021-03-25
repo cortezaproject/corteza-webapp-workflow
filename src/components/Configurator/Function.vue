@@ -26,7 +26,7 @@
           <b-form-select
             v-model="item.config.ref"
             :options="functionTypes"
-            @input="setParams"
+            @change="setParams"
           />
         </b-form-group>
 
@@ -100,7 +100,7 @@
                   v-model="a.type"
                   :options="(paramTypes[item.config.ref][a.target] || [])"
                   :disabled="(paramTypes[item.config.ref][a.target] || []).length <= 1"
-                  @input="$root.$emit('change-detected')"
+                  @change="$root.$emit('change-detected')"
                 />
                 <hr>
               </b-form-group>
@@ -116,7 +116,7 @@
                   button-variant="outline-primary"
                   buttons
                   class="w-100 bg-white"
-                  @input="$root.$emit('change-detected')"
+                  @change="$root.$emit('change-detected')"
                 />
               </b-form-group>
 
@@ -129,14 +129,14 @@
                   v-if="a.valueType === 'value'"
                   v-model="a.value"
                   placeholder="Constant"
-                  @input="$root.$emit('change-detected')"
+                  @change="$root.$emit('change-detected')"
                 />
 
                 <b-form-input
                   v-else-if="a.valueType === 'expr'"
                   v-model="a.expr"
                   placeholder="Expression"
-                  @input="$root.$emit('change-detected')"
+                  @change="$root.$emit('change-detected')"
                 />
               </b-form-group>
             </b-card>
@@ -197,7 +197,7 @@
                 <b-form-input
                   v-model="a.target"
                   placeholder="Target"
-                  @input="$root.$emit('change-detected')"
+                  @change="$root.$emit('change-detected')"
                 />
               </b-form-group>
             </b-card>

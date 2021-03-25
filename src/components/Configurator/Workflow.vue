@@ -5,7 +5,7 @@
     >
       <b-form-input
         v-model="workflow.meta.name"
-        @input="$root.$emit('change-detected')"
+        @change="$root.$emit('change-detected')"
       />
     </b-form-group>
 
@@ -14,14 +14,14 @@
     >
       <b-form-textarea
         v-model="workflow.meta.description"
-        @input="$root.$emit('change-detected')"
+        @change="$root.$emit('change-detected')"
       />
     </b-form-group>
 
     <b-form-group>
       <b-form-checkbox
         v-model="workflow.enabled"
-        @input="$root.$emit('change-detected')"
+        @change="$root.$emit('change-detected')"
       >
         Enabled
       </b-form-checkbox>

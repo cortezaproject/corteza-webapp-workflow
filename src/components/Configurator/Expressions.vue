@@ -73,7 +73,7 @@
               <b-form-input
                 v-model="a.target"
                 placeholder="Target"
-                @input="$root.$emit('change-detected')"
+                @change="$root.$emit('change-detected')"
               />
             </b-form-group>
 
@@ -84,7 +84,7 @@
               <b-form-select
                 v-model="a.type"
                 :options="fieldTypes"
-                @input="$root.$emit('change-detected')"
+                @change="$root.$emit('change-detected')"
               />
             </b-form-group>
 
@@ -96,7 +96,7 @@
               <b-form-input
                 v-model="a.expr"
                 placeholder="Expression"
-                @input="$root.$emit('change-detected')"
+                @change="$root.$emit('change-detected')"
               />
             </b-form-group>
           </b-card>
