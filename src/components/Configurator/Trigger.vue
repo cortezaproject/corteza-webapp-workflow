@@ -54,7 +54,7 @@
     </b-card>
 
     <b-card
-      v-if="item.triggers.resourceType && item.triggers.eventType"
+      v-if="showConstraints"
       class="flex-grow-1 border-bottom border-light rounded-0"
       body-class="p-0"
     >
@@ -68,6 +68,7 @@
           Constraints
         </h5>
         <b-button
+          v-if="constraintNameTypes.length > 1"
           variant="primary"
           class="align-top border-0 ml-3"
           @click="addConstraint()"
@@ -79,6 +80,7 @@
         class="p-0"
       >
         <b-table
+          v-if="constraintNameTypes.length > 1"
           id="constraints"
           fixed
           borderless
@@ -97,6 +99,7 @@
               }}
             </samp>
           </template>
+
           <template #cell(values)="{ item: c }">
             <div
               class="text-truncate"
@@ -116,7 +119,8 @@
               />
             </b-button>
           </template>
-           <template #row-details="{ item: c }">
+
+          <template #row-details="{ item: c }">
             <div class="arrow-up"/>
             <b-card
               class="bg-light"
@@ -183,6 +187,18 @@
             </b-card>
           </template>
         </b-table>
+
+        <b-form-group
+          v-else
+          :label="item.triggers.eventType.replace('on', '')"
+          label-class="text-primary"
+          class="mt-0 mb-4 mx-4"
+        >
+          <b-form-input
+            v-model="getDefaultConstraint"
+            @change="$root.$emit('change-detected')"
+          />
+        </b-form-group>
       </b-card-body>
     </b-card>
 
@@ -257,6 +273,14 @@ export default {
       return this.eventTypes.find(({ resourceType, eventType }) => resourceType === this.item.triggers.resourceType && eventType === this.item.triggers.eventType) || {}
     },
 
+
+    showConstraints () {
+      if (this.item.triggers.resourceType && this.item.triggers.eventType) {
+        return this.constraintNameTypes.length > 1 ? true : this.item.triggers.eventType !== 'onManual'
+      }
+      return false
+    },
+
     constraintFields () {
       return [
         {
@@ -320,6 +344,25 @@ export default {
 
       ]
     },
+
+    getDefaultConstraint: {
+      get () {
+        if (this.item.triggers.constraints.values) {
+          return this.item.triggers.constraints.values[0]
+        }
+        return ''
+      },
+
+      set (constraint) {
+        if (this.item.triggers.constraints.values.length) {
+          return item.triggers.constraints.values[0]
+        } else {
+          this.item.triggers.constraints = [{
+            values: [constraint]
+          }]
+        }
+      }
+    }
   },
 
   async created () {
