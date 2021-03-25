@@ -23,7 +23,7 @@
           <b-form-select
             v-model="item.triggers.resourceType"
             :options="resourceTypeOptions"
-            @input="$root.$emit('change-detected')"
+            @change="resourceChanged()"
           />
         </b-form-group>
 
@@ -35,7 +35,7 @@
           <b-form-select
             v-model="item.triggers.eventType"
             :options="eventTypeOptions"
-            @input="$root.$emit('change-detected')"
+            @change="eventChanged()"
           />
         </b-form-group>
 
@@ -45,7 +45,7 @@
           <b-form-checkbox
             v-model="item.triggers.enabled"
             class="text-primary"
-            @input="$root.$emit('change-detected')"
+            @change="enabledChanged()"
           >
             Enabled
           </b-form-checkbox>
@@ -83,9 +83,10 @@
           fixed
           borderless
           head-row-variant="secondary"
-          class="mb-4"
-          :items="this.item.triggers.constraints"
+          details-td-class="bg-white"
+          :items="item.triggers.constraints"
           :fields="constraintFields"
+          :tbody-tr-class="rowClass"
           @row-clicked="item=>$set(item, '_showDetails', !item._showDetails)"
         >
           <template #cell(name)="{ item: c }">
@@ -97,78 +98,89 @@
             </samp>
           </template>
           <template #cell(values)="{ item: c }">
-            <samp>{{ c.values.join(' or ') }}</samp>
-          </template>
-           <template #row-details="{ index, item: c }">
-            <b-form-group
-              label="Resource"
-              label-class="text-primary"
-            >
-              <b-form-select
-                v-model="c.name"
-                :options="constraintNameTypes"
-                @input="$root.$emit('change-detected')"
-              />
-            </b-form-group>
-
-            <b-form-group
-              label="Operator"
-              label-class="text-primary"
-            >
-              <b-form-select
-                v-model="c.op"
-                :options="constraintOperatorTypes"
-                @input="$root.$emit('change-detected')"
-              />
-            </b-form-group>
-
-            <b-form-group>
-              <template #label>
-                <div
-                  class="d-flex text-primary"
-                >
-                  Values
-                  <b-button
-                    variant="link"
-                    class="align-top border-0 p-0 ml-2"
-                    @click="c.values.push('')"
-                  >
-                    + Add
-                  </b-button>
-                </div>
-              </template>
-
-              <b-input-group
-                v-for="(value, index) in c.values"
-                :key="index"
-                class="mb-2"
-              >
-                <b-form-input
-                  v-model="c.values[index]"
-                  @input="$root.$emit('change-detected')"
-                />
-
-                <b-button
-                  class="ml-1"
-                  variant="outline-danger"
-                  @click="c.values.splice(index, 1)"
-                >
-                  X
-                </b-button>
-              </b-input-group>
-            </b-form-group>
-
             <div
-              class="d-inline-block bg-white w-auto"
+              class="text-truncate"
+              :class="{ 'w-75': c._showDetails}"
             >
-              <c-input-confirm
-                size="md"
-                :borderless="false"
-                @confirmed="removeConstraint(index)"
-              >
-                Remove
-              </c-input-confirm>
+              <samp>{{ c.values.join(' or ') }}</samp>
             </div>
+
+            <b-button
+              v-if="c._showDetails"
+              variant="outline-danger"
+              class="position-absolute trash border-0"
+              @click="removeConstraint(index)"
+            >
+              <font-awesome-icon
+                :icon="['far', 'trash-alt']"
+              />
+            </b-button>
+          </template>
+           <template #row-details="{ item: c }">
+            <div class="arrow-up"/>
+            <b-card
+              class="bg-light"
+            >
+              <b-form-group
+                label="Resource"
+                label-class="text-primary"
+              >
+                <b-form-select
+                  v-model="c.name"
+                  :options="constraintNameTypes"
+                  @change="$root.$emit('change-detected')"
+                />
+              </b-form-group>
+
+              <b-form-group
+                label="Operator"
+                label-class="text-primary"
+              >
+                <b-form-select
+                  v-model="c.op"
+                  :options="constraintOperatorTypes"
+                  @change="$root.$emit('change-detected')"
+                />
+              </b-form-group>
+
+              <b-form-group>
+                <template #label>
+                  <div
+                    class="d-flex text-primary"
+                  >
+                    Values
+                    <b-button
+                      variant="link"
+                      class="align-top border-0 p-0 ml-2"
+                      @click="c.values.push('')"
+                    >
+                      + Add
+                    </b-button>
+                  </div>
+                </template>
+
+                <b-input-group
+                  v-for="(value, index) in c.values"
+                  :key="index"
+                  class="mb-2"
+                >
+                  <b-form-input
+                    v-model="c.values[index]"
+                    @change="$root.$emit('change-detected')"
+                  />
+
+                  <b-button
+                    variant="outline-danger"
+                    class="ml-1 border-0"
+                    @click="c.values.splice(index, 1)"
+                  >
+                    <font-awesome-icon
+                      :icon="['far', 'trash-alt']"
+                    />
+                  </b-button>
+                </b-input-group>
+              </b-form-group>
+            </b-card>
           </template>
         </b-table>
       </b-card-body>
@@ -225,27 +237,6 @@ export default {
     }
   },
 
-  watch: {
-    'item.triggers.resourceType': {
-      handler () {
-        this.item.triggers.eventType = null
-        this.item.triggers.constraints = []
-      }
-    },
-
-    'item.triggers.eventType': {
-      handler () {
-        this.item.triggers.constraints = []
-      }
-    },
-
-    'item.triggers.enabled': {
-      handler () {
-        this.$root.$emit('trigger-updated', this.item.node)
-      }
-    },
-  },
-
   computed: {
     resourceTypeOptions () {
      return [
@@ -282,7 +273,7 @@ export default {
         {
           key: 'values',
           thClass: "pr-3 py-2",
-          tdClass: 'text-truncate pointer'
+          tdClass: 'position-relative pointer'
         },
       ]
     },
@@ -373,7 +364,64 @@ export default {
     removeConstraint (index) {
       this.item.triggers.constraints.splice(index, 1)
       this.$root.$emit('change-detected')
-    }
+    },
+
+    resourceChanged () {
+      this.item.triggers.eventType = null
+      this.item.triggers.constraints = []
+      this.$root.$emit('change-detected')
+    },
+
+    eventChanged () {
+      this.item.triggers.constraints = []
+      this.$root.$emit('change-detected')
+    },
+
+    enabledChanged () {
+      this.$root.$emit('trigger-updated', this.item.node)
+      this.$root.$emit('change-detected')
+    },
+
+    rowClass (item, type) {
+      if (type === 'row') {
+        return item._showDetails ? 'border-thick' : ''
+      } else if (type === 'row-details') {
+        return 'pt-0'
+      }
+    },
   }
 }
 </script>
+
+<style lang="scss">
+.border-thick {
+  border-left: 4px solid $primary;
+}
+
+.border-thick-transparent {
+  border-left: 4px solid transparent;
+}
+
+tr.b-table-details > td {
+  padding-top: 0;
+}
+</style>
+
+<style lang="scss" scoped>
+.trash {
+  right: 0;
+  left: 1;
+  top: 0;
+  bottom: 0;
+}
+
+.arrow-up {
+  width: 0; 
+  height: 0;
+  margin: 0 auto;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  
+  border-bottom: 10px solid $light;
+}
+</style>
