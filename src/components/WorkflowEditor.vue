@@ -33,7 +33,6 @@
           id="toolbar"
           ref="toolbar"
           class="d-flex flex-column align-items-center mt-1 overflow-auto"
-          style="min-width: 60px;"
         />
 
         <div
@@ -68,15 +67,20 @@
       >
         <div
           class="position-absolute pl-3 pt-2"
-          style="z-index: 1;"
+          style="z-index: 1; max-width: 50%"
         >
           <div
-            class="d-flex align-items-center h1 mb-0"
+            class="d-flex align-items-center"
           >
-            <b>{{ workflow.meta.name || workflow.handle }}</b>
+            <h1
+              class="mb-0 text-truncate"
+            >
+              <b>{{ workflow.meta.name || workflow.handle }}</b>
+            </h1>
+
             <a
               href="#"
-              class="h4 mb-0 ml-2"
+              class="h4 mb-0 ml-3"
               v-b-modal.workflow
             >
               <font-awesome-icon
@@ -84,19 +88,19 @@
               />
             </a>
 
-            <!-- <a
+            <a
               href="#"
-              class="h4 mb-0 ml-2"
+              class="h4 mb-0 ml-3"
               @click="saveWorkflow()"
             >
               <font-awesome-icon
                 :icon="['fas', 'save']"
               />
-            </a> -->
+            </a>
           </div>
           <p
-            class="mb-0 text-truncate"
-            style="white-space: pre-line; max-width: 738px; max-height: 50px;"
+            class="mb-0"
+            style="white-space: pre-line;"
           >
             {{ workflow.meta.description }}
           </p>
@@ -108,6 +112,16 @@
               variant="danger"
             >
               Disabled
+            </b-badge>
+          </h5>
+          <h5
+            v-if="hasIssues"
+            class="ml-1 mb-0"
+          >
+            <b-badge
+              variant="danger"
+            >
+              Issues detected
             </b-badge>
           </h5>
         </div>
@@ -161,15 +175,6 @@
             @click="saveWorkflow()"
           >
             Changes detected. Click here to save.
-          </b-button>
-          <b-button
-            v-if="hasIssues"
-            variant="danger"
-            class="rounded-0 py-2 px-3"
-            :class="{ 'mt-3': changeDetected }"
-            v-b-modal.issues
-          >
-            Issues detected in saved workflow. Click here to view.
           </b-button>
         </div>
 
@@ -259,7 +264,7 @@
       hide-footer
     >
       <template #modal-title>
-        {{ workflow.meta.name || workflow.handle }}
+        Workflow Configuration
 
         <c-permissions-button
           v-if="workflow.canGrant"
@@ -290,21 +295,16 @@
 
     <b-modal
       id="issues"
-      title="Workflow issues"
+      v-model="issuesModal.show"
+      title="Step issues"
       hide-footer
     >
       <div
-        v-for="(issue, index) in workflow.issues"
+        v-for="(issue, index) in issuesModal.issues"
         :key="index"
       >
-        <!-- <b
-          v-if="workflow.steps[issue.culprit.step].stepID"
-        >
-          StepID:
-        </b> <var>{{ workflow.steps[issue.culprit.step].stepID }}</var> -->
-        Position: {{ issue.culprit.step }}
         <p>
-          <code>{{ issue.description[0].toUpperCase() + issue.description.slice(1).toLowerCase() }}</code>
+          <code>{{ issue[0].toUpperCase() + issue.slice(1).toLowerCase() }}</code>
         </p>
       </div>
     </b-modal>
@@ -414,6 +414,7 @@ export default {
 
       vertices: {},
       edges: {},
+      issues: {},
 
       toolbar: undefined,
 
@@ -427,6 +428,11 @@ export default {
         itemType: undefined,
         outEdges: 0,
         show: false,
+      },
+
+      issuesModal: {
+        show: false,
+        issues: [],
       },
 
       dryRun: {
@@ -531,7 +537,7 @@ export default {
 
   methods: {
     deleteSelectedCells () {
-      if (this.graph.getSelectionCells().map(({ id }) => id).includes(this.sidebar.item.node.id)) {
+      if (this.sidebar.item && this.graph.getSelectionModel().isSelected(this.sidebar.item.node)) {
         this.sidebarClose()
       }
       this.graph.removeCells()
@@ -624,28 +630,35 @@ export default {
           if (cell.value) {
             label = `<div id="openSidebar" class="text-nowrap py-1 px-3 h6 mb-0 rounded bg-white pointer" style="border: 2px solid #A7D0E3; border-radius: 5px; color: #2D2D2D;">${cell.value}</div>`
           }
-        } else {
+        } else if (this.vertices[cell.id]) {
           const vertex = this.vertices[cell.id]
           if (vertex && vertex.config.kind !== 'visual') {
             const icon = getStyleFromKind(vertex.config).icon
             const type = vertex.config.kind.charAt(0).toUpperCase() + vertex.config.kind.slice(1)
             const shadow = 'shadow'// ((this.getSelectedItem || {}).node || {}).id === cell.id ? 'shadow-lg' : 'shadow'
             const cog = `${process.env.BASE_URL}icons/cog.svg`
+            const issue = `${process.env.BASE_URL}icons/issue.svg`
             const opacity = vertex.config.kind === 'trigger' && !vertex.triggers.enabled ? 'opacity: 0.7;' : ''
 
-            label = `<div class="d-flex flex-column bg-white rounded ${shadow} step" style="width: 200px; height: 80px; border-radius: 5px;${opacity}">`+ 
+            let issues = ''
+            if (this.issues[cell.id]) {
+              issues = `<img id="openIssues" src="${issue}" class="ml-2 pointer" style="width: 16px;"/>`
+            }
+
+            label = `<div class="d-flex flex-column bg-white rounded step ${shadow}" style="width: 200px; height: 80px; border-radius: 5px;${opacity}">`+ 
                       `<div class="d-flex flex-row align-items-center text-primary px-2 my-1 h6 mb-0 font-weight-bold" style="height: 35px;">`+
                         `<img src="${icon}" class="mr-2"/>${type}`+
-                        `<a href="#" class="hide ml-auto" style="text-decoration: none;">`+
-                          `<img id="openSidebar" src="${cog}" style="width: 16px;"/>`+
-                        `</a>`+
+                        `<div class="d-flex h-100 ml-auto align-items-center">`+
+                          `<img id="openSidebar" src="${cog}" class="hide pointer" style="width: 16px;"/>`+
+                          `${issues}`+
+                        `</div>`+
                       `</div>`+
                       `<div class="d-flex flex-row align-items-center hover-untruncate border-top px-2 mb-0 h6" style="height: 45px; color: #2D2D2D;">`+
                         `<span class="d-inline-block bg-white hover-untruncate py-2 pr-2">${cell.value || '/'}</span>`+
                       `</div>`+
                     `</div>`;
           } else {
-            label = `<div class="d-flex"><span class="d-inline-block h6 mb-0 text-truncate">${cell.value || ''}</span></div>`
+            label = `<div id="openSidebar" class="d-flex"><span class="d-inline-block h6 mb-0 text-truncate">${cell.value || ''}</span></div>`
           }
         }
 
@@ -1097,18 +1110,23 @@ export default {
         if (event) {
           if (mxEvent.isControlDown(event) || (mxClient.IS_MAC && mxEvent.isMetaDown(event))) {
             // Prevent sidebar opening/closing when CTRL(CMD) is pressed while clicking
-          } else {
-            if (cell && (((this.vertices[cell.id] || {}).config || {}).kind === 'visual' || event.target.id === 'openSidebar')) {
+          } else if (cell) {
+            // If clicked on cell that can be configured
+            const isVisual = ((this.vertices[cell.id] || {}).config || {}).kind === 'visual'
+            if (event.target.id === 'openSidebar' || isVisual) {
               const item = cell.edge ? this.edges[cell.id] : this.vertices[cell.id]
               const itemType = cell.edge ? 'edge' : item.config.kind
               this.sidebarReopen(item, itemType)
-            } else if (!cell && !event.defaultPrevented) {
-              // If click is on background and is not multiple selection, deselect all selected cells
-              this.graph.getSelectionModel().clear()
-              this.sidebar.show = false
-              if (this.getSelectedItem) {
-                this.sidebarClose()
-              }
+            } else if (event.target.id === 'openIssues') {
+              this.issuesModal.issues = this.issues[cell.id]
+              this.issuesModal.show = true
+            }
+          } else if (!event.defaultPrevented) {
+            // If click is on background and is not multiple selection, deselect all selected cells
+            this.graph.getSelectionModel().clear()
+            this.sidebar.show = false
+            if (this.getSelectedItem) {
+              this.sidebarClose()
             }
           }
         }
@@ -1618,6 +1636,21 @@ export default {
           this.workflow.paths.push(edge)
         })
       })
+
+      // Assemble issues
+      this.issues = {}
+      if (this.workflow.issues) {
+        this.workflow.issues.forEach(({ culprit, description }) => {
+          if (culprit && culprit.step >= 0) {
+            const stepID = (this.workflow.steps[culprit.step] || {}).stepID
+            if (this.issues[stepID]) {
+              this.issues[stepID].push(description)
+            } else {
+              this.issues[stepID] = [description]
+            }
+          }
+        })
+      }
 
       const steps = workflow.steps || []
       const paths = workflow.paths || []
