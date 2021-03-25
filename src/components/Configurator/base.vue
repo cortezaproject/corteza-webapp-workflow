@@ -18,19 +18,19 @@ export default {
   },
 
   computed: {
-    getSelectedItemConfigJSON: {
-      get () {
-        let config = {}
-        if (this.item) {
-          config = this.item.config
-        }
-        return JSON.stringify(config, undefined, 2)
-      },
+    // getSelectedItemConfigJSON: {
+    //   get () {
+    //     let config = {}
+    //     if (this.item) {
+    //       config = this.item.config
+    //     }
+    //     return JSON.stringify(config, undefined, 2)
+    //   },
 
-      set (value) {
-        this.item.config = JSON.parse(value)
-      }
-    },
+    //   set (value) {
+    //     this.item.config = JSON.parse(value)
+    //   }
+    // },
   },
 }
 </script>

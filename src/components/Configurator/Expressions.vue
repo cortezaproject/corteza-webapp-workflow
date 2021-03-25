@@ -182,7 +182,7 @@ export default {
 
 <style lang="scss">
 .border-thick {
-  border-left: 4px solid $primary;
+  border-left: 4px solid #A7D0E3;
 }
 
 .border-thick-transparent {
