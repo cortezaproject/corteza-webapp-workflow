@@ -40,7 +40,7 @@
           <var>{{ a.type }}</var>
         </template>
 
-        <template #cell(value)="{ item: a }">
+        <template #cell(value)="{ item: a, index }">
           <div
             class="text-truncate"
             :class="{ 'w-75': a._showDetails}"

@@ -100,7 +100,7 @@
             </samp>
           </template>
 
-          <template #cell(values)="{ item: c }">
+          <template #cell(values)="{ item: c, index }">
             <div
               class="text-truncate"
               :class="{ 'w-75': c._showDetails}"
