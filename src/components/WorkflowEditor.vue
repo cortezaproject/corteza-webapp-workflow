@@ -36,17 +36,18 @@
         />
 
         <div
-          class="d-flex flex-grow-1 align-items-start justify-content-center p-3"
+          class="d-flex flex-grow-1 align-items-end justify-content-center p-3"
         >
-          <a
-            href="#"
-            class="h4 mb-0"
+          <b-button
+            variant="link"
+            class="p-0"
             v-b-modal.help
           >
             <font-awesome-icon
               :icon="['far', 'question-circle']"
+              class="h4 mb-0"
             />
-          </a>
+          </b-button>
         </div>
       </b-card-body>
     </b-card>
@@ -66,8 +67,8 @@
         class="p-0"
       >
         <div
-          class="position-absolute pl-3 pt-2"
-          style="z-index: 1; max-width: 50%"
+          class="position-absolute pl-3 pt-2 mw-100"
+          style="z-index: 1;"
         >
           <div
             class="d-flex align-items-center"
@@ -77,53 +78,62 @@
             >
               <b>{{ workflow.meta.name || workflow.handle }}</b>
             </h1>
-
-            <a
-              href="#"
-              class="h4 mb-0 ml-3"
-              v-b-modal.workflow
-            >
-              <font-awesome-icon
-                :icon="['fas', 'cog']"
-              />
-            </a>
-
-            <a
-              href="#"
-              class="h4 mb-0 ml-3"
-              @click="saveWorkflow()"
-            >
-              <font-awesome-icon
-                :icon="['fas', 'save']"
-              />
-            </a>
           </div>
+
           <p
-            class="mb-0"
-            style="white-space: pre-line;"
+            class="mb-0 text-truncate"
+            style="white-space: pre-line; max-width: 75%; max-height: 48px;"
           >
             {{ workflow.meta.description }}
           </p>
-          <h5
-            v-if="!workflow.enabled"
-            class="ml-1 mb-0"
+
+          <div
+            class="d-flex align-items-center mb-1"
           >
-            <b-badge
-              variant="danger"
+            <h5
+              v-if="!workflow.enabled"
+              class="mb-0"
             >
-              Disabled
-            </b-badge>
-          </h5>
-          <h5
-            v-if="hasIssues"
-            class="ml-1 mb-0"
+              <b-badge
+                variant="danger"
+              >
+                Disabled
+              </b-badge>
+            </h5>
+
+            <h5
+              v-if="hasIssues"
+              class="ml-1 mb-0"
+            >
+              <b-badge
+                variant="danger"
+              >
+                Issues detected
+              </b-badge>
+            </h5>
+          </div>
+
+          <b-button
+            variant="link"
+            class="px-0"
+            v-b-modal.workflow
           >
-            <b-badge
-              variant="danger"
-            >
-              Issues detected
-            </b-badge>
-          </h5>
+            <font-awesome-icon
+              :icon="['fas', 'cog']"
+              class="h4 mb-0"
+            />
+          </b-button>
+
+          <b-button
+            variant="link"
+            class="ml-3 px-0"
+            @click="saveWorkflow()"
+          >
+            <font-awesome-icon
+              :icon="['fas', 'save']"
+              class="h4 mb-0"
+            />
+          </b-button>
         </div>
 
         <div
@@ -955,7 +965,7 @@ export default {
       this.keyHandler.controlKeys[32] = () => {
         if (this.graph.model.getChildCount(this.graph.getDefaultParent())) {
           this.graph.fit()
-          this.graph.view.setTranslate(this.graph.view.translate.x + 79, this.graph.view.translate.y + 160)
+          this.graph.view.setTranslate(this.graph.view.translate.x + 79, this.graph.view.translate.y + 220)
         } else {
           this.resetZoom()
           this.graph.view.setTranslate(originPoint, originPoint)
@@ -1720,7 +1730,7 @@ export default {
           this.graph.view.rendering = true
           this.graph.refresh()
 
-          this.graph.view.setTranslate(this.graph.view.translate.x + 79, this.graph.view.translate.y + 160)
+          this.graph.view.setTranslate(this.graph.view.translate.x + 79, this.graph.view.translate.y + 220)
         }
 
         this.rendering = false
