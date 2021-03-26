@@ -12,8 +12,8 @@ export function getStyleFromKind ({ kind = '', ref = '' }) {
 // The style property tells mxGraph what internal style to use for displaying the specific step
 const kindToStyle = {
   visualSwimlane: {
-    width: 360,
-    height: 120,
+    width: 320,
+    height: 160,
     icon: `${process.env.BASE_URL}icons/swimlane.svg`,
     tooltip: 'Visually group steps',
     style: 'swimlane'
