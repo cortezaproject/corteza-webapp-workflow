@@ -1,95 +1,93 @@
 <template>
   <div class="h-100 py-3 flex-grow-1 overflow-auto">
     <b-container>
+      <b-row no-gutters>
+        <b-col xl="8" offset-xl="2">
+        </b-col>
+      </b-row>
       <b-card
-        class="mb-2"
+        no-body
+        class="shadow-sm"
       >
-        <b-row
-          class="justify-content-between"
+        <b-card-header
+          header-bg-variant="white"
+          class="py-3"
         >
-          <b-col
-            md="5"
-          >
-            <b-form
-              v-if="newWorkflow"
-              @submit.prevent="createWorkflow"
-            >
-              <b-form-group label="Create Workflow">
-                <b-input-group>
-                  <b-input
-                    id="name"
-                    v-model="newWorkflow.meta.name"
-                    type="text"
-                    required
-                    placeholder="Workflow name"
-                  />
-                  <b-input-group-append>
-                    <b-button
-                      type="submit"
-                      variant="dark"
-                    >
-                      Create
-                    </b-button>
-                  </b-input-group-append>
-                </b-input-group>
-              </b-form-group>
-            </b-form>
-          </b-col>
+          <h1 class="mb-3">
+            List of Workflows
+          </h1>
 
-          <b-col
-            md="2"
-            class="d-flex justify-content-end"
+          <b-row
+            class="align-items-center justify-content-between"
+            no-gutters
           >
-            <c-permissions-button
-              v-if="canGrant"
-              resource="automation:workflow:*"
-              link
-            />
-          </b-col>
-        </b-row>
-      </b-card>
-      <b-card
-        title="Workflow List"
-      >
-        <b-table
-          :fields="tableFields"
-          :items="workflows"
-          :sort-by.sync="sortBy"
-          :sort-desc="sortDesc"
-          striped
-          borderless
-          responsive
-        >
-
-          <template v-slot:cell(handle)="{ item: w }">
-            {{ w.meta.name || w.handle }}
-          </template>
-          <template v-slot:cell(enabled)="{ item: w }">
-            <font-awesome-icon
-              :icon="['fas', w.enabled ? 'check' : 'times']"
-            />
-          </template>
-          <template v-slot:cell(actions)="{ item: w }">
-            <span>
-              <router-link
-                :to="{name: 'workflow.edit', params: { workflowID: w.workflowID }}"
-                class="text-dark"
+            <div class="text-nowrap flex-grow-1">
+              <b-button
+                v-if="newWorkflow"
+                variant="primary"
+                size="lg"
+                class="mr-1"
+                @click="createWorkflow"
               >
-                <font-awesome-icon
-                  :icon="['far', 'edit']"
-                />
-              </router-link>
-            </span>
-            <c-permissions-button
-              v-if="w.canGrant"
-              :title="w.meta.name || w.handle"
-              :target="w.meta.name || w.handle"
-              :resource="`automation:workflow:${w.workflowID}`"
-              link
-              class="ml-2"
-            />
-          </template>
-        </b-table>
+                New Workflow
+              </b-button>
+
+              <c-permissions-button
+                v-if="canGrant"
+                resource="automation:workflow:*"
+                buttonLabel="Permissions"
+                buttonVariant="light"
+                class="btn-lg"
+              />
+            </div>
+
+            <div class="flex-grow-1 mt-1">
+              <b-input
+                v-model.trim="query"
+                class="mw-100"
+                type="search"
+                placeholder="Type here to search all workflows..." />
+
+            </div>
+          </b-row>
+        </b-card-header>
+
+        <b-card-body class="p-0">
+          <b-table
+            :fields="tableFields"
+            :items="workflows"
+            :filter="query"
+            :filter-included-fields="['handle']"
+            filter-debounce="300"
+            :sort-by.sync="sortBy"
+            :sort-desc="sortDesc"
+            head-variant="light"
+            tbody-tr-class="pointer"
+            responsive
+            hover
+            @row-clicked="handleRowClicked"
+          >
+
+            <template v-slot:cell(handle)="{ item: w }">
+              {{ w.meta.name || w.handle }}
+            </template>
+            <template v-slot:cell(enabled)="{ item: w }">
+              <font-awesome-icon
+                :icon="['fas', w.enabled ? 'check' : 'times']"
+              />
+            </template>
+            <template v-slot:cell(actions)="{ item: w }">
+              <c-permissions-button
+                v-if="w.canGrant"
+                :title="w.meta.name || w.handle"
+                :target="w.meta.name || w.handle"
+                :resource="`automation:workflow:${w.workflowID}`"
+                link
+                class="btn px-2"
+              />
+            </template>
+          </b-table>
+        </b-card-body>
       </b-card>
     </b-container>
   </div>
@@ -107,6 +105,8 @@ export default {
 
       workflows: [],
 
+      query: '',
+
       sortBy: 'handle',
       sortDesc: false,
 
@@ -114,8 +114,9 @@ export default {
         ownedBy: this.userID,
         runAs: this.userID,
         enabled: true,
+        handle: 'UnnamedWorkflow',
         meta: {
-          name: '',
+          name: 'Unnamed Workflow',
         },
       }),
     }
@@ -135,28 +136,33 @@ export default {
           key: 'handle',
           label: 'Name',
           sortable: true,
+          tdClass: 'align-middle text-nowrap',
+          class:"pl-4"
         },
         {
           key: 'enabled',
           sortable: true,
+          tdClass: 'align-middle',
           class: 'text-center',
         },
         {
           key: 'steps',
           sortable: true,
           sortByFormatted: true,
+          tdClass: 'align-middle',
           class: 'text-center',
           formatter: steps => {
             return (steps || []).length
           },
         },
         {
-          key: 'createdAt',
+          key: 'updatedAt',
           sortable: true,
           sortByFormatted: true,
+          tdClass: 'align-middle',
           class: 'text-right',
-          formatter: createdAt => {
-            return new Date(createdAt).toLocaleDateString('en-US')
+          formatter: (updatedAt, key, item) => {
+            return new Date(updatedAt || item.createdAt).toLocaleDateString('en-US')
           }
         },
         {
@@ -198,6 +204,10 @@ export default {
       this.$AutomationAPI.workflowCreate(this.newWorkflow)
         .then(wf => this.openWorkflowEditor(wf))
         .catch(this.defaultErrorHandler('Failed to create workflow'))
+    },
+
+    handleRowClicked (workflow) {
+      this.$router.push({name: 'workflow.edit', params: { workflowID: workflow.workflowID }})
     },
 
     openWorkflowEditor (workflow) {
