@@ -82,7 +82,7 @@
 
           <p
             class="mb-0 text-truncate"
-            style="white-space: pre-line; max-width: 75%; max-height: 48px;"
+            style="white-space: pre-line; max-height: 48px;"
           >
             {{ workflow.meta.description }}
           </p>
