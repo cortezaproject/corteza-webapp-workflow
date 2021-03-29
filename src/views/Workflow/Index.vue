@@ -107,8 +107,8 @@ export default {
 
       workflows: [],
 
-      sortBy: 'createdAt',
-      sortDesc: true,
+      sortBy: 'handle',
+      sortDesc: false,
 
       newWorkflow: new automation.Workflow({
         ownedBy: this.userID,
