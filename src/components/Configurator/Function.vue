@@ -110,6 +110,7 @@
               </b-form-group>
 
               <b-form-group
+                v-if="!a.options.length"
                 label="Value type"
                 label-class="text-primary"
               >
@@ -129,8 +130,15 @@
                 label-class="text-primary"
                 class="mb-0"
               >
+                <b-form-select
+                  v-if="a.options.length"
+                  v-model="a.value"
+                  :options="[...defaultOptions, ...a.options]"
+                  @change="$root.$emit('change-detected')"
+                />
+
                 <b-form-textarea
-                  v-if="a.valueType === 'value'"
+                  v-else-if="a.valueType === 'value'"
                   v-model="a.value"
                   placeholder="Constant..."
                   max-rows="5"
@@ -290,6 +298,10 @@ export default {
       ]
     },
 
+    defaultOptions () {
+      return [{ value: null , text: 'Select an option', disabled: true }]
+    },
+
     functionDescription () {
       return (this.functions.find(({ ref }) => ref === this.item.config.ref) || { meta: {} }).meta.description
     },
@@ -364,10 +376,11 @@ export default {
             name: param.name,
             target: param.name,
             type: arg.type || this.paramTypes[func.ref][param.name][0],
-            valueType: this.getValueType(arg),
-            value: arg.value || undefined,
-            expr: arg.expr || arg.source  || undefined,
-            required: param.required || false
+            valueType: this.getValueType(arg, ((param.meta || {}).visual || {}).options),
+            value: arg.value || null,
+            expr: arg.expr || arg.source  || null,
+            required: param.required || false,
+            options: ((param.meta || {}).visual || {}).options || []
           }
         }) || []
 
@@ -404,8 +417,12 @@ export default {
         .catch(this.defaultErrorHandler('Failed to fetch types'))
     },
 
-    getValueType (item) {
-      return item.value ? 'value' : 'expr'
+    getValueType (item, options = []) {
+      if (options.length) {
+        return 'value'
+      } else {
+        return item.value ? 'value' : 'expr'
+      }
     },
 
     rowClass (item, type) {
