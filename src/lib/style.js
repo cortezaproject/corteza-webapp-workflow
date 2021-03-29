@@ -143,7 +143,7 @@ const kindToStyle = {
     width: 200,
     height: 80,
     icon: `${process.env.BASE_URL}icons/debug.svg`,
-    tooltip: 'Logs current workflow scope',
+    tooltip: 'Logs current workflow scope into server logs. If workflow debug is enabled',
     style: `debug`
   },
 }
