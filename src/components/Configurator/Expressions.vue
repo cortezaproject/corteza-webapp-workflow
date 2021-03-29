@@ -36,6 +36,10 @@
         :tbody-tr-class="rowClass"
         @row-clicked="item=>$set(item, '_showDetails', !item._showDetails)"
       >
+        <template #cell(target)="{ item: a }">
+          <samp>{{ a.target }}</samp>(<var>{{ a.type }}</var>)
+        </template>
+
         <template #cell(type)="{ item: a }">
           <var>{{ a.type }}</var>
         </template>
@@ -93,9 +97,10 @@
               label-class="text-primary"
               class="mb-0"
             >
-              <b-form-input
+              <b-form-textarea
                 v-model="a.expr"
-                placeholder="Expression"
+                placeholder="Expression..."
+                max-rows="5"
                 @change="$root.$emit('change-detected')"
               />
             </b-form-group>
@@ -126,11 +131,11 @@ export default {
           thClass: "pl-3 py-2",
           tdClass: 'text-truncate pointer'
         },
-        {
-          key: 'type',
-          thClass: "py-2",
-          tdClass: 'text-truncate pointer'
-        },
+        // {
+        //   key: 'type',
+        //   thClass: "py-2",
+        //   tdClass: 'text-truncate pointer'
+        // },
         {
           key: 'value',
           label: 'Expression',
@@ -171,9 +176,9 @@ export default {
 
     rowClass (item, type) {
       if (type === 'row') {
-        return item._showDetails ? 'border-thick' : ''
+        return item._showDetails ? 'border-thick' : 'border-thick-transparent'
       } else if (type === 'row-details') {
-        return 'pt-0'
+        return ''
       }
     }
   }
