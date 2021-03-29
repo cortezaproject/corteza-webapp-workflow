@@ -285,19 +285,19 @@ export default {
       return [
         {
           key: 'name',
-          thClass: "pl-3 py-2",
-          tdClass: 'text-truncate pointer'
+          thClass: "pl-3 py-2 w-auto",
+          tdClass: 'pr-0 text-truncate pointer'
         },
         {
           key: 'op',
           label: 'Operator',
-          thClass: "py-2",
-          tdClass: 'text-truncate pointer'
+          thClass: "py-2 operator text-center",
+          tdClass: 'pl-0 text-truncate text-center pointer'
         },
         {
           key: 'values',
-          thClass: "pr-3 py-2",
-          tdClass: 'position-relative pointer'
+          thClass: "pr-3 py-2 w-auto text-center",
+          tdClass: 'position-relative pointer text-center'
         },
       ]
     },
@@ -428,9 +428,9 @@ export default {
 
     rowClass (item, type) {
       if (type === 'row') {
-        return item._showDetails ? 'border-thick' : ''
+        return item._showDetails ? 'border-thick' : 'border-thick-transparent'
       } else if (type === 'row-details') {
-        return 'pt-0'
+        return ''
       }
     },
   }
@@ -448,6 +448,10 @@ export default {
 
 tr.b-table-details > td {
   padding-top: 0;
+}
+
+.operator {
+  width: 100px;
 }
 </style>
 
