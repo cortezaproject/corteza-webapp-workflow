@@ -70,11 +70,9 @@
           :tbody-tr-class="rowClass"
           @row-clicked="item=>$set(item, '_showDetails', !item._showDetails)"
         >
-          <template #cell(target)="{ item: a }">
-            <samp>
-              {{ `${a.target}${a.required ? '*' : ''}` }}
-            </samp>
-          </template>
+        <template #cell(target)="{ item: a }">
+          <samp>{{ `${a.target}${a.required ? '*' : ''}` }}</samp> <var>({{ a.type }})</var>
+        </template>
 
           <template #cell(type)="{ item: a }">
             <var>{{ a.type }}</var>
@@ -90,6 +88,12 @@
             <b-card
               class="bg-light"
             >
+              <h5
+                class="text-primary text-truncate"
+              >
+                {{ `${a.target}${a.required ? '*' : ''}` }} ({{ a.type }})
+              </h5>
+              <hr>
               <b-form-group
                 v-if="(paramTypes[item.config.ref][a.target] || []).length > 1"
                 label="Type"
@@ -125,17 +129,19 @@
                 label-class="text-primary"
                 class="mb-0"
               >
-                <b-form-input
+                <b-form-textarea
                   v-if="a.valueType === 'value'"
                   v-model="a.value"
-                  placeholder="Constant"
+                  placeholder="Constant..."
+                  max-rows="5"
                   @change="$root.$emit('change-detected')"
                 />
 
-                <b-form-input
+                <b-form-textarea
                   v-else-if="a.valueType === 'expr'"
                   v-model="a.expr"
-                  placeholder="Expression"
+                  placeholder="Expression..."
+                  max-rows="5"
                   @change="$root.$emit('change-detected')"
                 />
               </b-form-group>
@@ -243,11 +249,11 @@ export default {
           thClass: "pl-3 py-2",
           tdClass: 'text-truncate pointer'
         },
-        {
-          key: 'type',
-          thClass: "py-2",
-          tdClass: 'text-truncate pointer'
-        },
+        // {
+        //   key: 'type',
+        //   thClass: "py-2",
+        //   tdClass: 'text-truncate pointer'
+        // },
         {
           key: 'value',
           thClass: "pr-3 py-2",
