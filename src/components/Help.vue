@@ -73,7 +73,7 @@ export default {
         { action: 'Copy', shortcut: 'Ctrl + C'},
         { action: 'Paste', shortcut: 'Ctrl + V'},
         { action: 'Save', shortcut: 'Ctrl + S'},
-        { action: 'Nudge', shortcut: 'Arrow keys'},
+        { action: 'Nudge', shortcut: 'Arrow keys - Use Shift to adjust distance'},
         { action: 'Show guides', shortcut: 'Hold Alt'},
       ]
     }

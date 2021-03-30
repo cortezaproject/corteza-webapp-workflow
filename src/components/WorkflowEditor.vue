@@ -974,18 +974,22 @@ export default {
 
 
       // Nudge
-      const nudge = keyCode => {
+      const nudge = (keyCode, evt) => {
         if (!this.graph.isSelectionEmpty()) {
           let dx = 0
           let dy = 0
+
+          // If shift is not pressed move cell by whole grid block
+          const delta = evt.shiftKey ? 8 : 40
+
           if (keyCode === 37) {
-            dx = -2
+            dx = -delta
           } else if (keyCode === 38) {
-            dy = -2
+            dy = -delta
           } else if (keyCode === 39) {
-            dx = 2
+            dx = delta
           } else if (keyCode === 40) {
-            dy = 2
+            dy = delta
           }
 
           this.graph.moveCells(this.graph.getSelectionCells(), dx, dy)
@@ -993,20 +997,20 @@ export default {
       }
 
       // Move cells with arrow keys
-      this.keyHandler.bindKey(37, () => {
-        nudge(37)
+      this.keyHandler.bindKey(37, (evt) => {
+        nudge(37, evt)
       })
 
-      this.keyHandler.bindKey(38, () => {
-        nudge(38)
+      this.keyHandler.bindKey(38, (evt) => {
+        nudge(38, evt)
       })
 
-      this.keyHandler.bindKey(39, () => {
-        nudge(39)
+      this.keyHandler.bindKey(39, (evt) => {
+        nudge(39, evt)
       })
 
-      this.keyHandler.bindKey(40, () => {
-        nudge(40)
+      this.keyHandler.bindKey(40, (evt) => {
+        nudge(40, evt)
       })
     },
 
