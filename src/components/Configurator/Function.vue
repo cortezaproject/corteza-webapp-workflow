@@ -71,7 +71,8 @@
           @row-clicked="item=>$set(item, '_showDetails', !item._showDetails)"
         >
         <template #cell(target)="{ item: a }">
-          <var>{{ `${a.target}${a.required ? '*' : ''}` }}</var> <var>({{ a.type }})</var>
+          <var>{{ `${a.target}${a.required ? '*' : ''}` }}</var>
+          <samp v-if="!isWhileIterator"> ({{ a.type }})</samp>
         </template>
 
           <template #cell(type)="{ item: a }">
@@ -88,12 +89,7 @@
             <b-card
               class="bg-light"
             >
-              <h5
-                class="text-primary text-truncate"
-              >
-                {{ `${a.target}${a.required ? '*' : ''}` }} ({{ a.type }})
-              </h5>
-              <hr>
+
               <b-form-group
                 v-if="(paramTypes[item.config.ref][a.target] || []).length > 1"
                 label="Type"
@@ -110,7 +106,7 @@
               </b-form-group>
 
               <b-form-group
-                v-if="!a.options.length"
+                v-if="!a.options.length && !isWhileIterator"
                 label="Value type"
                 label-class="text-primary"
               >
@@ -140,7 +136,6 @@
                 <b-form-textarea
                   v-else-if="a.valueType === 'value'"
                   v-model="a.value"
-                  placeholder="Constant..."
                   max-rows="5"
                   @change="$root.$emit('change-detected')"
                 />
@@ -148,7 +143,6 @@
                 <b-form-textarea
                   v-else-if="a.valueType === 'expr'"
                   v-model="a.expr"
-                  placeholder="Expression..."
                   max-rows="5"
                   @change="$root.$emit('change-detected')"
                 />
@@ -305,6 +299,12 @@ export default {
     functionDescription () {
       return (this.functions.find(({ ref }) => ref === this.item.config.ref) || { meta: {} }).meta.description
     },
+
+    isWhileIterator () {
+      if (this.item.config) {
+        return this.item.config.kind === 'iterator' && this.item.config.ref === 'loopDo'
+      }
+    }
   },
 
   watch: {
@@ -424,7 +424,7 @@ export default {
     },
 
     getValueType (item, options = []) {
-      if (options.length) {
+      if (options.length || this.isWhileIterator) {
         return 'value'
       } else {
         return item.value ? 'value' : 'expr'
