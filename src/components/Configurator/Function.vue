@@ -82,7 +82,7 @@
             <samp>{{ a[a.valueType] }}</samp>
           </template>
 
-          <template #row-details="{ item: a }">
+          <template #row-details="{ item: a, index }">
             <div class="arrow-up"/>
 
             <b-card
@@ -121,7 +121,7 @@
                   button-variant="outline-primary"
                   buttons
                   class="w-100 bg-white"
-                  @change="$root.$emit('change-detected')"
+                  @change="valueTypeChanged($event, index)"
                 />
               </b-form-group>
 
@@ -415,6 +415,12 @@ export default {
       return this.$AutomationAPI.typeList()
         .then(({ set }) => this.types = set)
         .catch(this.defaultErrorHandler('Failed to fetch types'))
+    },
+
+    valueTypeChanged (valueType, index) {
+      let oldType = valueType === 'value' ? 'expr' : 'value'
+      this.args[index][valueType] = this.args[index][oldType]
+      this.$root.$emit('change-detected')
     },
 
     getValueType (item, options = []) {
