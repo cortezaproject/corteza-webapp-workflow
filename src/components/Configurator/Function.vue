@@ -62,6 +62,7 @@
           id="arguments"
           fixed
           borderless
+          hover
           head-row-variant="secondary"
           details-td-class="bg-white"
           class="mb-4"
@@ -176,6 +177,7 @@
           id="results"
           fixed
           borderless
+          hover
           head-row-variant="secondary"
           details-td-class="bg-white"
           class="mb-4"

@@ -84,6 +84,7 @@
           id="constraints"
           fixed
           borderless
+          hover
           head-row-variant="secondary"
           details-td-class="bg-white"
           :items="item.triggers.constraints"

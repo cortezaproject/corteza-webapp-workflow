@@ -29,6 +29,7 @@
         id="arguments"
         fixed
         borderless
+        hover
         head-row-variant="secondary"
         details-td-class="bg-white"
         :items="item.config.arguments"
