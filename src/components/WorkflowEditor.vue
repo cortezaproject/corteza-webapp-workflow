@@ -651,16 +651,20 @@ export default {
             const opacity = vertex.config.kind === 'trigger' && !vertex.triggers.enabled ? 'opacity: 0.7;' : ''
 
             let issues = ''
+            let id = ''
             if (this.issues[cell.id]) {
               issues = `<img id="openIssues" src="${issue}" class="ml-2 pointer" style="width: 16px;"/>`
+            } else {
+              id = `<span class="show id-label">${cell.id}</span>`
             }
 
-            label = `<div class="d-flex flex-column bg-white rounded step ${shadow}" style="width: 200px; height: 80px; border-radius: 5px;${opacity}">`+ 
+            label = `<div class="d-flex flex-column position-relative bg-white rounded step ${shadow}" style="width: 200px; height: 80px; border-radius: 5px;${opacity}">`+ 
                       `<div class="d-flex flex-row align-items-center text-primary px-2 my-1 h6 mb-0 font-weight-bold" style="height: 35px;">`+
                         `<img src="${icon}" class="mr-2"/>${type}`+
                         `<div class="d-flex h-100 ml-auto align-items-center">`+
                           `<img id="openSidebar" src="${cog}" class="hide pointer" style="width: 16px;"/>`+
-                          `${issues}`+
+                          id +
+                          issues +
                         `</div>`+
                       `</div>`+
                       `<div class="d-flex flex-row align-items-center hover-untruncate border-top px-2 mb-0 h6" style="height: 45px; color: #2D2D2D;">`+
@@ -1802,6 +1806,20 @@ export default {
 }
 .step:hover .hide {
   display: flex;
+}
+
+.show {
+  display: flex;
+}
+.step:hover .show {
+  display: none;
+}
+
+.id-label {
+  position: absolute;
+  font-size: 8px;
+  top: 4px;
+  right: 4px;
 }
 .hover-untruncate {
   overflow: hidden;
