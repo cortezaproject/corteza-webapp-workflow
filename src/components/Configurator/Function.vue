@@ -71,7 +71,7 @@
           @row-clicked="item=>$set(item, '_showDetails', !item._showDetails)"
         >
         <template #cell(target)="{ item: a }">
-          <samp>{{ `${a.target}${a.required ? '*' : ''}` }}</samp> <var>({{ a.type }})</var>
+          <var>{{ `${a.target}${a.required ? '*' : ''}` }}</var> <var>({{ a.type }})</var>
         </template>
 
           <template #cell(type)="{ item: a }">
