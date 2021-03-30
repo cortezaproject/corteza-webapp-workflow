@@ -1783,7 +1783,6 @@ export default {
 
     saveWorkflow () {
       this.$emit('save', this.getJsonModel())
-      this.sidebarClose()
     }
   },
 }
