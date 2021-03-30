@@ -63,7 +63,7 @@ export default {
   },
 
   beforeRouteLeave (to, from, next) {
-    if (this.changeDetected){
+    if (this.changeDetected && this.workflow.workflowID){
       next(window.confirm('You have unsaved changes, are you sure you want to exit?'))
     } else {
       window.onbeforeunload = null
@@ -143,6 +143,8 @@ export default {
       if (this.workflow.workflowID) {
         this.$AutomationAPI.workflowDelete(this.workflow)
           .then(() => {
+            // Disable unsaved changes prompt
+            this.workflow = {}
             this.$router.push({ name: 'workflow.list' })
 
             this.raiseSuccessAlert('Workflow deleted')
