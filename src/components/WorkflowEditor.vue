@@ -1308,26 +1308,58 @@ export default {
         }
       }
 
-      this.graph.getAllConnectionConstraints = function(terminal) {
+      this.graph.getAllConnectionConstraints = function(terminal, source = false) {
         if (terminal != null && this.model.isVertex(terminal.cell) && !terminal.cell.style.includes('swimlane')) {
-          return [
-            new mxConnectionConstraint(new mxPoint(0, 0), true),
-            new mxConnectionConstraint(new mxPoint(0.25, 0), true),
-            new mxConnectionConstraint(new mxPoint(0.5, 0), true),
-            new mxConnectionConstraint(new mxPoint(0.75, 0), true),
-            new mxConnectionConstraint(new mxPoint(1, 0), true),
-            new mxConnectionConstraint(new mxPoint(1, 0.25), true),
-            new mxConnectionConstraint(new mxPoint(1, 0.5), true),
-            new mxConnectionConstraint(new mxPoint(1, 0.75), true),
-            new mxConnectionConstraint(new mxPoint(1, 1), true),
-            new mxConnectionConstraint(new mxPoint(0.75, 1), true),
-            new mxConnectionConstraint(new mxPoint(0.5, 1), true),
-            new mxConnectionConstraint(new mxPoint(0.25, 1), true),
-            new mxConnectionConstraint(new mxPoint(0, 1), true),
-            new mxConnectionConstraint(new mxPoint(0, 0.75), true),
-            new mxConnectionConstraint(new mxPoint(0, 0.5), true),
-            new mxConnectionConstraint(new mxPoint(0, 0.25), true),
+          let possibleConnections = [
+            [0, 0],
+            [0.25, 0],
+            [0.5, 0],
+            [0.75, 0],
+            [1, 0],
+            [1, 0.25],
+            [1, 0.5],
+            [1, 0.75],
+            [1, 1],
+            [0.75, 1],
+            [0.5, 1],
+            [0.25, 1],
+            [0, 1],
+            [0, 0.75],
+            [0, 0.5],
+            [0, 0.25],
           ]
+
+          // Allows for multiple inbound edges on the same point, but not outbound from the same point
+          if (source) {
+            const edges = terminal.cell.edges || []
+            edges.forEach(({ source, target, style }) => {
+              const points = {}
+              if (style) {
+                style.split(';').forEach(point => {
+                  const [key, value] = point.split('=')
+                  if (key && value) {
+                    points[key] = parseFloat(value)
+                  }
+                })
+  
+                possibleConnections = possibleConnections.filter(([x, y]) => {
+                  // Outgoing edge, check exitX/Y
+                  if (source.id === terminal.cell.id) {
+                    // Filter out exit point
+                    return !(x === points.exitX && y === points.exitY)
+                  } else if (target.id === terminal.cell.id) {
+                    // Incoming edge
+                    return !(x === points.entryX && y === points.entryY)
+                  }
+                  return true
+                })
+              }
+            })
+          }
+
+          return possibleConnections.map(([x, y]) => {
+            return new mxConnectionConstraint(new mxPoint(x, y), true)
+          })
         }
 
         return null
