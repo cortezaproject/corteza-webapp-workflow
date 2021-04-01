@@ -1584,7 +1584,7 @@ export default {
       const testParams = {
         workflowID: this.workflow.workflowID,
         stepID: this.sidebar.item.triggers.stepID,
-        trace: true,
+        trace: this.workflow.canManageWorkflowSessions || false,
         wait: true,
         async: true,
       }
