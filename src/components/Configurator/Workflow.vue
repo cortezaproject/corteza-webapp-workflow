@@ -94,7 +94,7 @@ export default {
   computed: {
     handleState () {
       const { handle } = this.workflow
-      if (!handle || handle.length === 0) {
+      if (!handle || handle.length === 0 || handle.length > 64) {
         return null
       }
 
