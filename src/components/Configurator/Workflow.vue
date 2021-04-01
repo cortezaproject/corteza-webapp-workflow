@@ -10,6 +10,16 @@
     </b-form-group>
 
     <b-form-group
+      label="Handle"
+    >
+      <b-form-input
+        v-model="workflow.handle"
+        :state="handleState"
+        @change="$root.$emit('change-detected')"
+      />
+    </b-form-group>
+
+    <b-form-group
       label="Description"
     >
       <b-form-textarea
@@ -45,5 +55,16 @@ export default {
       default: () => {},
     },
   },
+
+  computed: {
+    handleState () {
+      const { handle } = this.workflow
+      if (!handle || handle.length === 0) {
+        return null
+      }
+
+      return /^[A-Za-z][0-9A-Za-z_\-.]*[A-Za-z0-9]$/.test(handle)
+    }
+  }
 }
 </script>

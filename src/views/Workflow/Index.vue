@@ -114,7 +114,7 @@ export default {
         ownedBy: this.userID,
         runAs: this.userID,
         enabled: true,
-        handle: 'UnnamedWorkflow',
+        handle: 'Handle',
         meta: {
           name: 'Unnamed Workflow',
         },
@@ -190,17 +190,13 @@ export default {
 
     fetchWorkflows () {
       this.$AutomationAPI.workflowList({ disabled: 1 })
-        .then(({ set = [], filter = {} }) => {
+        .then(({ set = [] }) => {
           this.workflows = set
         })
         .catch(this.defaultErrorHandler('Failed to fetch workflows'))
     },
 
     createWorkflow () {
-      this.newWorkflow.handle = this.newWorkflow.meta.name.trim(' ').split(' ').map(s => {
-        return s[0].toUpperCase() + s.slice(1).toLowerCase()
-      }).join('')
-
       this.$AutomationAPI.workflowCreate(this.newWorkflow)
         .then(wf => this.openWorkflowEditor(wf))
         .catch(this.defaultErrorHandler('Failed to create workflow'))
@@ -217,10 +213,3 @@ export default {
   },
 }
 </script>
-<style lang="scss" scoped>
-table {
-  tr {
-    cursor: pointer;
-  }
-}
-</style>
