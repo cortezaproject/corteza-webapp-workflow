@@ -52,6 +52,7 @@
     </b-form-group>
 
     <c-input-confirm
+      v-if="workflow.canDeleteWorkflow"
       size="md"
       sizeConfirm="md"
       :borderless="false"

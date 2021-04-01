@@ -176,7 +176,7 @@
           style="z-index: 1; width: fit-content;"
         >
           <b-button
-            v-if="changeDetected"
+            v-if="changeDetected && workflow.canUpdateWorkflow"
             variant="dark"
             class="rounded-0 py-2 px-3"
             @click="saveWorkflow()"
@@ -487,7 +487,7 @@ export default {
     },
 
     canTest () {
-      if (this.sidebar.item) {
+      if (this.sidebar.item && this.workflow.canExecuteWorkflow) {
         return this.sidebar.item.triggers && this.sidebar.item.triggers.triggerID && this.sidebar.item.triggers.eventType === 'onManual'
       }
       return false
@@ -1807,7 +1807,11 @@ export default {
     },
 
     saveWorkflow () {
-      this.$emit('save', this.getJsonModel())
+      if (this.workflow.canUpdateWorkflow) {
+        this.$emit('save', this.getJsonModel())
+      } else {
+        this.raiseWarningAlert('Not allowed to update workflow', 'Update failed')
+      }
     }
   },
 }

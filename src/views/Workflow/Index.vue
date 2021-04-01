@@ -23,7 +23,7 @@
           >
             <div class="text-nowrap flex-grow-1">
               <b-button
-                v-if="newWorkflow"
+                v-if="newWorkflow && canCreate"
                 variant="primary"
                 size="lg"
                 class="mr-1"
@@ -102,6 +102,7 @@ export default {
   data () {
     return {
       canGrant: false,
+      canCreate: false,
 
       workflows: [],
 
@@ -176,6 +177,7 @@ export default {
       this.$AutomationAPI.permissionsEffective()
         .then(rules => {
           this.canGrant = rules.find(({ resource, operation, allow }) => resource === 'automation' && operation === 'grant').allow
+          this.canCreate = rules.find(({ resource, operation, allow }) => resource === 'automation' && operation === 'workflow.create').allow
         })
         .catch(this.defaultErrorHandler('Failed to fetch automation permissions'))
     },
