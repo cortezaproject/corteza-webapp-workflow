@@ -75,16 +75,25 @@
           >
             <h1
               class="mb-0 text-truncate"
+              :class="{ 'mb-2': workflow.meta.description }"
             >
               <b>{{ workflow.meta.name || workflow.handle }}</b>
             </h1>
           </div>
 
           <p
+            v-if="workflow.meta.description"
             class="mb-0 text-truncate"
             style="white-space: pre-line; max-height: 48px;"
+            :class="{ 'mb-2': getRunAs }"
           >
             {{ workflow.meta.description }}
+          </p>
+          <p
+            v-if="getRunAs"
+            class="mb-0 text-truncate"
+          >
+            <b>Run as:</b> <samp>{{ getRunAs }}</samp>
           </p>
 
           <div
@@ -426,6 +435,8 @@ export default {
       edges: {},
       issues: {},
 
+      runAsUser: undefined,
+
       toolbar: undefined,
 
       edgeConnected: false,
@@ -495,6 +506,14 @@ export default {
 
     hasIssues () {
       return (this.workflow.issues || []).length
+    },
+
+    getRunAs () {
+      if (this.runAsUser) {
+        const { userID, name, username, email } = this.runAsUser
+        return name || username || email || `<@${userID}>`
+      }
+      return undefined
     }
   },
 
@@ -507,6 +526,20 @@ export default {
         this.render(workflow)
       }
     },
+
+    'workflow.runAs': {
+      immediate: true,
+      handler (runAs = '0') {
+        if (runAs !== '0') {
+          this.$SystemAPI.userRead({ userID: runAs })
+            .then(user => {
+              this.runAsUser = user
+            })
+        } else {
+          this.runAsUser = undefined
+        }
+      }
+    }
   },
 
   mounted () {

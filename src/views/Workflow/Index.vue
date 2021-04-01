@@ -110,15 +110,7 @@ export default {
       sortBy: 'handle',
       sortDesc: false,
 
-      newWorkflow: new automation.Workflow({
-        ownedBy: this.userID,
-        runAs: this.userID,
-        enabled: true,
-        handle: 'Handle',
-        meta: {
-          name: 'Unnamed Workflow',
-        },
-      }),
+      newWorkflow: {}
     }
   },
 
@@ -197,6 +189,16 @@ export default {
     },
 
     createWorkflow () {
+      this.newWorkflow = new automation.Workflow({
+        ownedBy: this.userID,
+        runAs: '0',
+        enabled: true,
+        handle: 'Handle',
+        meta: {
+          name: 'Unnamed Workflow',
+        },
+      }),
+
       this.$AutomationAPI.workflowCreate(this.newWorkflow)
         .then(wf => this.openWorkflowEditor(wf))
         .catch(this.defaultErrorHandler('Failed to create workflow'))
