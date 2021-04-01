@@ -244,6 +244,7 @@
         >
           <c-input-confirm
             size="md"
+            sizeConfirm="md"
             variant="danger"
             :borderless="false"
             @confirmed="sidebarDelete()"

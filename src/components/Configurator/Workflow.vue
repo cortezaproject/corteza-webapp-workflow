@@ -53,6 +53,7 @@
 
     <c-input-confirm
       size="md"
+      sizeConfirm="md"
       :borderless="false"
       @confirmed="$emit('delete')"
     >
