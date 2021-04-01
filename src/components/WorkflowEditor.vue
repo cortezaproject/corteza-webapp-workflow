@@ -1,7 +1,7 @@
 <template>
   <div
     id="editor"
-    class="h-100 d-flex p-1"
+    class="h-100 d-flex"
   >
     <b-card
       no-body
