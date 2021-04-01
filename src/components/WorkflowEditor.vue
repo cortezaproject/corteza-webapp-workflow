@@ -685,7 +685,7 @@ export default {
                       `<div class="d-flex flex-row align-items-center text-primary px-2 my-1 h6 mb-0 font-weight-bold" style="height: 35px;">`+
                         `<img src="${icon}" class="mr-2"/>${type}`+
                         `<div class="d-flex h-100 ml-auto align-items-center">`+
-                          `<img id="openSidebar" src="${cog}" class="hide pointer" style="width: 16px;"/>`+
+                          `<img id="openSidebar" src="${cog}" class="hide pointer" style="width: 20px;"/>`+
                           id +
                           issues +
                         `</div>`+
