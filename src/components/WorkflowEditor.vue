@@ -72,10 +72,20 @@
         >
           <div
             class="d-flex align-items-center"
+            :class="{ 'mb-2': workflow.meta.description }"
           >
+            <b-button
+              variant="link"
+              class="p-0 mr-3"
+              v-b-modal.workflow
+            >
+              <font-awesome-icon
+                :icon="['fas', 'cog']"
+                class="h4 mb-0"
+              />
+            </b-button>
             <h1
               class="mb-0 text-truncate"
-              :class="{ 'mb-2': workflow.meta.description }"
             >
               <b>{{ workflow.meta.name || workflow.handle }}</b>
             </h1>
@@ -101,7 +111,7 @@
           >
             <h5
               v-if="!workflow.enabled"
-              class="mb-0"
+              class="mb-0 mr-1"
             >
               <b-badge
                 variant="danger"
@@ -112,7 +122,7 @@
 
             <h5
               v-if="hasIssues"
-              class="ml-1 mb-0"
+              class="mb-0"
             >
               <b-badge
                 variant="danger"
@@ -121,28 +131,6 @@
               </b-badge>
             </h5>
           </div>
-
-          <b-button
-            variant="link"
-            class="px-0"
-            v-b-modal.workflow
-          >
-            <font-awesome-icon
-              :icon="['fas', 'cog']"
-              class="h4 mb-0"
-            />
-          </b-button>
-
-          <b-button
-            variant="link"
-            class="ml-3 px-0"
-            @click="saveWorkflow()"
-          >
-            <font-awesome-icon
-              :icon="['fas', 'save']"
-              class="h4 mb-0"
-            />
-          </b-button>
         </div>
 
         <div
