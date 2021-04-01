@@ -676,7 +676,7 @@ export default {
             let issues = ''
             let id = ''
             if (this.issues[cell.id]) {
-              issues = `<img id="openIssues" src="${issue}" class="ml-2 pointer" style="width: 16px;"/>`
+              issues = `<img id="openIssues" src="${issue}" class="ml-2 pointer" style="width: 20px;"/>`
             } else {
               id = `<span class="show id-label">${cell.id}</span>`
             }
