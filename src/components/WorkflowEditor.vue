@@ -67,7 +67,7 @@
         class="p-0"
       >
         <div
-          class="position-absolute pl-3 pt-2 mw-100"
+          class="position-absolute pl-3 pt-2 w-100 mw-100"
           style="z-index: 1;"
         >
           <div
@@ -94,7 +94,7 @@
           <p
             v-if="workflow.meta.description"
             class="mb-0 text-truncate"
-            style="white-space: pre-line; max-height: 48px;"
+            style="white-space: pre-line; max-width: 50%; max-height: 48px;"
             :class="{ 'mb-2': getRunAs }"
           >
             {{ workflow.meta.description }}
