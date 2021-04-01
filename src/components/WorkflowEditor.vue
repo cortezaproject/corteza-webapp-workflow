@@ -644,7 +644,8 @@ export default {
 
       mxEdgeHandler.prototype.snapToTerminals = true
 
-      mxGraph.prototype.minFitScale = 0.9
+      mxGraph.prototype.minFitScale = 1
+      mxGraph.prototype.maxFitScale = 1
 
       this.graph.isHtmlLabel  = cell => {
         return true
@@ -991,6 +992,7 @@ export default {
         if (this.graph.model.getChildCount(this.graph.getDefaultParent())) {
           this.graph.fit()
           this.graph.view.setTranslate(this.graph.view.translate.x + 79, this.graph.view.translate.y + 220)
+          this.zoomLevel = this.graph.view.scale
         } else {
           this.resetZoom()
           this.graph.view.setTranslate(originPoint, originPoint)
@@ -1792,6 +1794,7 @@ export default {
           this.graph.refresh()
 
           this.graph.view.setTranslate(this.graph.view.translate.x + 79, this.graph.view.translate.y + 220)
+          this.zoomLevel = this.graph.view.scale
         }
 
         this.rendering = false
