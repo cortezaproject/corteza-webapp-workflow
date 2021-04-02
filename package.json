@@ -1,6 +1,6 @@
 {
   "name": "corteza-workflow",
-  "version": "2021.3.0-rc.1",
+  "version": "2021.3.0-rc.4",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
