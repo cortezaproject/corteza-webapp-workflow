@@ -176,12 +176,13 @@
           style="z-index: 1; width: fit-content;"
         >
           <b-button
-            v-if="changeDetected && workflow.canUpdateWorkflow"
+            v-if="changeDetected"
             variant="dark"
             class="rounded-0 py-2 px-3"
+            :disabled="!workflow.canUpdateWorkflow"
             @click="saveWorkflow()"
           >
-            Changes detected. Click here to save.
+            Changes detected {{ `${workflow.canUpdateWorkflow ? 'Click here to save.' : ''}` }}
           </b-button>
         </div>
 
