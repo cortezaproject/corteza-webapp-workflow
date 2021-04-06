@@ -1146,9 +1146,8 @@ export default {
           if (mxEvent.isControlDown(event) || (mxClient.IS_MAC && mxEvent.isMetaDown(event))) {
             // Prevent sidebar opening/closing when CTRL(CMD) is pressed while clicking
           } else if (cell) {
-            // If clicked on cell that can be configured
-            const isVisual = ((this.vertices[cell.id] || {}).config || {}).kind === 'visual'
-            if (event.target.id === 'openSidebar' || isVisual) {
+            // If clicked on Cog icon
+            if (event.target.id === 'openSidebar') {
               const item = cell.edge ? this.edges[cell.id] : this.vertices[cell.id]
               const itemType = cell.edge ? 'edge' : item.config.kind
               this.sidebarReopen(item, itemType)
@@ -1171,11 +1170,12 @@ export default {
 
       this.graph.addListener(mxEvent.DOUBLE_CLICK, (sender, evt) => {
         const event = evt.getProperty('event')
-        if (event) {
-          const cell = evt.getProperty('cell')
-          if (cell && cell.edge) {
-            const item = this.edges[cell.id]
-            const itemType = 'edge'
+        const cell = evt.getProperty('cell')
+        if (event && cell) {
+          const isVisual = ((this.vertices[cell.id] || {}).config || {}).kind === 'visual'
+          if (cell.edge || isVisual) {
+            const item = cell.edge ? this.edges[cell.id] : this.vertices[cell.id]
+            const itemType = cell.edge ? 'edge' : item.config.kind
             this.sidebarReopen(item, itemType)
           }
         }
