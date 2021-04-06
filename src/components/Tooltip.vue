@@ -64,8 +64,12 @@ export default {
   max-width: 20rem;
   min-width: 20rem;
   margin-left: 0.15rem;
-  background-color: transparent;
+  background-color: transparent !important;
   opacity: 1;
+}
+
+.tooltip.b-tooltip-light.bs-tooltip-right .arrow::before {
+  border-right-color: #2D2D2D !important;
 }
 
 .tooltip.b-tooltip {
