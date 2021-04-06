@@ -9,7 +9,7 @@ export default {
       this.raiseAlert({
         ...success,
         message,
-        title: title || success.title
+        title: title || success.title,
       })
     },
 
@@ -17,7 +17,7 @@ export default {
       this.raiseAlert({
         ...danger,
         message,
-        title: title || danger.title
+        title: title || danger.title,
       })
     },
 
@@ -25,7 +25,7 @@ export default {
       this.raiseAlert({
         ...warning,
         message,
-        title: title || warning.title
+        title: title || warning.title,
       })
     },
 
@@ -33,7 +33,7 @@ export default {
       this.raiseAlert({
         ...info,
         message,
-        title: title || info.title
+        title: title || info.title,
       })
     },
 

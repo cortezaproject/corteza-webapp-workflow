@@ -250,8 +250,8 @@ export default {
         {
           key: 'target',
           label: 'Name',
-          thClass: "pl-3 py-2",
-          tdClass: 'text-truncate pointer'
+          thClass: 'pl-3 py-2',
+          tdClass: 'text-truncate pointer',
         },
         // {
         //   key: 'type',
@@ -260,8 +260,8 @@ export default {
         // },
         {
           key: 'value',
-          thClass: "pr-3 py-2",
-          tdClass: 'text-truncate pointer'
+          thClass: 'pr-3 py-2',
+          tdClass: 'text-truncate pointer',
         },
       ]
     },
@@ -270,19 +270,19 @@ export default {
       return [
         {
           key: 'target',
-          thClass: "pl-3 py-2",
-          tdClass: 'text-truncate pointer'
+          thClass: 'pl-3 py-2',
+          tdClass: 'text-truncate pointer',
         },
         {
           key: 'type',
-          thClass: "py-2",
-          tdClass: 'text-truncate pointer'
+          thClass: 'py-2',
+          tdClass: 'text-truncate pointer',
         },
         {
           key: 'expr',
           label: 'Result',
-          thClass: "pr-3 py-2",
-          tdClass: 'text-truncate pointer'
+          thClass: 'pr-3 py-2',
+          tdClass: 'text-truncate pointer',
         },
       ]
     },
@@ -295,7 +295,7 @@ export default {
     },
 
     defaultOptions () {
-      return [{ value: null , text: 'Select an option', disabled: true }]
+      return [{ value: null, text: 'Select an option', disabled: true }]
     },
 
     functionDescription () {
@@ -306,7 +306,8 @@ export default {
       if (this.item.config) {
         return this.item.config.kind === 'iterator' && this.item.config.ref === 'loopDo'
       }
-    }
+      return false
+    },
   },
 
   watch: {
@@ -324,7 +325,7 @@ export default {
         this.setParams(this.item.config.ref, true)
 
         this.processing = false
-      }
+      },
     },
 
     args: {
@@ -334,22 +335,22 @@ export default {
           .map(arg => {
             const argMapped = {
               target: arg.target,
-              type: arg.type
+              type: arg.type,
             }
 
             argMapped[arg.valueType] = arg[arg.valueType]
 
             return argMapped
           })
-      }
+      },
     },
 
     results: {
       deep: true,
       handler (res) {
         this.item.config.results = res.filter(({ target }) => target).map(({ target, expr }) => ({ target, expr }))
-      }
-    }
+      },
+    },
   },
 
   methods: {
@@ -365,9 +366,9 @@ export default {
         const func = this.functions.find(({ ref }) => ref === fName)
 
         // Set parameters
-        if (!this.paramTypes[func.ref]) {
+        if (!this.paramTypes[func.ref] && func.parameters) {
           this.paramTypes[func.ref] = {}
-          func.parameters?.forEach(({ name, types }) => {
+          func.parameters.forEach(({ name, types }) => {
             this.paramTypes[func.ref][name] = types || []
           })
         }
@@ -380,16 +381,16 @@ export default {
             type: arg.type || this.paramTypes[func.ref][param.name][0],
             valueType: this.getValueType(arg, ((param.meta || {}).visual || {}).options),
             value: arg.value || null,
-            expr: arg.expr || arg.source  || null,
+            expr: arg.expr || arg.source || null,
             required: param.required || false,
-            options: ((param.meta || {}).visual || {}).options || []
+            options: ((param.meta || {}).visual || {}).options || [],
           }
         }) || []
 
         // Set results
-        if (!this.resultTypes[func.ref]) {
+        if (!this.resultTypes[func.ref] && func.results) {
           this.resultTypes[func.ref] = {}
-          func.results?.forEach(({ name, types }) => {
+          func.results.forEach(({ name, types }) => {
             this.resultTypes[func.ref][name] = types || []
           })
         }
@@ -401,7 +402,7 @@ export default {
             valueType: 'expr',
             target: res.target || undefined,
             type: this.resultTypes[func.ref][result.name][0],
-            expr: res.expr || result.name
+            expr: res.expr || result.name,
           }
         }) || []
       }
@@ -409,18 +410,22 @@ export default {
 
     async getFunctionTypes () {
       return this.$AutomationAPI.functionList()
-        .then(({ set }) => this.functions = set.filter(({ kind = '' }) => kind !== 'iterator').sort((a, b) => a.meta.short.localeCompare(b.meta.short)))
+        .then(({ set }) => {
+          this.functions = set.filter(({ kind = '' }) => kind !== 'iterator').sort((a, b) => a.meta.short.localeCompare(b.meta.short))
+        })
         .catch(this.defaultErrorHandler('Failed to fetch functions'))
     },
 
     async getTypes () {
       return this.$AutomationAPI.typeList()
-        .then(({ set }) => this.types = set)
+        .then(({ set }) => {
+          this.types = set
+        })
         .catch(this.defaultErrorHandler('Failed to fetch types'))
     },
 
     valueTypeChanged (valueType, index) {
-      let oldType = valueType === 'value' ? 'expr' : 'value'
+      const oldType = valueType === 'value' ? 'expr' : 'value'
       this.args[index][valueType] = this.args[index][oldType]
       this.$root.$emit('change-detected')
     },
@@ -435,8 +440,8 @@ export default {
 
     rowClass (item, type) {
       return item._showDetails && type === 'row' ? 'border-thick' : 'border-thick-transparent'
-    }
-  }
+    },
+  },
 }
 </script>
 
@@ -463,12 +468,11 @@ tr.b-table-details > td {
 }
 
 .arrow-up {
-  width: 0; 
+  width: 0;
   height: 0;
   margin: 0 auto;
   border-left: 10px solid transparent;
   border-right: 10px solid transparent;
-  
   border-bottom: 10px solid $light;
 }
 </style>

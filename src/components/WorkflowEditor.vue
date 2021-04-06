@@ -265,7 +265,6 @@
       </template>
     </b-sidebar>
 
-
     <b-modal
       id="workflow"
       title="Workflow configuration"
@@ -341,11 +340,11 @@
 </template>
 
 <script>
-import mxgraph from "mxgraph"
+import mxgraph from 'mxgraph'
 import Vue from 'vue'
-import { encodeGraph } from "../lib/codec"
-import { getStyleFromKind, getKindFromStyle } from "../lib/style"
-import toolbarConfig from "../lib/toolbar.js"
+import { encodeGraph } from '../lib/codec'
+import { getStyleFromKind, getKindFromStyle } from '../lib/style'
+import toolbarConfig from '../lib/toolbar.js'
 import Configurator from '../components/Configurator'
 import Tooltip from '../components/Tooltip.vue'
 import WorkflowConfigurator from '../components/Configurator/Workflow'
@@ -371,7 +370,6 @@ const {
   mxEdgeStyle,
   mxConnectionHandler,
   mxClipboard,
-  mxParallelEdgeLayout,
   mxPoint,
   mxRectangle,
   mxLog,
@@ -379,7 +377,6 @@ const {
   mxConstraintHandler,
   mxConnectionConstraint,
   mxCellState,
-  mxRectangleShape,
   mxEllipse,
   mxCellOverlay,
   mxCellHighlight,
@@ -393,8 +390,7 @@ export default {
   components: {
     Configurator,
     WorkflowConfigurator,
-    Tooltip,
-    Help
+    Help,
   },
 
   props: {
@@ -411,7 +407,7 @@ export default {
     changeDetected: {
       type: Boolean,
       default: false,
-    }
+    },
   },
 
   data () {
@@ -477,6 +473,7 @@ export default {
       if (item && item.config) {
         return getStyleFromKind(item.config).icon
       }
+      return undefined
     },
 
     getSelectedItem () {
@@ -504,7 +501,7 @@ export default {
         return name || username || email || `<@${userID}>`
       }
       return undefined
-    }
+    },
   },
 
   watch: {
@@ -514,7 +511,7 @@ export default {
 
         // If worklow exist render it
         this.render(workflow)
-      }
+      },
     },
 
     'workflow.runAs': {
@@ -528,8 +525,8 @@ export default {
         } else {
           this.runAsUser = undefined
         }
-      }
-    }
+      },
+    },
   },
 
   mounted () {
@@ -542,7 +539,6 @@ export default {
       this.graph = new mxGraph(this.$refs.graph, null, mxConstants.DIALECT_STRICTHTML)
       this.eventHandler = new mxGraphHandler(this.graph)
       this.keyHandler = new mxKeyHandler(this.graph)
-      new mxRubberband(this.graph) // Enables multiple selection
 
       this.setup()
 
@@ -562,7 +558,6 @@ export default {
       })
 
       this.render(this.workflow, true)
-
     } catch (e) {
       console.error(e)
     }
@@ -609,15 +604,15 @@ export default {
         this.sidebar.outEdges = (item.node.edges || []).length
         if (!this.sidebar.show) {
           setTimeout(() => {
-          this.sidebar.item = item
-          this.sidebar.itemType = itemType
+            this.sidebar.item = item
+            this.sidebar.itemType = itemType
             this.sidebar.show = !this.sidebar.show
           }, 300)
         }
       }
     },
 
-    setup() {
+    setup () {
       this.graph.zoomFactor = 1.2
 
       // Sets a background image and restricts child movement to its bounds
@@ -629,18 +624,20 @@ export default {
       this.graph.setConnectable(true)
       this.graph.setAllowDanglingEdges(false)
       this.graph.setTooltips(true)
+      /* eslint-disable no-new */
+      new mxRubberband(this.graph) // Enables multiple selection
       this.graph.edgeLabelsMovable = false
 
       // Enables guides
       mxGraphHandler.prototype.guidesEnabled = true
-      
+
       // Alt disables guides
       mxGraphHandler.prototype.useGuidesForEvent = (evt) => {
         return mxEvent.isAltDown(evt.getEvent())
       }
 
       const mxGraphHandlerIsValidDropTarget = mxGraphHandler.prototype.isValidDropTarget
-      mxGraphHandler.prototype.isValidDropTarget = function(target, me) {
+      mxGraphHandler.prototype.isValidDropTarget = function (target, me) {
         return mxGraphHandlerIsValidDropTarget.apply(this, arguments) && !target.edge
       }
 
@@ -649,7 +646,7 @@ export default {
       mxGraph.prototype.minFitScale = 1
       mxGraph.prototype.maxFitScale = 1
 
-      this.graph.isHtmlLabel  = cell => {
+      this.graph.isHtmlLabel = cell => {
         return true
       }
 
@@ -682,19 +679,19 @@ export default {
               id = `<span class="show id-label">${cell.id}</span>`
             }
 
-            label = `<div class="d-flex flex-column position-relative bg-white rounded step ${shadow}" style="width: 200px; height: 80px; border-radius: 5px;${opacity}">`+ 
-                      `<div class="d-flex flex-row align-items-center text-primary px-2 my-1 h6 mb-0 font-weight-bold" style="height: 35px;">`+
-                        `<img src="${icon}" class="mr-2"/>${type}`+
-                        `<div class="d-flex h-100 ml-auto align-items-center">`+
-                          `<img id="openSidebar" src="${cog}" class="hide pointer" style="width: 20px;"/>`+
+            label = `<div class="d-flex flex-column position-relative bg-white rounded step ${shadow}" style="width: 200px; height: 80px; border-radius: 5px;${opacity}">` +
+                      '<div class="d-flex flex-row align-items-center text-primary px-2 my-1 h6 mb-0 font-weight-bold" style="height: 35px;">' +
+                        `<img src="${icon}" class="mr-2"/>${type}` +
+                        '<div class="d-flex h-100 ml-auto align-items-center">' +
+                          `<img id="openSidebar" src="${cog}" class="hide pointer" style="width: 20px;"/>` +
                           id +
                           issues +
-                        `</div>`+
-                      `</div>`+
-                      `<div class="d-flex flex-row align-items-center hover-untruncate border-top px-2 mb-0 h6" style="height: 45px; color: #2D2D2D;">`+
-                        `<span class="d-inline-block bg-white hover-untruncate py-2 pr-2">${cell.value || '/'}</span>`+
-                      `</div>`+
-                    `</div>`;
+                        '</div>' +
+                      '</div>' +
+                      '<div class="d-flex flex-row align-items-center hover-untruncate border-top px-2 mb-0 h6" style="height: 45px; color: #2D2D2D;">' +
+                        `<span class="d-inline-block bg-white hover-untruncate py-2 pr-2">${cell.value || '/'}</span>` +
+                      '</div>' +
+                    '</div>'
           } else {
             label = `<div id="openSidebar" class="d-flex"><span class="d-inline-block h6 mb-0 text-truncate">${cell.value || ''}</span></div>`
           }
@@ -707,11 +704,6 @@ export default {
         return false
       }
 
-      // this.edgeLayout = new mxParallelEdgeLayout(this.graph)
-      // this.edgeLayout.isEdgeIgnored = (edge) => {
-      //   return (edge.geometry.points || []).length
-      // }
-
       // Disables mxGraph console window
       mxLog.setVisible = () => {}
 
@@ -719,6 +711,7 @@ export default {
 
       if (mxClient.IS_QUIRKS) {
         document.body.style.overflow = 'hidden'
+        /* eslint-disable no-new */
         new mxDivResizer(this.graph.container)
       }
 
@@ -731,7 +724,7 @@ export default {
       }
     },
 
-    initToolbar() {
+    initToolbar () {
       this.toolbar = new mxToolbar(this.$refs.toolbar)
       this.graph.dropEnabled = true
 
@@ -750,7 +743,7 @@ export default {
         const cell = new mxCell(
           null,
           new mxGeometry(0, 0, width, height),
-          style
+          style,
         )
         cell.setVertex(true)
 
@@ -767,7 +760,7 @@ export default {
           if (cellStyle) {
             addCell({
               ...cell,
-              ...cellStyle
+              ...cellStyle,
             })
           }
         }
@@ -791,7 +784,7 @@ export default {
     },
 
     makeCellCopy ({ edge, id }) {
-      let cell = edge ? this.edges[id] : this.vertices[id]
+      const cell = edge ? this.edges[id] : this.vertices[id]
       let node = cell.node
 
       if (cell.node.children) {
@@ -800,7 +793,7 @@ export default {
       }
 
       const cellCopy = {
-        node
+        node,
       }
 
       // Need to use JSON.parse to remove references
@@ -809,11 +802,11 @@ export default {
       }
 
       if (cell.triggers) {
-        let triggers = {
+        const triggers = {
           enabled: cell.triggers.enabled,
           constraints: cell.triggers.constraints,
           eventType: cell.triggers.eventType,
-          resourceType: cell.triggers.resourceType
+          resourceType: cell.triggers.resourceType,
         }
 
         cellCopy.triggers = JSON.parse(JSON.stringify(triggers))
@@ -826,7 +819,7 @@ export default {
       // TODO cutting swimlanes doesn't respect geometry
       // TODO Nested swimlanes copy doesn't work properly
       mxClipboard.copy = (graph, cells) => {
-        let exportableCells = graph.getExportableCells(graph.model.getTopmostCells(cells || graph.getSelectionCells()))
+        const exportableCells = graph.getExportableCells(graph.model.getTopmostCells(cells || graph.getSelectionCells()))
 
         cells = {}
         exportableCells.forEach(cell => {
@@ -886,14 +879,14 @@ export default {
               tmpParent = graph.model.contains(tmpParent) ? tmpParent : defaultParent
 
               const configs = []
-              let nodes = []
+              const nodes = []
 
               children.forEach(({ node, ...rest }) => {
                 nodes.push(node)
                 configs.push(rest)
               })
 
-              graph.importCells(graph.getImportableCells(nodes),  delta, delta, tmpParent).forEach((node, index) => {
+              graph.importCells(graph.getImportableCells(nodes), delta, delta, tmpParent).forEach((node, index) => {
                 if (node) {
                   const rest = JSON.parse(JSON.stringify(configs[index]))
                   // Remap ID's and Create edges/vertices entry
@@ -924,7 +917,7 @@ export default {
       }
     },
 
-    keys() {
+    keys () {
       // Register control and meta key if Mac
       this.keyHandler.getFunction = (evt) => {
         if (evt != null) {
@@ -1001,7 +994,6 @@ export default {
         }
       }
 
-
       // Nudge
       const nudge = (keyCode, evt) => {
         if (!this.graph.isSelectionEmpty()) {
@@ -1043,7 +1035,7 @@ export default {
       })
     },
 
-    events() {
+    events () {
       // Edge connect event
       this.graph.connectionHandler.addListener(mxEvent.CONNECT, (sender, evt) => {
         const node = evt.getProperty('cell')
@@ -1074,7 +1066,7 @@ export default {
           if (source.config.ref === 'excl') {
             this.edges[node.id].node.value = `#${outPaths.length} - ${outPaths.length === 1 ? 'If' : 'Else (if)'}`
           } else if (source.config.ref === 'incl') {
-            this.edges[node.id].node.value = `If`
+            this.edges[node.id].node.value = 'If'
           }
 
           this.sidebar.outEdges = (source.node.edges || []).length
@@ -1087,7 +1079,6 @@ export default {
         // this.edgeLayout.execute(this.graph.getDefaultParent())
         this.edgeConnected = true
       })
-
 
       this.graph.addListener(mxEvent.CELLS_ADDED, (sender, evt) => {
         if (!this.rendering) {
@@ -1107,13 +1098,14 @@ export default {
         const cells = evt.getProperty('cells') || []
         cells.forEach(cell => {
           if (cell.edge) {
-            let source = this.vertices[cell.source.id]
-            let target = this.vertices[cell.target.id]
+            const source = this.vertices[cell.source.id]
+            const target = this.vertices[cell.target.id]
 
             // If exlusive gateway, update edge indexes (#n)
             if (source.config.kind === 'gateway') {
               if (source.config.ref === 'excl') {
                 source.node.edges.filter(e => e.source.id === source.node.id).forEach((edge, index) => {
+                  /* eslint-disable no-unused-vars */
                   const [edgeID, ...rest] = edge.value.split(' - ')
 
                   this.edges[edge.id].node.value = `#${index + 1} - ${rest.join(' - ')}`
@@ -1126,7 +1118,7 @@ export default {
               }
             } else if (source.config.kind === 'iterator') {
               this.graph.removeCells(source.node.edges.filter(e => e.source.id === source.node.id))
-            }  else if (source.config.kind === 'error-handler') {
+            } else if (source.config.kind === 'error-handler') {
               this.graph.removeCells(source.node.edges.filter(e => e.source.id === source.node.id))
             }
 
@@ -1212,7 +1204,7 @@ export default {
       })
     },
 
-    styling() {
+    styling () {
       // General
       mxConstants.VERTEX_SELECTION_COLOR = '#A7D0E3'
       mxConstants.VERTEX_SELECTION_STROKEWIDTH = 2
@@ -1315,15 +1307,14 @@ export default {
       // // Expression
       // style = mxUtils.clone(this.graph.getStylesheet().getCellStyle('symbol'))
       // this.graph.getStylesheet().putCellStyle('expressions', style)
-
     },
 
     cellOverlay () {
       mxCellOverlay.prototype.defaultOverlap = 1.2
     },
 
-    connectionHandler() {
-      mxConstraintHandler.prototype.intersects = function(icon, point, source, existingEdge) {
+    connectionHandler () {
+      mxConstraintHandler.prototype.intersects = function (icon, point, source, existingEdge) {
         return (!source || existingEdge) || mxUtils.intersects(icon.bounds, point)
       }
 
@@ -1337,7 +1328,7 @@ export default {
         }
       }
 
-      this.graph.getAllConnectionConstraints = function(terminal, source = false) {
+      this.graph.getAllConnectionConstraints = function (terminal, source = false) {
         if (terminal != null && this.model.isVertex(terminal.cell) && !terminal.cell.style.includes('swimlane')) {
           let possibleConnections = [
             [0, 0],
@@ -1370,7 +1361,7 @@ export default {
                     points[key] = parseFloat(value)
                   }
                 })
-  
+
                 possibleConnections = possibleConnections.filter(([x, y]) => {
                   // Outgoing edge, check exitX/Y
                   if (source.id === terminal.cell.id) {
@@ -1395,14 +1386,14 @@ export default {
       }
 
       // Connect preview
-      mxConnectionHandler.prototype.createEdgeState = function(me) {
+      mxConnectionHandler.prototype.createEdgeState = function (me) {
         const edge = this.graph.createEdge(null, null, null, null, null)
         return new mxCellState(this.graph.view, edge, this.graph.getStylesheet().getDefaultEdgeStyle())
       }
 
       // Resets control points when related cells are moved
       this.graph.resetEdgesOnMove = true
-      mxGraph.prototype.resetEdges = function(cells) {
+      mxGraph.prototype.resetEdges = function (cells) {
         if (cells != null) {
           this.model.beginUpdate()
           try {
@@ -1426,24 +1417,24 @@ export default {
       mxConstraintHandler.prototype.pointImage = new mxImage(`${process.env.BASE_URL}icons/connection-point.svg`, 8, 8)
 
       // On hover outline for fixed point
-      mxConstraintHandler.prototype.createHighlightShape = function() {
+      mxConstraintHandler.prototype.createHighlightShape = function () {
         var hl = new mxEllipse(null, '#A7D0E3', '#A7D0E3', 1)
 
         return hl
       }
     },
 
-    addToolbarItem(title, graph, toolbar, prototype, icon, tooltip) {
+    addToolbarItem (title, graph, toolbar, prototype, icon, tooltip) {
       const funct = (graph, evt, cell) => {
         graph.stopEditing(false)
 
         const pt = graph.getPointForEvent(evt)
-        let vertex = graph.getModel().cloneCell(prototype)
+        const vertex = graph.getModel().cloneCell(prototype)
         vertex.geometry.x = pt.x
         vertex.geometry.y = pt.y
 
-        const [newCell] = graph.importCells([vertex], 0, 0, cell)
-       }
+        graph.importCells([vertex], 0, 0, cell)
+      }
 
       const dragElt = document.createElement('div')
       dragElt.style.border = 'dashed #A7D0E3 2px'
@@ -1458,7 +1449,7 @@ export default {
       img.id = prototype.style.split(';')[0]
       const TooltipComponent = Vue.extend(Tooltip)
       const instance = new TooltipComponent({
-        propsData: { title, kind: img.id, img: icon, text: tooltip }
+        propsData: { title, kind: img.id, img: icon, text: tooltip },
       })
       instance.$mount()
       this.$refs.tooltips.appendChild(instance.$el)
@@ -1482,7 +1473,7 @@ export default {
           stepID: cell.id,
           kind: config.kind || '',
           ref: config.ref || '',
-          ...(this.rendering ? {} : getKindFromStyle(cell))
+          ...(this.rendering ? {} : getKindFromStyle(cell)),
         },
       }
 
@@ -1513,7 +1504,7 @@ export default {
       this.graph.model.setValue(this.sidebar.item.node, value)
     },
 
-    zoom(up = true) {
+    zoom (up = true) {
       if (up && this.graph.view.scale < 3) {
         this.graph.zoomIn()
       } else if (!up && this.graph.view.scale > 0.1) {
@@ -1594,7 +1585,7 @@ export default {
                 stepID,
                 parentID,
                 stepTime,
-                error
+                error,
               }
 
               if (cells[stepID]) {
@@ -1630,7 +1621,7 @@ export default {
                   min: frames[0].stepTime,
                   max: frames[0].stepTime,
                   avg: 0,
-                  sum: 0.
+                  sum: 0.0,
                 }
 
                 error = ''
@@ -1640,7 +1631,7 @@ export default {
                     if (stepTime < time.min) {
                       time.min = stepTime
                     }
-  
+
                     if (stepTime > time.max) {
                       time.max = stepTime
                     }
@@ -1690,7 +1681,6 @@ export default {
       const { x = originPoint, y = originPoint } = this.graph.view.translate
       const { scale } = this.graph.view
 
-
       if (!this.workflow.steps) {
         this.workflow.steps = []
       }
@@ -1704,7 +1694,7 @@ export default {
         this.workflow.steps.push({
           stepID: meta.visual.id,
           kind: 'trigger',
-          meta
+          meta,
         })
 
         meta.visual.edges.forEach(edge => {
@@ -1749,8 +1739,8 @@ export default {
             const node = (meta || {}).visual
             if (node) {
               node.parent = this.graph.model.getCell(node.parent) || root
- 
-              let { width, height, style } = getStyleFromKind(config)
+
+              const { width, height, style } = getStyleFromKind(config)
 
               const newCell = this.graph.insertVertex(node.parent, node.id, node.value, node.xywh[0], node.xywh[1], node.xywh[2] || width, node.xywh[3] || height, style)
               this.addCellToVertices(newCell)
@@ -1772,7 +1762,7 @@ export default {
 
             this.edges[edge.id] = {
               node: newEdge,
-              config
+              config,
             }
           }
         })
@@ -1813,7 +1803,7 @@ export default {
       } else {
         this.raiseWarningAlert('Not allowed to update workflow', 'Update failed')
       }
-    }
+    },
   },
 }
 </script>
@@ -1833,6 +1823,7 @@ export default {
 .hide {
   display: none;
 }
+
 .step:hover .hide {
   display: flex;
 }
@@ -1840,6 +1831,7 @@ export default {
 .show {
   display: flex;
 }
+
 .step:hover .show {
   display: none;
 }
@@ -1850,15 +1842,18 @@ export default {
   top: 4px;
   right: 4px;
 }
+
 .hover-untruncate {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
 .step:hover .hover-untruncate {
   overflow: visible;
   text-overflow: initial;
 }
+
 #toolbar > hr {
   margin: 0.5rem 0 0.5rem 0 !important;
   align-self: stretch;

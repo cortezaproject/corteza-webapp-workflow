@@ -121,7 +121,7 @@ export default {
 
   data () {
     return {
-      fieldTypes: []
+      fieldTypes: [],
     }
   },
 
@@ -130,8 +130,8 @@ export default {
       return [
         {
           key: 'target',
-          thClass: "pl-3 py-2",
-          tdClass: 'text-truncate pointer'
+          thClass: 'pl-3 py-2',
+          tdClass: 'text-truncate pointer',
         },
         // {
         //   key: 'type',
@@ -141,8 +141,8 @@ export default {
         {
           key: 'value',
           label: 'Expression',
-          thClass: "py-2 pr-3",
-          tdClass: 'position-relative pointer'
+          thClass: 'py-2 pr-3',
+          tdClass: 'position-relative pointer',
         },
       ]
     },
@@ -160,7 +160,7 @@ export default {
         target: '',
         expr: '',
         type: 'Any',
-        _showDetails: true
+        _showDetails: true,
       })
       this.$root.$emit('change-detected')
     },
@@ -172,7 +172,9 @@ export default {
 
     async getTypes () {
       return this.$AutomationAPI.typeList()
-        .then(({ set }) => this.fieldTypes = set)
+        .then(({ set }) => {
+          this.fieldTypes = set
+        })
         .catch(this.defaultErrorHandler('Failed to fetch types'))
     },
 
@@ -182,8 +184,8 @@ export default {
       } else if (type === 'row-details') {
         return ''
       }
-    }
-  }
+    },
+  },
 }
 </script>
 
@@ -210,12 +212,11 @@ tr.b-table-details > td {
 }
 
 .arrow-up {
-  width: 0; 
+  width: 0;
   height: 0;
   margin: 0 auto;
   border-left: 10px solid transparent;
   border-right: 10px solid transparent;
-  
   border-bottom: 10px solid $light;
 }
 </style>

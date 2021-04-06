@@ -27,6 +27,52 @@ import base from './base'
 export default {
   extends: base,
 
+  computed: {
+    // Ignores exclusiveGateway indexes (#n)
+    label: {
+      get () {
+        if (this.getSourceType) {
+          if (this.getSourceType === 'gatewayExclusive') {
+            /* eslint-disable no-unused-vars */
+            const [edgeID, ...rest] = this.item.node.value.split(' - ')
+            return rest.join(' - ')
+          }
+        }
+
+        return this.item.node.value
+      },
+
+      set (label) {
+        if (this.getSourceType) {
+          if (this.getSourceType === 'gatewayExclusive') {
+            /* eslint-disable no-unused-vars */
+            const [edgeID, ...rest] = this.item.node.value.split(' - ')
+            const newLabel = [edgeID]
+            if (label) {
+              newLabel.push(label)
+            }
+            label = newLabel.join(' - ')
+          }
+        }
+
+        this.item.node.value = label
+      },
+    },
+
+    getSourceType () {
+      const { source } = this.item.node
+      if (source && source.style) {
+        return source.style
+      }
+      return undefined
+    },
+
+    // Used to detect changes in node value
+    valueID () {
+      return `${this.item.node.id || '0'}-${this.item.node.value || undefined}`
+    },
+  },
+
   watch: {
     // Used to detect changes in node value(label)
     valueID: {
@@ -41,52 +87,8 @@ export default {
             this.$emit('update-value', this.item.node.value)
           }
         }
-      }
-    }
-  },
-
-  computed: {
-    // Ignores exclusiveGateway indexes (#n)
-    label: {
-      get () {
-        if (this.getSourceType) {
-          if (this.getSourceType === 'gatewayExclusive') {
-            const [edgeID, ...rest] = this.item.node.value.split(' - ')
-            return rest.join(' - ')
-          }
-        }
-
-        return this.item.node.value
       },
-
-      set (label) {
-        if (this.getSourceType) {
-          if (this.getSourceType === 'gatewayExclusive') {
-            const [edgeID, ...rest] = this.item.node.value.split(' - ')
-            const newLabel = [edgeID]
-            if (label) {
-              newLabel.push(label)
-            }
-            label = newLabel.join(' - ')
-          }
-        }
-
-        this.item.node.value = label
-      }
     },
-
-    getSourceType () {
-      const { source } = this.item.node
-      if (source && source.style) {
-        return source.style
-      }
-      return undefined
-    },
-
-    // Used to detect changes in node value
-    valueID () {
-      return `${this.item.node.id || '0'}-${this.item.node.value || undefined}`
-    }
-  }
+  },
 }
 </script>

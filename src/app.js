@@ -35,16 +35,16 @@ export default (options = {}) => {
           window.location.replace(url.toString())
         }
       })
-      .catch((err) => {
-        if (err instanceof Error && err.message === 'Unauthenticated') {
+        .catch((err) => {
+          if (err instanceof Error && err.message === 'Unauthenticated') {
           // user not logged-in,
           // start with authentication flow
-          this.$auth.startAuthenticationFlow()
-          return
-        }
+            this.$auth.startAuthenticationFlow()
+            return
+          }
 
-        throw err
-      })
+          throw err
+        })
     },
 
     router,

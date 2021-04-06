@@ -52,7 +52,7 @@ export default {
       collapse: {
         basic: true,
         configurator: true,
-      }
+      },
     }
   },
 

@@ -55,29 +55,29 @@ export default {
   data () {
     return {
       basicControls: [
-        { action: 'Select', shortcut: 'Left click'},
-        { action: 'Select multiple', shortcut: 'Left click & drag'},
-        { action: 'Deselect', shortcut: 'Left click on background'},
-        { action: 'Pan', shortcut: 'Right click & drag'},
-        { action: 'Zoom in/out', shortcut: 'Mouse wheel'},
+        { action: 'Select', shortcut: 'Left click' },
+        { action: 'Select multiple', shortcut: 'Left click & drag' },
+        { action: 'Deselect', shortcut: 'Left click on background' },
+        { action: 'Pan', shortcut: 'Right click & drag' },
+        { action: 'Zoom in/out', shortcut: 'Mouse wheel' },
       ],
 
       keyboardShortcuts: [
-        { action: 'Select all', shortcut: 'Ctrl + A'},
-        { action: 'Add to selection', shortcut: 'Ctrl + left mouse button'},
-        { action: 'Delete selected elements', shortcut: 'Delete or Backspace'},
-        { action: 'Reset view to starting point', shortcut: 'Ctrl + Space'},
-        { action: 'Undo', shortcut: 'Ctrl + Z'},
-        { action: 'Redo', shortcut: 'Ctrl + Shift + Z'},
-        { action: 'Cut', shortcut: 'Ctrl + X'},
-        { action: 'Copy', shortcut: 'Ctrl + C'},
-        { action: 'Paste', shortcut: 'Ctrl + V'},
-        { action: 'Save', shortcut: 'Ctrl + S'},
-        { action: 'Nudge', shortcut: 'Arrow keys - Use Shift to adjust distance'},
-        { action: 'Show guides', shortcut: 'Hold Alt'},
-      ]
+        { action: 'Select all', shortcut: 'Ctrl + A' },
+        { action: 'Add to selection', shortcut: 'Ctrl + left mouse button' },
+        { action: 'Delete selected elements', shortcut: 'Delete or Backspace' },
+        { action: 'Reset view to starting point', shortcut: 'Ctrl + Space' },
+        { action: 'Undo', shortcut: 'Ctrl + Z' },
+        { action: 'Redo', shortcut: 'Ctrl + Shift + Z' },
+        { action: 'Cut', shortcut: 'Ctrl + X' },
+        { action: 'Copy', shortcut: 'Ctrl + C' },
+        { action: 'Paste', shortcut: 'Ctrl + V' },
+        { action: 'Save', shortcut: 'Ctrl + S' },
+        { action: 'Nudge', shortcut: 'Arrow keys - Use Shift to adjust distance' },
+        { action: 'Show guides', shortcut: 'Hold Alt' },
+      ],
     }
-  }
+  },
 }
 </script>
 

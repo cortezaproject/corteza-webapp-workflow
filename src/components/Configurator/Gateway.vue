@@ -67,21 +67,21 @@ export default {
                 source: source.id,
                 target: target.id,
                 value,
-                expr: this.edges[id].config.expr || ''
+                expr: this.edges[id].config.expr || '',
               })
             }
           })
         }
       }
       return edges
-    }
+    },
   },
 
   methods: {
     updateEdge (id, expr) {
       this.edges[id].config.expr = expr
       this.$root.$emit('change-detected')
-    }
-  }
+    },
+  },
 }
 </script>

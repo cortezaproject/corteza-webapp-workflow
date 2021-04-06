@@ -34,25 +34,25 @@ export default {
   props: {
     title: {
       type: String,
-      required: true
+      required: true,
     },
     kind: {
       type: String,
-      required: true
+      required: true,
     },
     img: {
       type: String,
-      required: true
+      required: true,
     },
     text: {
       type: String,
-      required: true
+      required: true,
     },
   },
 
   data () {
     return {
-      show: false
+      show: false,
     }
   },
 }
@@ -73,8 +73,9 @@ export default {
 }
 
 .fade-enter-active, .fade-leave-active {
-  transition: opacity .3s;
+  transition: opacity 0.3s;
 }
+
 .fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */ {
   opacity: 0;
 }

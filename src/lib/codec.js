@@ -32,9 +32,9 @@ export function encodeGraph (model, vertices, edges) {
                 value,
                 parent: parent.id,
                 points: geometry.points,
-                style
-              }
-            }
+                style,
+              },
+            },
           }
 
           if (vertices[source.id].triggers || vertices[target.id].triggers) {
@@ -42,7 +42,7 @@ export function encodeGraph (model, vertices, edges) {
           } else if (!paths[id]) {
             paths[id] = edge
           }
-        })
+        }),
       }
 
       if (vertices[cell.id].triggers) {
@@ -56,7 +56,7 @@ export function encodeGraph (model, vertices, edges) {
             name: cell.value || '',
             description: '',
             visual: cell,
-          }
+          },
         })
       } else {
         steps.push({
@@ -65,10 +65,9 @@ export function encodeGraph (model, vertices, edges) {
             label: cell.value || '',
             description: '',
             visual: cell,
-          }
+          },
         })
       }
-
     })
 
   return { steps, paths: Object.values(paths), triggers }

@@ -96,7 +96,7 @@
             <samp v-if="c.name">
               {{ c.name.split('.').map(s => {
                   return s[0].toUpperCase() + s.slice(1).toLowerCase()
-                }).join(' ') 
+                }).join(' ')
               }}
             </samp>
           </template>
@@ -256,24 +256,23 @@ export default {
 
   computed: {
     resourceTypeOptions () {
-     return [
+      return [
         { value: null, text: 'Select resource type', disabled: true },
-        ...this.resourceTypes
+        ...this.resourceTypes,
       ]
     },
 
     eventTypeOptions () {
-     return [
+      return [
         { value: null, text: 'Select event type', disabled: true },
         ...this.eventTypes.filter(({ resourceType }) => resourceType === this.item.triggers.resourceType)
-          .map(({ eventType }) => eventType)
+          .map(({ eventType }) => eventType),
       ]
     },
 
     eventType () {
       return this.eventTypes.find(({ resourceType, eventType }) => resourceType === this.item.triggers.resourceType && eventType === this.item.triggers.eventType) || {}
     },
-
 
     showConstraints () {
       if (this.item.triggers.resourceType && this.item.triggers.eventType) {
@@ -286,19 +285,19 @@ export default {
       return [
         {
           key: 'name',
-          thClass: "pl-3 py-2 w-auto",
-          tdClass: 'pr-0 text-truncate pointer'
+          thClass: 'pl-3 py-2 w-auto',
+          tdClass: 'pr-0 text-truncate pointer',
         },
         {
           key: 'op',
           label: 'Operator',
-          thClass: "py-2 operator text-center",
-          tdClass: 'pl-0 text-truncate text-center pointer'
+          thClass: 'py-2 operator text-center',
+          tdClass: 'pl-0 text-truncate text-center pointer',
         },
         {
           key: 'values',
-          thClass: "pr-3 py-2 w-auto text-center",
-          tdClass: 'position-relative pointer text-center'
+          thClass: 'pr-3 py-2 w-auto text-center',
+          tdClass: 'position-relative pointer text-center',
         },
       ]
     },
@@ -307,13 +306,13 @@ export default {
       return [
         {
           key: 'name',
-          thClass: "pl-3 py-2",
-          tdClass: 'text-truncate'
+          thClass: 'pl-3 py-2',
+          tdClass: 'text-truncate',
         },
         {
           key: 'type',
-          thClass: "pr-3 py-2",
-          tdClass: 'text-truncate'
+          thClass: 'pr-3 py-2',
+          tdClass: 'text-truncate',
         },
       ]
     },
@@ -325,13 +324,16 @@ export default {
         { value: null, text: 'Select constraint type', disabled: true },
         ...constraints.reduce((cons, { name }) => {
           if (!name.includes('*')) {
-            cons.push({ value: name, text: name.split('.').map(s => {
-              return s[0].toUpperCase() + s.slice(1).toLowerCase()
-            }).join(' ')})
+            cons.push({
+              value: name,
+              text: name.split('.').map(s => {
+                return s[0].toUpperCase() + s.slice(1).toLowerCase()
+              }).join(' '),
+            })
           }
 
           return cons
-        }, [])
+        }, []),
       ]
     },
 
@@ -356,14 +358,14 @@ export default {
 
       set (constraint) {
         if (this.item.triggers.constraints.values.length) {
-          return item.triggers.constraints.values[0]
+          return this.item.triggers.constraints.values[0]
         } else {
           this.item.triggers.constraints = [{
-            values: [constraint]
+            values: [constraint],
           }]
         }
-      }
-    }
+      },
+    },
   },
 
   async created () {
@@ -385,10 +387,13 @@ export default {
         .then(({ set }) => {
           this.eventTypes = set
           const resourceTypes = new Set(set.map(({ resourceType }) => resourceType))
-          this.resourceTypes = [...resourceTypes].map(resourceType  => {
-            return { value: resourceType, text: resourceType.split(':').map(s => {
-              return s[0].toUpperCase() + s.slice(1).toLowerCase()
-            }).join(' ')}
+          this.resourceTypes = [...resourceTypes].map(resourceType => {
+            return {
+              value: resourceType,
+              text: resourceType.split(':').map(s => {
+                return s[0].toUpperCase() + s.slice(1).toLowerCase()
+              }).join(' '),
+            }
           })
         })
         .catch(this.defaultErrorHandler('Failed to fetch event types'))
@@ -399,7 +404,7 @@ export default {
         name: null,
         op: '=',
         values: [''],
-        _showDetails: true
+        _showDetails: true,
       })
 
       this.$root.$emit('change-detected')
@@ -434,7 +439,7 @@ export default {
         return ''
       }
     },
-  }
+  },
 }
 </script>
 
@@ -465,12 +470,11 @@ tr.b-table-details > td {
 }
 
 .arrow-up {
-  width: 0; 
+  width: 0;
   height: 0;
   margin: 0 auto;
   border-left: 10px solid transparent;
   border-right: 10px solid transparent;
-  
   border-bottom: 10px solid $light;
 }
 </style>

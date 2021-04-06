@@ -14,6 +14,7 @@ module.exports = {
     'comma-dangle': ['error', 'always-multiline'],
     // https://github.com/vuejs/eslint-plugin-vue/blob/master/docs/rules/order-in-components.md
     'vue/order-in-components': ['error'],
+    'new-cap': 'off',
   },
   parserOptions: {
     parser: 'babel-eslint',

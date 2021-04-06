@@ -55,7 +55,6 @@ export default {
       this.changeDetected = true
     })
 
-
     await this.fetchTriggers()
     await this.fetchWorkflow()
 
@@ -63,7 +62,7 @@ export default {
   },
 
   beforeRouteLeave (to, from, next) {
-    if (this.changeDetected && this.workflow.workflowID){
+    if (this.changeDetected && this.workflow.workflowID) {
       next(window.confirm('You have unsaved changes, are you sure you want to exit?'))
     } else {
       window.onbeforeunload = null
@@ -79,14 +78,18 @@ export default {
     async fetchWorkflow () {
       if (this.workflowID) {
         return this.$AutomationAPI.workflowRead({ workflowID: this.workflowID })
-          .then(wf => this.workflow = wf)
+          .then(wf => {
+            this.workflow = wf
+          })
           .catch(this.defaultErrorHandler('Failed to fetch workflow'))
       }
     },
 
     async fetchTriggers () {
       return this.$AutomationAPI.triggerList({ workflowID: this.workflowID, disabled: 1 })
-        .then(({ set = [] }) => this.triggers = set)
+        .then(({ set = [] }) => {
+          this.triggers = set
+        })
         .catch(this.defaultErrorHandler('Failed to fetch triggers'))
     },
 
@@ -97,10 +100,10 @@ export default {
 
         // Delete triggers of steps that were deleted
         await Promise.all(this.triggers.filter(({ triggerID }) => {
-            return !triggers.find(t => triggerID === t.triggerID)
-          }).map(({ triggerID }) => {
-            return this.$AutomationAPI.triggerDelete({ triggerID })
-          })
+          return !triggers.find(t => triggerID === t.triggerID)
+        }).map(({ triggerID }) => {
+          return this.$AutomationAPI.triggerDelete({ triggerID })
+        }),
         ).then(async () => {
           await Promise.all(triggers.map(t => {
             // Update triggers that already have an ID
@@ -109,7 +112,6 @@ export default {
                 ...t,
                 workflowStepID: t.stepID,
               })
-  
             } else {
               // Create the other triggers
               return this.$AutomationAPI.triggerCreate({
@@ -147,7 +149,7 @@ export default {
           })
           .catch(this.defaultErrorHandler('Failed to delete workflow'))
       }
-    }
-  }
+    },
+  },
 }
 </script>

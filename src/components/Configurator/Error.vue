@@ -41,8 +41,8 @@ export default {
       {
         target: 'message',
         type: 'String',
-        value: ''
-      }
+        value: '',
+      },
     ])
   },
 }

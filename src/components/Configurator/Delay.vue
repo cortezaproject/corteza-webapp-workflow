@@ -40,7 +40,7 @@ import base from './base'
 export default {
   extends: base,
 
-   watch: {
+  watch: {
     'item.node.id': {
       immediate: true,
       async handler () {
@@ -49,11 +49,11 @@ export default {
         this.$set(this.item.config, 'arguments', this.item.config.arguments || [{
           target: 'offset',
           type: 'Duration',
-          value: ''
+          value: '',
         }])
 
         this.processing = false
-      }
+      },
     },
   },
 }

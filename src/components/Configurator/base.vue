@@ -14,7 +14,7 @@ export default {
     outEdges: {
       type: Number,
       default: 0,
-    }
+    },
   },
 
   computed: {

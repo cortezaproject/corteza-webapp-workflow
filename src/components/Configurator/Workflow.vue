@@ -89,7 +89,7 @@ export default {
           query: null,
           limit: 10,
         },
-      }
+      },
     }
   },
 
@@ -101,7 +101,7 @@ export default {
       }
 
       return /^[A-Za-z][0-9A-Za-z_\-.]*[A-Za-z0-9]$/.test(handle)
-    }
+    },
   },
 
   created () {
@@ -157,6 +157,6 @@ export default {
     getOptionLabel ({ userID, email, name, username }) {
       return name || username || email || `<@${userID}>`
     },
-  }
+  },
 }
 </script>

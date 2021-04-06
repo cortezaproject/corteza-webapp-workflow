@@ -111,7 +111,7 @@ export default {
       sortBy: 'handle',
       sortDesc: false,
 
-      newWorkflow: {}
+      newWorkflow: {},
     }
   },
 
@@ -130,7 +130,7 @@ export default {
           label: 'Name',
           sortable: true,
           tdClass: 'align-middle text-nowrap',
-          class:"pl-4"
+          class: 'pl-4',
         },
         {
           key: 'enabled',
@@ -156,7 +156,7 @@ export default {
           class: 'text-right',
           formatter: (updatedAt, key, item) => {
             return new Date(updatedAt || item.createdAt).toLocaleDateString('en-US')
-          }
+          },
         },
         {
           key: 'actions',
@@ -199,7 +199,7 @@ export default {
         meta: {
           name: 'Unnamed Workflow',
         },
-      }),
+      })
 
       this.$AutomationAPI.workflowCreate(this.newWorkflow)
         .then(wf => this.openWorkflowEditor(wf))
@@ -207,7 +207,7 @@ export default {
     },
 
     handleRowClicked (workflow) {
-      this.$router.push({name: 'workflow.edit', params: { workflowID: workflow.workflowID }})
+      this.$router.push({ name: 'workflow.edit', params: { workflowID: workflow.workflowID } })
     },
 
     openWorkflowEditor (workflow) {

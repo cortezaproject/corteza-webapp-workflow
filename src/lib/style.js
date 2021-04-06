@@ -16,7 +16,7 @@ const kindToStyle = {
     height: 160,
     icon: `${process.env.BASE_URL}icons/swimlane.svg`,
     tooltip: 'Visually group steps',
-    style: 'swimlane'
+    style: 'swimlane',
   },
 
   expressions: {
@@ -24,7 +24,7 @@ const kindToStyle = {
     height: 80,
     icon: `${process.env.BASE_URL}icons/expressions.svg`,
     tooltip: 'Define and mutate scope variables',
-    style: `expressions`
+    style: 'expressions',
   },
 
   function: {
@@ -32,7 +32,7 @@ const kindToStyle = {
     height: 80,
     icon: `${process.env.BASE_URL}icons/function.svg`,
     tooltip: 'Execute the chosen predefined function',
-    style: `function`
+    style: 'function',
   },
 
   iterator: {
@@ -40,7 +40,7 @@ const kindToStyle = {
     height: 80,
     icon: `${process.env.BASE_URL}icons/iterator.svg`,
     tooltip: 'Iterate over items',
-    style: `iterator`
+    style: 'iterator',
   },
 
   break: {
@@ -48,7 +48,7 @@ const kindToStyle = {
     height: 80,
     icon: `${process.env.BASE_URL}icons/break.svg`,
     tooltip: 'Stop iterator execution and continue with workflow',
-    style: `break`
+    style: 'break',
   },
 
   continue: {
@@ -56,7 +56,7 @@ const kindToStyle = {
     height: 80,
     icon: `${process.env.BASE_URL}icons/continue.svg`,
     tooltip: 'Stop current iteration and continue with the next one',
-    style: `continue`
+    style: 'continue',
   },
 
   trigger: {
@@ -64,7 +64,7 @@ const kindToStyle = {
     height: 80,
     icon: `${process.env.BASE_URL}icons/trigger.svg`,
     tooltip: 'Trigger the workflow execution based on configuration',
-    style: `trigger`
+    style: 'trigger',
   },
 
   'error-handler': {
@@ -72,7 +72,7 @@ const kindToStyle = {
     height: 80,
     icon: `${process.env.BASE_URL}icons/error-handler.svg`,
     tooltip: 'Continue workflow from this step if an error is triggered',
-    style: `error-handler`
+    style: 'error-handler',
   },
 
   error: {
@@ -80,7 +80,7 @@ const kindToStyle = {
     height: 80,
     icon: `${process.env.BASE_URL}icons/error.svg`,
     tooltip: 'Throws error and stops workflow execution, also prevents saving of records triggered with before trigger',
-    style: `error`
+    style: 'error',
   },
 
   termination: {
@@ -88,7 +88,7 @@ const kindToStyle = {
     height: 80,
     icon: `${process.env.BASE_URL}icons/termination.svg`,
     tooltip: 'Terminate workflow execution',
-    style: `termination`
+    style: 'termination',
   },
 
   gatewayExcl: {
@@ -96,7 +96,7 @@ const kindToStyle = {
     height: 80,
     icon: `${process.env.BASE_URL}icons/gateway-exclusive.svg`,
     tooltip: 'Workflow execution can continue on first path that fits condition',
-    style: `gatewayExclusive`
+    style: 'gatewayExclusive',
   },
 
   gatewayIncl: {
@@ -104,7 +104,7 @@ const kindToStyle = {
     height: 80,
     icon: `${process.env.BASE_URL}icons/gateway-inclusive.svg`,
     tooltip: 'Workflow execution can continue on all paths that fit condition',
-    style: `gatewayInclusive`
+    style: 'gatewayInclusive',
   },
 
   gatewayFork: {
@@ -112,7 +112,7 @@ const kindToStyle = {
     height: 80,
     icon: `${process.env.BASE_URL}icons/gateway-parallel.svg`,
     tooltip: 'Splits workflow execution into two parralel paths or merges multiple paths into one',
-    style: `gatewayParallel`
+    style: 'gatewayParallel',
   },
 
   gatewayJoin: {
@@ -120,7 +120,7 @@ const kindToStyle = {
     height: 80,
     icon: `${process.env.BASE_URL}icons/gateway-parallel.svg`,
     tooltip: 'Splits workflow execution into two parralel paths or merges multiple paths into one',
-    style: `gatewayParallel`
+    style: 'gatewayParallel',
   },
 
   prompt: {
@@ -128,7 +128,7 @@ const kindToStyle = {
     height: 80,
     icon: `${process.env.BASE_URL}icons/prompt.svg`,
     tooltip: 'Prompts user and waits for input',
-    style: `prompt`
+    style: 'prompt',
   },
 
   delay: {
@@ -136,7 +136,7 @@ const kindToStyle = {
     height: 80,
     icon: `${process.env.BASE_URL}icons/delay.svg`,
     tooltip: 'Delays workflow execution',
-    style: `delay`
+    style: 'delay',
   },
 
   debug: {
@@ -144,10 +144,9 @@ const kindToStyle = {
     height: 80,
     icon: `${process.env.BASE_URL}icons/debug.svg`,
     tooltip: 'Logs current workflow scope into server logs. If workflow debug is enabled',
-    style: `debug`
+    style: 'debug',
   },
 }
-
 
 // When adding & or copy/pasting a new cell, this is used to determine the kind & ref
 export function getKindFromStyle (vertex) {
@@ -185,6 +184,6 @@ export function getKindFromStyle (vertex) {
 }
 
 const gatewayKinds = {
-  'gatewayExclusive': { kind: 'gateway', ref: 'excl' },
-  'gatewayInclusive': { kind: 'gateway', ref: 'incl' },
+  gatewayExclusive: { kind: 'gateway', ref: 'excl' },
+  gatewayInclusive: { kind: 'gateway', ref: 'incl' },
 }

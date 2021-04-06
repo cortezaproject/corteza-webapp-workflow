@@ -45,5 +45,5 @@ export default {
         description: 'Default: deny',
       },
     },
-  }
+  },
 }

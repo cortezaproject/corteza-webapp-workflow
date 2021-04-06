@@ -9,6 +9,6 @@ export default {
     async getFunctionTypes () {
       this.functions = components.promptDefinitions || []
     },
-  }
+  },
 }
 </script>
