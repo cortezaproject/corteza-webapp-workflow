@@ -421,6 +421,11 @@ export default {
       edges: {},
       issues: {},
 
+      highlights: {
+        success: undefined,
+        error: undefined,
+      },
+
       runAsUser: undefined,
 
       toolbar: undefined,
@@ -1199,6 +1204,13 @@ export default {
 
       this.graph.model.addListener(mxEvent.CHANGE, (sender, evt) => {
         if (!this.rendering) {
+          if (this.highlights.length > 0) {
+            this.highlights.forEach(h => {
+              h.destroy()
+            })
+            this.highlights = []
+            this.graph.clearCellOverlays()
+          }
           this.$root.$emit('change-detected')
         }
       })
@@ -1595,11 +1607,13 @@ export default {
               }
             })
 
+            this.highlights = []
+
             // Handle first cell & edge
-            new mxCellHighlight(this.graph, '#719430', 3).highlight(this.graph.view.getState(this.graph.model.getCell(this.sidebar.item.node.id)))
+            this.highlights[this.highlights.push(new mxCellHighlight(this.graph, '#719430', 3)) - 1].highlight(this.graph.view.getState(this.graph.model.getCell(this.sidebar.item.node.id)))
             const firstEdge = this.graph.model.getEdgesBetween(this.graph.model.getCell(this.sidebar.item.node.id), this.graph.model.getCell(testParams.stepID), true)[0]
             if (firstEdge) {
-              new mxCellHighlight(this.graph, '#719430', 3).highlight(this.graph.view.getState(firstEdge))
+              this.highlights[this.highlights.push(new mxCellHighlight(this.graph, '#719430', 3)) - 1].highlight(this.graph.view.getState(firstEdge))
             }
 
             // Handle others
@@ -1612,7 +1626,7 @@ export default {
                 if (cell && cell.index !== 0) {
                   this.graph.model.getEdgesBetween(this.graph.model.getCell(cell.parentID), this.graph.model.getCell(stepID), true)
                     .forEach(edge => {
-                      new mxCellHighlight(this.graph, '#719430', 3).highlight(this.graph.view.getState(edge))
+                      this.highlights[this.highlights.push(new mxCellHighlight(this.graph, '#719430', 3)) - 1].highlight(this.graph.view.getState(edge))
                     })
                 }
               } else {
@@ -1642,7 +1656,7 @@ export default {
                   time.sum += stepTime
                   this.graph.model.getEdgesBetween(this.graph.model.getCell(parentID), this.graph.model.getCell(stepID), true)
                     .forEach(edge => {
-                      new mxCellHighlight(this.graph, '#719430', 3).highlight(this.graph.view.getState(edge))
+                      this.highlights[this.highlights.push(new mxCellHighlight(this.graph, '#719430', 3)) - 1].highlight(this.graph.view.getState(edge))
                     })
                 })
 
@@ -1656,9 +1670,9 @@ export default {
 
               // Highlight cell based on error
               if (error) {
-                new mxCellHighlight(this.graph, '#E54122', 3).highlight(this.graph.view.getState(this.graph.model.getCell(stepID)))
+                this.highlights[this.highlights.push(new mxCellHighlight(this.graph, '#E54122', 3)) - 1].highlight(this.graph.view.getState(this.graph.model.getCell(stepID)))
               } else {
-                new mxCellHighlight(this.graph, '#719430', 3).highlight(this.graph.view.getState(this.graph.model.getCell(stepID)))
+                this.highlights[this.highlights.push(new mxCellHighlight(this.graph, '#719430', 3)) - 1].highlight(this.graph.view.getState(this.graph.model.getCell(stepID)))
               }
             })
 
