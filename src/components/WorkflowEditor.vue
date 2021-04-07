@@ -1794,6 +1794,9 @@ export default {
 
         this.graph.getModel().endUpdate() // Updates the display
 
+        // Resolves problems with same id's being reused
+        this.graph.getModel().nextId = this.graph.getModel().nextId + 1
+
         if (initial) {
           this.graph.fit()
           this.graph.view.rendering = true
