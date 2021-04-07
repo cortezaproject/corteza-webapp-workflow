@@ -111,7 +111,7 @@ const kindToStyle = {
     width: 200,
     height: 80,
     icon: `${process.env.BASE_URL}icons/gateway-parallel.svg`,
-    tooltip: 'Splits workflow execution into two parralel paths or merges multiple paths into one',
+    tooltip: 'Splits workflow execution into two parallel paths or merges multiple paths into one',
     style: 'gatewayParallel',
   },
 
@@ -119,7 +119,7 @@ const kindToStyle = {
     width: 200,
     height: 80,
     icon: `${process.env.BASE_URL}icons/gateway-parallel.svg`,
-    tooltip: 'Splits workflow execution into two parralel paths or merges multiple paths into one',
+    tooltip: 'Splits workflow execution into two parallel paths or merges multiple paths into one',
     style: 'gatewayParallel',
   },
 
