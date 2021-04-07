@@ -2,6 +2,7 @@
   <div
     id="editor"
     class="h-100 d-flex"
+    @keydown="keybinds"
   >
     <b-card
       no-body
@@ -194,6 +195,10 @@
       </b-card-body>
     </b-card>
 
+    <!--
+      no-enforce-focus flag doesn't set focus to sidebar when it is opened.
+      Bad for Accesability, since keyboard only users can't use sidebar.
+     -->
     <b-sidebar
       v-model="sidebar.show"
       shadow
@@ -922,6 +927,16 @@ export default {
       }
     },
 
+    // Works on all of editor (mostly)
+    keybinds (event) {
+      // Ctrl + S
+      if ((event.ctrlKey || event.metaKey) && event.key === 's') {
+        this.saveWorkflow()
+        event.preventDefault()
+      }
+    },
+
+    // Only works when canvas is focused
     keys () {
       // Register control and meta key if Mac
       this.keyHandler.getFunction = (evt) => {
@@ -960,11 +975,6 @@ export default {
       // Ctrl + A
       this.keyHandler.controlKeys[65] = () => {
         this.graph.selectAll()
-      }
-
-      // Ctrl + S
-      this.keyHandler.controlKeys[83] = () => {
-        this.saveWorkflow()
       }
 
       // Ctrl + Z
