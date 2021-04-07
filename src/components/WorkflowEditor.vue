@@ -1121,10 +1121,11 @@ export default {
               if (['join', 'fork'].includes(target.config.ref)) {
                 this.updateVertexConfig(source.node.id)
               }
-            } else if (source.config.kind === 'iterator') {
-              this.graph.removeCells(source.node.edges.filter(e => e.source.id === source.node.id))
-            } else if (source.config.kind === 'error-handler') {
-              this.graph.removeCells(source.node.edges.filter(e => e.source.id === source.node.id))
+            } else if (source.config.kind === 'iterator' || source.config.kind === 'error-handler') {
+              // Since later placed edges will have greater id than the ones placed before, we can filter by id
+              // Remove all edges that were placed after the one that was just deleted.
+              // This needs to be done to preserve edge order
+              this.graph.removeCells(source.node.edges.filter(e => e.source.id === source.node.id && e.id > cell.id))
             }
 
             if (target.config.kind === 'gateway') {
