@@ -7,10 +7,18 @@ module.exports = ({ appFlavour, appName, appLabel, version, theme, packageAlias,
   const isProduction = (env === 'production')
   const isTest = (env === 'test')
 
-  if (isTest) {
+  if (isTest || isDevelopment) {
     const Vue = require('vue')
-    Vue.config.devtools = false
-    Vue.config.productionTip = false
+
+    if (isTest) {
+      Vue.config.devtools = false
+      Vue.config.productionTip = false
+    }
+
+    if (isDevelopment) {
+      Vue.config.devtools = true
+      Vue.config.performance = true
+    }
   }
 
   const publicPath = isProduction ? '/' + appName : '/'
@@ -44,6 +52,9 @@ module.exports = ({ appFlavour, appName, appLabel, version, theme, packageAlias,
 
     configureWebpack: {
       // other webpack options to merge in ...
+
+      resolve: { symlinks: false },
+
       plugins: [
         new webpack.DefinePlugin({
           FLAVOUR: JSON.stringify(appFlavour),

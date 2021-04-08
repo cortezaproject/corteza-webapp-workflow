@@ -3,23 +3,23 @@
     class="flex-grow-1 rounded-0"
     body-class="p-0"
   >
-      <b-card-header
-        header-tag="header"
-        class="d-flex align-items-center bg-white py-4"
+    <b-card-header
+      header-tag="header"
+      class="d-flex align-items-center bg-white py-4"
+    >
+      <h5
+        class="mb-0"
       >
-        <h5
-          class="mb-0"
-        >
-          Expressions
-        </h5>
-        <b-button
-          variant="primary"
-          class="align-top border-0 ml-3"
-          @click="addArgument()"
-        >
-          + Add Expression
-        </b-button>
-      </b-card-header>
+        Expressions
+      </h5>
+      <b-button
+        variant="primary"
+        class="align-top border-0 ml-3"
+        @click="addArgument()"
+      >
+        + Add Expression
+      </b-button>
+    </b-card-header>
 
     <b-card-body
       v-if="item.config.arguments.length"
@@ -67,7 +67,7 @@
         </template>
 
         <template #row-details="{ item: a }">
-          <div class="arrow-up"/>
+          <div class="arrow-up" />
 
           <b-card
             class="bg-light"

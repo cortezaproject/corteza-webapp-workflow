@@ -11,18 +11,6 @@
   "gitHooks": {
     "pre-commit": "yarn lint"
   },
-  "stylelint": {
-    "plugins": [
-      "stylelint-scss"
-    ],
-    "extends": "stylelint-config-standard",
-    "rules": {
-      "color-hex-case": null,
-      "color-hex-length": null,
-      "no-empty-source": null,
-      "selector-list-comma-newline-after": null
-    }
-  },
   "dependencies": {
     "@cortezaproject/corteza-js": "^2021.3.0",
     "@cortezaproject/corteza-vue": "^2021.3.0",
@@ -63,19 +51,17 @@
     "stylelint-webpack-plugin": "^0.10.5",
     "vue-template-compiler": "^2.6.11"
   },
-  "eslintConfig": {
-    "root": true,
-    "env": {
-      "node": true
-    },
-    "extends": [
-      "plugin:vue/essential",
-      "eslint:recommended"
+  "stylelint": {
+    "plugins": [
+      "stylelint-scss"
     ],
-    "parserOptions": {
-      "parser": "babel-eslint"
-    },
-    "rules": {}
+    "extends": "stylelint-config-standard",
+    "rules": {
+      "color-hex-case": null,
+      "color-hex-length": null,
+      "no-empty-source": null,
+      "selector-list-comma-newline-after": null
+    }
   },
   "browserslist": [
     "> 1%",

@@ -95,8 +95,8 @@
           <template #cell(name)="{ item: c }">
             <samp v-if="c.name">
               {{ c.name.split('.').map(s => {
-                  return s[0].toUpperCase() + s.slice(1).toLowerCase()
-                }).join(' ')
+                return s[0].toUpperCase() + s.slice(1).toLowerCase()
+              }).join(' ')
               }}
             </samp>
           </template>
@@ -122,7 +122,7 @@
           </template>
 
           <template #row-details="{ item: c }">
-            <div class="arrow-up"/>
+            <div class="arrow-up" />
             <b-card
               class="bg-light"
             >

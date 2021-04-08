@@ -2,8 +2,10 @@
   <div class="h-100 py-3 flex-grow-1 overflow-auto">
     <b-container>
       <b-row no-gutters>
-        <b-col xl="8" offset-xl="2">
-        </b-col>
+        <b-col
+          xl="8"
+          offset-xl="2"
+        />
       </b-row>
       <b-card
         no-body
@@ -35,8 +37,8 @@
               <c-permissions-button
                 v-if="canGrant"
                 resource="automation:workflow:*"
-                buttonLabel="Permissions"
-                buttonVariant="light"
+                button-label="Permissions"
+                button-variant="light"
                 class="btn-lg"
               />
             </div>
@@ -46,8 +48,8 @@
                 v-model.trim="query"
                 class="mw-100"
                 type="search"
-                placeholder="Type here to search all workflows..." />
-
+                placeholder="Type here to search all workflows..."
+              />
             </div>
           </b-row>
         </b-card-header>
@@ -67,7 +69,6 @@
             hover
             @row-clicked="handleRowClicked"
           >
-
             <template v-slot:cell(handle)="{ item: w }">
               {{ w.meta.name || w.handle }}
             </template>

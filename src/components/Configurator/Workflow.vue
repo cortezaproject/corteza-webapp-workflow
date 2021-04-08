@@ -54,7 +54,7 @@
     <c-input-confirm
       v-if="workflow.canDeleteWorkflow"
       size="md"
-      sizeConfirm="md"
+      size-confirm="md"
       :borderless="false"
       @confirmed="$emit('delete')"
     >

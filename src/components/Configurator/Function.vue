@@ -71,10 +71,10 @@
           :tbody-tr-class="rowClass"
           @row-clicked="item=>$set(item, '_showDetails', !item._showDetails)"
         >
-        <template #cell(target)="{ item: a }">
-          <var>{{ `${a.target}${a.required ? '*' : ''}` }}</var>
-          <samp v-if="!isWhileIterator"> ({{ a.type }})</samp>
-        </template>
+          <template #cell(target)="{ item: a }">
+            <var>{{ `${a.target}${a.required ? '*' : ''}` }}</var>
+            <samp v-if="!isWhileIterator"> ({{ a.type }})</samp>
+          </template>
 
           <template #cell(type)="{ item: a }">
             <var>{{ a.type }}</var>
@@ -85,12 +85,11 @@
           </template>
 
           <template #row-details="{ item: a, index }">
-            <div class="arrow-up"/>
+            <div class="arrow-up" />
 
             <b-card
               class="bg-light"
             >
-
               <b-form-group
                 v-if="(paramTypes[item.config.ref][a.target] || []).length > 1"
                 label="Type"
@@ -195,7 +194,7 @@
           </template>
 
           <template #row-details="{ item: a }">
-            <div class="arrow-up"/>
+            <div class="arrow-up" />
 
             <b-card
               class="bg-light"

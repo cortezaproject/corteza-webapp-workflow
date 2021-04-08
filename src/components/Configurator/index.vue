@@ -26,8 +26,8 @@
     </b-card>
 
     <component
-      v-if="stepComponent"
       :is="stepComponent"
+      v-if="stepComponent"
       :item.sync="item"
       :edges.sync="edges"
       :out-edges="outEdges"

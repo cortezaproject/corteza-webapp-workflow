@@ -1,20 +1,20 @@
 module.exports = {
-  root: true,
+  root: false,
   env: {
     node: true,
-    mocha: true,
   },
   extends: [
-    'plugin:vue/essential',
+    'plugin:vue/recommended',
     '@vue/standard',
   ],
   rules: {
+    'new-cap': 'off',
+    'import/no-named-default': 'off',
+    'vue/component-name-in-template-casing': ['error', 'kebab-case'],
+    'vue/no-v-html': 'off',
     'no-console': process.env.NODE_ENV === 'production' ? 'error' : 'off',
     'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'off',
     'comma-dangle': ['error', 'always-multiline'],
-    // https://github.com/vuejs/eslint-plugin-vue/blob/master/docs/rules/order-in-components.md
-    'vue/order-in-components': ['error'],
-    'new-cap': 'off',
   },
   parserOptions: {
     parser: 'babel-eslint',

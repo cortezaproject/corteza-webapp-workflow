@@ -40,9 +40,9 @@
           class="d-flex flex-grow-1 align-items-end justify-content-center p-3"
         >
           <b-button
+            v-b-modal.help
             variant="link"
             class="p-0"
-            v-b-modal.help
           >
             <font-awesome-icon
               :icon="['far', 'question-circle']"
@@ -76,9 +76,9 @@
             :class="{ 'mb-2': workflow.meta.description }"
           >
             <b-button
+              v-b-modal.workflow
               variant="link"
               class="p-0 mr-3"
-              v-b-modal.workflow
             >
               <font-awesome-icon
                 :icon="['fas', 'cog']"
@@ -250,7 +250,7 @@
         >
           <c-input-confirm
             size="md"
-            sizeConfirm="md"
+            size-confirm="md"
             variant="danger"
             :borderless="false"
             @confirmed="sidebarDelete()"
