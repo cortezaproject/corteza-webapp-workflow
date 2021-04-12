@@ -4,6 +4,7 @@
     :workflow="workflow"
     :triggers="triggers"
     :change-detected="changeDetected"
+    :can-create="canCreate"
     @save="saveWorkflow"
     @delete="deleteWorkflow"
   />
@@ -11,6 +12,7 @@
 
 <script>
 import WorkflowEditor from '../../components/WorkflowEditor'
+import { automation } from '@cortezaproject/corteza-js'
 
 export default {
   name: 'Editor',
@@ -21,6 +23,8 @@ export default {
 
   data () {
     return {
+      canCreate: false,
+
       processing: true,
       workflow: {},
       triggers: [],
@@ -31,7 +35,7 @@ export default {
 
   computed: {
     workflowID () {
-      return this.$route.params.workflowID
+      return this.$route.params.workflowID || (this.workflow.workflowID !== '0' ? this.workflow.workflowID : undefined)
     },
 
     userID () {
@@ -55,14 +59,28 @@ export default {
       this.changeDetected = true
     })
 
-    await this.fetchTriggers()
-    await this.fetchWorkflow()
+    this.fetchPermissions()
+
+    if (this.workflowID) {
+      await this.fetchTriggers()
+      await this.fetchWorkflow()
+    } else {
+      this.workflow = new automation.Workflow({
+        ownedBy: this.userID,
+        runAs: '0',
+        enabled: true,
+        handle: '',
+        meta: {
+          name: 'Unnamed Workflow',
+        },
+      })
+    }
 
     this.processing = false
   },
 
   beforeRouteLeave (to, from, next) {
-    if (this.changeDetected && this.workflow.workflowID) {
+    if (this.changeDetected) {
       next(window.confirm('You have unsaved changes, are you sure you want to exit?'))
     } else {
       window.onbeforeunload = null
@@ -76,27 +94,52 @@ export default {
 
   methods: {
     async fetchWorkflow () {
-      if (this.workflowID) {
-        return this.$AutomationAPI.workflowRead({ workflowID: this.workflowID })
-          .then(wf => {
-            this.workflow = wf
-          })
-          .catch(this.defaultErrorHandler('Failed to fetch workflow'))
-      }
+      return this.$AutomationAPI.workflowRead({ workflowID: this.workflowID })
+        .then(wf => {
+          this.workflow = wf
+        })
+        .catch(this.defaultErrorHandler('Failed to fetch workflow'))
     },
 
-    async fetchTriggers () {
-      return this.$AutomationAPI.triggerList({ workflowID: this.workflowID, disabled: 1 })
+    async fetchTriggers (workflowID = this.workflowID) {
+      return this.$AutomationAPI.triggerList({ workflowID, disabled: 1 })
         .then(({ set = [] }) => {
           this.triggers = set
         })
         .catch(this.defaultErrorHandler('Failed to fetch triggers'))
     },
 
+    fetchPermissions () {
+      this.$AutomationAPI.permissionsEffective()
+        .then(rules => {
+          this.canCreate = rules.find(({ resource, operation }) => resource === 'automation' && operation === 'workflow.create').allow
+        })
+        .catch(this.defaultErrorHandler('Failed to fetch automation permissions'))
+    },
+
     async saveWorkflow ({ steps = [], paths = [], triggers = [] }) {
-      if (this.workflow.workflowID) {
+      try {
+        const isNew = !this.workflowID
+
         this.workflow.steps = steps
         this.workflow.paths = paths
+
+        let wf = this.workflow
+
+        if (isNew) {
+          // Create workflow
+          if (!this.canCreate) {
+            throw new Error('Not allowed to create workflow')
+          }
+
+          wf = await this.$AutomationAPI.workflowCreate(this.workflow)
+        } else {
+          if (!this.workflow.canUpdateWorkflow) {
+            throw new Error('Not allowed to update workflow')
+          }
+
+          wf = await this.$AutomationAPI.workflowUpdate(this.workflow)
+        }
 
         // Delete triggers of steps that were deleted
         await Promise.all(this.triggers.filter(({ triggerID }) => {
@@ -116,7 +159,7 @@ export default {
               // Create the other triggers
               return this.$AutomationAPI.triggerCreate({
                 ...t,
-                workflowID: this.workflow.workflowID,
+                workflowID: wf.workflowID,
                 workflowStepID: t.stepID,
                 ownedBy: this.userID,
               })
@@ -125,15 +168,21 @@ export default {
             throw new Error('Make sure all trigger steps are properly configured')
           })
 
-          const wf = await this.$AutomationAPI.workflowUpdate(this.workflow)
+          await this.fetchTriggers(wf.workflowID)
 
-          await this.fetchTriggers()
           this.changeDetected = false
           window.onbeforeunload = null
 
           this.workflow = wf
           this.raiseSuccessAlert('Workflow updated')
-        }).catch(this.defaultErrorHandler('Failed to save workflow'))
+
+          if (isNew) {
+            // Redirect to edit route if new
+            this.$router.push({ name: 'workflow.edit', params: { workflowID: this.workflow.workflowID } })
+          }
+        })
+      } catch (e) {
+        this.defaultErrorHandler('Save failed')(e)
       }
     },
 

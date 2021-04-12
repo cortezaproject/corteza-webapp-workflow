@@ -50,16 +50,6 @@
         Enabled
       </b-form-checkbox>
     </b-form-group>
-
-    <c-input-confirm
-      v-if="workflow.canDeleteWorkflow"
-      size="md"
-      size-confirm="md"
-      :borderless="false"
-      @confirmed="$emit('delete')"
-    >
-      Delete
-    </c-input-confirm>
   </div>
 </template>
 
@@ -97,7 +87,7 @@ export default {
     handleState () {
       const { handle } = this.workflow
       if (!handle || handle.length === 0 || handle.length > 64) {
-        return null
+        return false
       }
 
       return /^[A-Za-z][0-9A-Za-z_\-.]*[A-Za-z0-9]$/.test(handle)
@@ -131,12 +121,14 @@ export default {
     },
 
     async getUserByID () {
-      this.$SystemAPI.userRead({ userID: this.workflow.runAs })
-        .then(user => {
-          this.user.value = user
-        }).catch(() => {
-          return {}
-        })
+      if (this.workflow.runAs !== '0') {
+        this.$SystemAPI.userRead({ userID: this.workflow.runAs })
+          .then(user => {
+            this.user.value = user
+          }).catch(() => {
+            return {}
+          })
+      }
     },
 
     updateRunAs (user) {

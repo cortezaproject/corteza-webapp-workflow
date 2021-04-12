@@ -68,6 +68,7 @@
         class="p-0"
       >
         <div
+          v-if="workflow.meta"
           class="position-absolute pl-3 pt-2 w-100 mw-100"
           style="z-index: 1;"
         >
@@ -180,10 +181,10 @@
             v-if="changeDetected"
             variant="dark"
             class="rounded-0 py-2 px-3"
-            :disabled="!workflow.canUpdateWorkflow"
+            :disabled="!canUpdateWorkflow"
             @click="saveWorkflow()"
           >
-            Changes detected {{ `${workflow.canUpdateWorkflow ? 'Click here to save.' : ''}` }}
+            Changes detected {{ `${canUpdateWorkflow ? 'Click here to save.' : ''}` }}
           </b-button>
         </div>
 
@@ -274,7 +275,6 @@
       id="workflow"
       title="Workflow configuration"
       size="lg"
-      hide-footer
     >
       <template #modal-title>
         Workflow Configuration
@@ -293,6 +293,30 @@
         :workflow="workflow"
         @delete="$emit('delete')"
       />
+
+      <template #modal-footer>
+        <div
+          class="d-flex w-100"
+        >
+          <c-input-confirm
+            v-if="workflow.canDeleteWorkflow"
+            size="md"
+            size-confirm="md"
+            :borderless="false"
+            @confirmed="$emit('delete')"
+          >
+            Delete
+          </c-input-confirm>
+
+          <b-button
+            variant="primary"
+            class="ml-auto"
+            @click="saveWorkflow()"
+          >
+            Save
+          </b-button>
+        </div>
+      </template>
     </b-modal>
 
     <b-modal
@@ -413,6 +437,11 @@ export default {
       type: Boolean,
       default: false,
     },
+
+    canCreate: {
+      type: Boolean,
+      default: false,
+    },
   },
 
   data () {
@@ -494,6 +523,10 @@ export default {
       return `${Math.floor(this.zoomLevel * 100).toFixed(0)}%`
     },
 
+    canUpdateWorkflow () {
+      return this.workflow.workflowID === '0' ? this.canCreate : this.workflow.canUpdateWorkflow
+    },
+
     canTest () {
       if (this.sidebar.item && this.workflow.canExecuteWorkflow) {
         return this.sidebar.item.triggers && this.sidebar.item.triggers.triggerID && this.sidebar.item.triggers.eventType === 'onManual'
@@ -568,6 +601,11 @@ export default {
       })
 
       this.render(this.workflow, true)
+
+      // Open workflow configurator if workflow is new
+      if (this.workflow.workflowID && this.workflow.workflowID === '0') {
+        this.$bvModal.show('workflow')
+      }
     } catch (e) {
       console.error(e)
     }
@@ -1826,11 +1864,8 @@ export default {
     },
 
     saveWorkflow () {
-      if (this.workflow.canUpdateWorkflow) {
-        this.$emit('save', this.getJsonModel())
-      } else {
-        this.raiseWarningAlert('Not allowed to update workflow', 'Update failed')
-      }
+      // Just emit, let parent component take care of permission checks
+      this.$emit('save', this.getJsonModel())
     },
   },
 }

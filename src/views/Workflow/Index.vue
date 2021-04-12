@@ -25,11 +25,11 @@
           >
             <div class="text-nowrap flex-grow-1">
               <b-button
-                v-if="newWorkflow && canCreate"
+                v-if="canCreate"
                 variant="primary"
                 size="lg"
                 class="mr-1"
-                @click="createWorkflow"
+                :to="{ name: 'workflow.create' }"
               >
                 New Workflow
               </b-button>
@@ -95,8 +95,6 @@
 </template>
 
 <script>
-import { automation } from '@cortezaproject/corteza-js'
-
 export default {
   name: 'WorkflowList',
 
@@ -117,13 +115,6 @@ export default {
   },
 
   computed: {
-    userID () {
-      if (this.$auth.user) {
-        return this.$auth.user.userID
-      }
-      return undefined
-    },
-
     tableFields () {
       return [
         {
@@ -191,29 +182,8 @@ export default {
         .catch(this.defaultErrorHandler('Failed to fetch workflows'))
     },
 
-    createWorkflow () {
-      this.newWorkflow = new automation.Workflow({
-        ownedBy: this.userID,
-        runAs: '0',
-        enabled: true,
-        handle: 'Handle',
-        meta: {
-          name: 'Unnamed Workflow',
-        },
-      })
-
-      this.$AutomationAPI.workflowCreate(this.newWorkflow)
-        .then(wf => this.openWorkflowEditor(wf))
-        .catch(this.defaultErrorHandler('Failed to create workflow'))
-    },
-
     handleRowClicked (workflow) {
       this.$router.push({ name: 'workflow.edit', params: { workflowID: workflow.workflowID } })
-    },
-
-    openWorkflowEditor (workflow) {
-      const { workflowID } = workflow
-      this.$router.push({ name: 'workflow.edit', params: { workflowID } })
     },
   },
 }
