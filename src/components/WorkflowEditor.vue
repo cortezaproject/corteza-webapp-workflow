@@ -1732,7 +1732,7 @@ export default {
               this.raiseSuccessAlert('Workflow test completed', 'Test completed')
             }
           } else {
-            this.raiseWarningAlert('Trace not avaliable', 'Test failed')
+            this.raiseWarningAlert('Trace not avaliable', 'Test completed')
           }
         })
         .catch(this.defaultErrorHandler('Test failed'))
