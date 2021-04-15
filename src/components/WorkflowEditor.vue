@@ -258,15 +258,6 @@
           >
             Delete
           </c-input-confirm>
-
-          <b-button
-            v-if="canTest"
-            variant="success"
-            class="ml-auto"
-            @click="setTestInput()"
-          >
-            Test workflow
-          </b-button>
         </div>
       </template>
     </b-sidebar>
@@ -346,25 +337,58 @@
       </div>
     </b-modal>
 
-    <!-- <b-modal
-      v-model="dryRun.show"
+    <b-modal
       id="dry-run"
+      v-model="dryRun.show"
+      size="lg"
       title="Initial scope"
-      ok-only
-      ok-title="Run"
+      scrollable
+      :body-class="dryRun.lookup ? '' : 'p-1'"
+      :ok-only="dryRun.lookup"
+      :ok-title="`${dryRun.lookup ? 'Load and Configure' : 'Run Workflow'}`"
+      cancel-title="Back"
       ok-variant="success"
-      @ok="testWorkflow"
+      @cancel.prevent="dryRun.lookup = true"
+      @ok="dryRunOk"
     >
-      <b-form-group
-        v-for="(property, index) in dryRun.initialScope"
-        :key="index"
-        :label="property.label"
+      <div
+        v-if="dryRun.lookup"
       >
-        <b-form-input
-          v-model="property.value"
+        <small>
+          The initial scope gets injected into the workflow at execution. To load avaliable variables, input the related IDs/Handles below<br>
+          If you do not wish to load any variables, click "Configure" to modify the initial scope before running workflow<br>
+          Variables that can't be loaded will be auto initialized as empty
+          <br><br>
+          WARNING: If prompts are used in the workflow, make sure that the related webapp is also opened. Otherwise workflow will timeout
+        </small>
+        <div
+          v-for="(p, index) in Object.values(dryRun.initialScope)"
+          :key="index"
+          class="mt-4"
+        >
+          <b-form-group
+            v-if="p.lookup"
+            :label="p.label"
+            :description="p.description"
+          >
+            <b-form-input
+              v-model="p.value"
+            />
+          </b-form-group>
+        </div>
+      </div>
+      <div
+        v-else
+        class="h-100"
+      >
+        <vue-json-editor
+          :value="dryRun.input"
+          :options="{ name: 'Initial Scope' }"
+          class="h-100"
+          @input="onDryRunEdit"
         />
-      </b-form-group>
-    </b-modal> -->
+      </div>
+    </b-modal>
   </div>
 </template>
 
@@ -373,11 +397,13 @@ import mxgraph from 'mxgraph'
 import Vue from 'vue'
 import { encodeGraph } from '../lib/codec'
 import { getStyleFromKind, getKindFromStyle } from '../lib/style'
-import toolbarConfig from '../lib/toolbar.js'
+import { encodeInput } from '../lib/dry-run'
+import toolbarConfig from '../lib/toolbar'
 import Configurator from '../components/Configurator'
 import Tooltip from '../components/Tooltip.vue'
 import WorkflowConfigurator from '../components/Configurator/Workflow'
 import Help from '../components/Help'
+import VueJsonEditor from 'v-jsoneditor'
 
 const {
   mxClient,
@@ -420,6 +446,7 @@ export default {
     Configurator,
     WorkflowConfigurator,
     Help,
+    VueJsonEditor,
   },
 
   props: {
@@ -482,8 +509,13 @@ export default {
       },
 
       dryRun: {
-        constraints: [],
         show: false,
+        processing: false,
+        lookup: false,
+        cellID: undefined,
+        initialScope: {},
+        input: {},
+        inputEdited: {},
       },
 
       zoomLevel: 1,
@@ -525,13 +557,6 @@ export default {
 
     canUpdateWorkflow () {
       return this.workflow.workflowID === '0' ? this.canCreate : this.workflow.canUpdateWorkflow
-    },
-
-    canTest () {
-      if (this.sidebar.item && this.workflow.canExecuteWorkflow) {
-        return this.sidebar.item.triggers && this.sidebar.item.triggers.triggerID && this.sidebar.item.triggers.eventType === 'onManual'
-      }
-      return false
     },
 
     hasIssues () {
@@ -676,6 +701,9 @@ export default {
       new mxRubberband(this.graph) // Enables multiple selection
       this.graph.edgeLabelsMovable = false
 
+      // Prevent showing tooltips on regular cells, just show overlay
+      this.graph.getTooltipForCell = () => {}
+
       // Enables guides
       mxGraphHandler.prototype.guidesEnabled = true
 
@@ -717,8 +745,10 @@ export default {
             const shadow = 'shadow'// ((this.getSelectedItem || {}).node || {}).id === cell.id ? 'shadow-lg' : 'shadow'
             const cog = `${process.env.BASE_URL}icons/cog.svg`
             const issue = `${process.env.BASE_URL}icons/issue.svg`
+            const playIcon = `${process.env.BASE_URL}icons/play.svg`
             const opacity = vertex.config.kind === 'trigger' && !vertex.triggers.enabled ? 'opacity: 0.7;' : ''
 
+            let play = ''
             let issues = ''
             let id = ''
             if (this.issues[cell.id]) {
@@ -727,10 +757,16 @@ export default {
               id = `<span class="show id-label">${cell.id}</span>`
             }
 
+            // Add play button to triggers
+            if (!this.dryRun.processing && this.workflow.canExecuteWorkflow && vertex.triggers && vertex.triggers.triggerID) {
+              play = `<img id="testWorkflow" src="${playIcon}" class="mr-1 hide pointer" style="width: 20px;"/>`
+            }
+
             label = `<div class="d-flex flex-column position-relative bg-white rounded step ${shadow}" style="width: 200px; height: 80px; border-radius: 5px;${opacity}">` +
                       '<div class="d-flex flex-row align-items-center text-primary px-2 my-1 h6 mb-0 font-weight-bold" style="height: 35px;">' +
                         `<img src="${icon}" class="mr-2"/>${type}` +
                         '<div class="d-flex h-100 ml-auto align-items-center">' +
+                          play +
                           `<img id="openSidebar" src="${cog}" class="hide pointer" style="width: 20px;"/>` +
                           id +
                           issues +
@@ -1208,6 +1244,9 @@ export default {
             } else if (event.target.id === 'openIssues') {
               this.issuesModal.issues = this.issues[cell.id]
               this.issuesModal.show = true
+            } else if (event.target.id === 'testWorkflow') {
+              this.dryRun.cellID = cell.id
+              this.loadTestScope()
             }
           } else if (!event.defaultPrevented) {
             // If click is on background and is not multiple selection, deselect all selected cells
@@ -1253,13 +1292,7 @@ export default {
 
       this.graph.model.addListener(mxEvent.CHANGE, (sender, evt) => {
         if (!this.rendering) {
-          if (this.highlights.length > 0) {
-            this.highlights.forEach(h => {
-              h.destroy()
-            })
-            this.highlights = []
-            this.graph.clearCellOverlays()
-          }
+          this.removeDryRunOverlay()
           this.$root.$emit('change-detected')
         }
       })
@@ -1588,7 +1621,17 @@ export default {
       }
     },
 
-    async setTestInput () {
+    removeDryRunOverlay () {
+      if (this.highlights.length > 0) {
+        this.highlights.forEach(h => {
+          h.destroy()
+        })
+        this.highlights = []
+        this.graph.clearCellOverlays()
+      }
+    },
+
+    async loadTestScope () {
       // Can only test saved workflow
       if (this.changeDetected) {
         this.raiseWarningAlert('Save workflow first to test it', 'Test failed')
@@ -1601,42 +1644,114 @@ export default {
         return
       }
 
-      this.testWorkflow()
+      const lookupableTypes = [
+        'record',
+        'oldRecord',
+        'module',
+        'oldModule',
+        'page',
+        'oldPage',
+        'namespace',
+        'oldNamespace',
+        'user',
+        'oldUser',
+        'role',
+        'oldRole',
+        'application',
+        'oldApplication',
+      ]
 
       // Assume trigger is valid since workflow is saved and has no issues
-      // const { resourceType, eventType } = this.sidebar.item.triggers
-      // await this.$AutomationAPI.eventTypesList()
-      //   .then(({ set }) => {
-      //     const et = (set.find(et => resourceType === et.resourceType && eventType === et.eventType ) || {}).properties
-      //     if (et) {
-      //       this.dryRun.initialScope = et.map(p => {
-      //         return { label: p.name, value: undefined }
-      //       })
+      const { resourceType, eventType } = this.vertices[this.dryRun.cellID].triggers
+      await this.$AutomationAPI.eventTypesList()
+        .then(({ set }) => {
+          const et = (set.find(et => resourceType === et.resourceType && eventType === et.eventType) || {}).properties
+          if (et) {
+            // Flag to check if lookup should be opened, or JSON editor
+            let lookup = false
+            if (et.length) {
+              this.dryRun.initialScope = et.reduce((initialScope, p) => {
+                let label = `${p.name}${lookupableTypes.includes(p.name) ? ' (ID)' : ''}`
+                if (p.type === 'ComposeNamespace' || p.type === 'ComposeModule') {
+                  label = `${p.name} (Handle)`
+                }
 
-      //       this.dryRun.show = true
-      //     } else {
-      //       this.raiseWarningAlert('Event type not found', 'Test failed')
-      //     }
-      //     if (this.dryRun.initialScope) {
-      //       this.dryRun.initialScope.map
-      //     }
-      //   })
-      //   .catch(this.defaultErrorHandler('Failed to fetch event types'))
+                let description = ''
+                if (p.type === 'ComposeRecord') {
+                  description = 'Namespace and Module required'
+                } else if (p.type === 'ComposeModule' || p.name === 'page' || p.name === 'oldPage') {
+                  description = 'Namespace required'
+                }
+
+                initialScope[p.name] = ({
+                  label,
+                  value: (this.dryRun.initialScope[p.name] || {}).value,
+                  lookup: lookupableTypes.includes(p.name),
+                  description,
+                })
+
+                lookup = lookup ? true : lookupableTypes.includes(p.name)
+                return initialScope
+              }, {})
+
+              // Set initial values for unlookable types
+              encodeInput(this.dryRun.initialScope, this.$ComposeAPI, this.$SystemAPI)
+                .then(input => {
+                  this.dryRun.input = input
+                  this.dryRun.lookup = lookup
+                  this.dryRun.show = true
+                })
+                .catch(this.defaultErrorHandler('Failed to load initial scope'))
+            } else {
+              // If no constraints, just run
+              this.dryRun.initialScope = {}
+              this.testWorkflow()
+            }
+          } else {
+            this.raiseWarningAlert('Event type not found', 'Test failed')
+          }
+        })
+        .catch(this.defaultErrorHandler('Failed to fetch event types'))
     },
 
-    async testWorkflow () {
+    async dryRunOk (e) {
+      if (this.dryRun.lookup) {
+        e.preventDefault()
+        // Lookup based on provided ids
+        encodeInput(this.dryRun.initialScope, this.$ComposeAPI, this.$SystemAPI)
+          .then(input => {
+            this.dryRun.input = input
+            this.dryRun.inputEdited = input
+            this.dryRun.lookup = false
+          })
+          .catch(this.defaultErrorHandler('Failed to load initial scope'))
+      } else {
+        this.testWorkflow(this.dryRun.inputEdited)
+      }
+    },
+
+    onDryRunEdit (e) {
+      this.dryRun.inputEdited = e
+    },
+
+    async testWorkflow (input = {}) {
+      this.removeDryRunOverlay()
+      this.dryRun.processing = true
+      this.redrawLabel(this.graph.model.getCell(this.dryRun.cellID).mxObjectId)
+
       const testParams = {
         workflowID: this.workflow.workflowID,
-        stepID: this.sidebar.item.triggers.stepID,
+        stepID: this.vertices[this.dryRun.cellID].triggers.stepID,
         trace: this.workflow.canManageWorkflowSessions || false,
         wait: true,
         async: true,
+        input,
       }
 
       const cells = {}
 
       this.raiseInfoAlert('Workflow test started', 'Test in progress')
-      this.$AutomationAPI.workflowExec(testParams)
+      await this.$AutomationAPI.workflowExec(testParams)
         .then(({ error = false, trace }) => {
           if (trace) {
             // Build cells object for easier drawing of overlay
@@ -1659,69 +1774,71 @@ export default {
             this.highlights = []
 
             // Handle first cell & edge
-            this.highlights[this.highlights.push(new mxCellHighlight(this.graph, '#719430', 3)) - 1].highlight(this.graph.view.getState(this.graph.model.getCell(this.sidebar.item.node.id)))
-            const firstEdge = this.graph.model.getEdgesBetween(this.graph.model.getCell(this.sidebar.item.node.id), this.graph.model.getCell(testParams.stepID), true)[0]
+            this.highlights[this.highlights.push(new mxCellHighlight(this.graph, '#719430', 3)) - 1].highlight(this.graph.view.getState(this.graph.model.getCell(this.dryRun.cellID)))
+            const firstEdge = this.graph.model.getEdgesBetween(this.graph.model.getCell(this.dryRun.cellID), this.graph.model.getCell(testParams.stepID), true)[0]
             if (firstEdge) {
               this.highlights[this.highlights.push(new mxCellHighlight(this.graph, '#719430', 3)) - 1].highlight(this.graph.view.getState(firstEdge))
             }
 
             // Handle others
             Object.entries(cells).forEach(([stepID, frames]) => {
-              let error = frames[0].error
-              let log = `#${frames[0].index + 1} - ${frames[0].stepTime}ms${error ? ' - ERROR: ' + error : ''}`
-              if (frames.length < 2) {
-                const [cell] = frames
-                // If first cell, dont paint parent edge
-                if (cell && cell.index !== 0) {
-                  this.graph.model.getEdgesBetween(this.graph.model.getCell(cell.parentID), this.graph.model.getCell(stepID), true)
-                    .forEach(edge => {
-                      this.highlights[this.highlights.push(new mxCellHighlight(this.graph, '#719430', 3)) - 1].highlight(this.graph.view.getState(edge))
-                    })
-                }
-              } else {
-                // If step is visited multiple times, keep track of execution info
-                const time = {
-                  min: frames[0].stepTime,
-                  max: frames[0].stepTime,
-                  avg: 0,
-                  sum: 0.0,
-                }
-
-                error = ''
-
-                frames.forEach(({ index, parentID, stepTime, error }, i) => {
-                  if (i !== 0) {
-                    if (stepTime < time.min) {
-                      time.min = stepTime
-                    }
-
-                    if (stepTime > time.max) {
-                      time.max = stepTime
-                    }
-
-                    log = `${log}<br>#${index + 1} - ${stepTime}ms${error ? ' - ERROR: ' + error : ''}`
+              if (stepID !== '0') {
+                let error = frames[0].error
+                let log = `#${frames[0].index + 1} - ${frames[0].stepTime}ms${error ? ' - ERROR: ' + error : ''}`
+                if (frames.length < 2) {
+                  const [cell] = frames
+                  // If first cell, dont paint parent edge
+                  if (cell && cell.index !== 0) {
+                    this.graph.model.getEdgesBetween(this.graph.model.getCell(cell.parentID), this.graph.model.getCell(stepID), true)
+                      .forEach(edge => {
+                        this.highlights[this.highlights.push(new mxCellHighlight(this.graph, '#719430', 3)) - 1].highlight(this.graph.view.getState(edge))
+                      })
+                  }
+                } else {
+                  // If step is visited multiple times, keep track of execution info
+                  const time = {
+                    min: frames[0].stepTime,
+                    max: frames[0].stepTime,
+                    avg: 0,
+                    sum: 0.0,
                   }
 
-                  time.sum += stepTime
-                  this.graph.model.getEdgesBetween(this.graph.model.getCell(parentID), this.graph.model.getCell(stepID), true)
-                    .forEach(edge => {
-                      this.highlights[this.highlights.push(new mxCellHighlight(this.graph, '#719430', 3)) - 1].highlight(this.graph.view.getState(edge))
-                    })
-                })
+                  error = ''
 
-                time.avg = time.sum ? (time.sum / frames.length).toFixed(2) : time.sum
-                log = `${log}<br><br>MIN: ${time.min}<br>MAX: ${time.max}<br>AVG: ${time.avg}<br>SUM: ${time.sum}`
-              }
+                  frames.forEach(({ index, parentID, stepTime, error }, i) => {
+                    if (i !== 0) {
+                      if (stepTime < time.min) {
+                        time.min = stepTime
+                      }
 
-              // Set info overlay
-              const time = new mxCellOverlay(new mxImage(`${process.env.BASE_URL}icons/clock-${error ? 'danger' : 'success'}.svg`, 16, 16), `<span>${log}</span>`)
-              this.graph.addCellOverlay(this.graph.model.getCell(stepID), time)
+                      if (stepTime > time.max) {
+                        time.max = stepTime
+                      }
 
-              // Highlight cell based on error
-              if (error) {
-                this.highlights[this.highlights.push(new mxCellHighlight(this.graph, '#E54122', 3)) - 1].highlight(this.graph.view.getState(this.graph.model.getCell(stepID)))
-              } else {
-                this.highlights[this.highlights.push(new mxCellHighlight(this.graph, '#719430', 3)) - 1].highlight(this.graph.view.getState(this.graph.model.getCell(stepID)))
+                      log = `${log}<br>#${index + 1} - ${stepTime}ms${error ? ' - ERROR: ' + error : ''}`
+                    }
+
+                    time.sum += stepTime
+                    this.graph.model.getEdgesBetween(this.graph.model.getCell(parentID), this.graph.model.getCell(stepID), true)
+                      .forEach(edge => {
+                        this.highlights[this.highlights.push(new mxCellHighlight(this.graph, '#719430', 3)) - 1].highlight(this.graph.view.getState(edge))
+                      })
+                  })
+
+                  time.avg = time.sum ? (time.sum / frames.length).toFixed(2) : time.sum
+                  log = `${log}<br><br>MIN: ${time.min}<br>MAX: ${time.max}<br>AVG: ${time.avg}<br>SUM: ${time.sum}`
+                }
+
+                // Set info overlay
+                const time = new mxCellOverlay(new mxImage(`${process.env.BASE_URL}icons/clock-${error ? 'danger' : 'success'}.svg`, 16, 16), `<span>${log}</span>`)
+                this.graph.addCellOverlay(this.graph.model.getCell(stepID), time)
+
+                // Highlight cell based on error
+                if (error) {
+                  this.highlights[this.highlights.push(new mxCellHighlight(this.graph, '#E54122', 3)) - 1].highlight(this.graph.view.getState(this.graph.model.getCell(stepID)))
+                } else {
+                  this.highlights[this.highlights.push(new mxCellHighlight(this.graph, '#719430', 3)) - 1].highlight(this.graph.view.getState(this.graph.model.getCell(stepID)))
+                }
               }
             })
 
@@ -1734,8 +1851,14 @@ export default {
           } else {
             this.raiseWarningAlert('Trace not avaliable', 'Test completed')
           }
+
+          this.dryRun.lookup = true
         })
         .catch(this.defaultErrorHandler('Test failed'))
+        .finally(() => {
+          this.dryRun.processing = false
+          this.redrawLabel(this.graph.model.getCell(this.dryRun.cellID).mxObjectId)
+        })
     },
 
     render (workflow, initial = false) {
