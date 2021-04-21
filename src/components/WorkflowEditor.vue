@@ -1,6 +1,7 @@
 <template>
   <div
     id="editor"
+    ref="editor"
     class="h-100 d-flex"
     @keydown="keybinds"
   >
@@ -573,12 +574,12 @@ export default {
   },
 
   watch: {
-    workflow: {
-      handler (workflow) {
-        if (!workflow.workflowID) return
+    'workflow.updatedAt': {
+      handler () {
+        if (!this.workflow.workflowID) return
 
         // If worklow exist render it
-        this.render(workflow)
+        this.render(this.workflow)
       },
     },
 
@@ -869,11 +870,13 @@ export default {
 
     makeCellCopy ({ edge, id }) {
       const cell = edge ? this.edges[id] : this.vertices[id]
-      let node = cell.node
+      const node = this.graph.model.cloneCell(cell.node, false)
+      node.id = cell.node.id
+      node.parent = cell.node.parent.id
 
-      if (cell.node.children) {
-        node = this.graph.model.cloneCell(cell.node, false)
-        node.id = cell.node.id
+      if (edge) {
+        node.source = cell.node.source.id
+        node.target = cell.node.target.id
       }
 
       const cellCopy = {
@@ -900,105 +903,168 @@ export default {
     },
 
     initClipboard () {
-      // TODO cutting swimlanes doesn't respect geometry
-      // TODO Nested swimlanes copy doesn't work properly
-      mxClipboard.copy = (graph, cells) => {
-        const exportableCells = graph.getExportableCells(graph.model.getTopmostCells(cells || graph.getSelectionCells()))
-
-        cells = {}
-        exportableCells.forEach(cell => {
-          if (!cells[cell.parent.id]) {
-            cells[cell.parent.id] = []
+      const absoluteGeometry = (cell) => {
+        // If parent not container cell
+        if (!cell.parent.geometry) {
+          return {
+            x: cell.geometry.x,
+            y: cell.geometry.y,
           }
+        }
 
-          cells[cell.parent.id].push(this.makeCellCopy(cell))
+        // Get absoluteGeometry recursively
+        const { x, y } = absoluteGeometry(cell.parent)
+        return {
+          x: cell.geometry.x + x,
+          y: cell.geometry.y + y,
+        }
+      }
 
-          if (cell.children) {
-            if (!cells[cell.id]) {
-              cells[cell.id] = []
+      const copyCells = (cells, parentID) => {
+        let copiedCells = {}
+        let copiedEdges = []
+
+        cells.forEach(cell => {
+          const newCell = this.makeCellCopy(cell)
+
+          if (cell.edge) {
+            copiedEdges.push(newCell)
+          } else {
+            if (!copiedCells[cell.parent.id]) {
+              copiedCells[cell.parent.id] = []
             }
-            cell.children.forEach(cc => {
-              cells[cc.parent.id].push(this.makeCellCopy(cc))
-            })
+
+            // Cell parent is container cell, and copyCells wasn't called by parent of curent cell
+            if (cell.parent.geometry && cell.parent.id !== parentID) {
+              // Get relative x,y recursively - Needed because of relative x,y in swimlanes. And paste not respecting relative x,y
+              const { x, y } = absoluteGeometry(cell)
+              newCell.node.geometry.x = x
+              newCell.node.geometry.y = y
+            }
+
+            copiedCells[cell.parent.id].push(newCell)
+
+            // Handle children
+            if (cell.children) {
+              if (!copiedCells[cell.id]) {
+                copiedCells[cell.id] = []
+              }
+
+              // Recursively copy children
+              const childrenCells = copyCells(cell.children, cell.id)
+              copiedCells = { ...copiedCells, ...childrenCells.cells }
+              copiedEdges = [...copiedEdges, ...childrenCells.edges]
+            }
           }
         })
 
-        mxClipboard.insertCount = 1
-        mxClipboard.setCells(cells)
+        return {
+          cells: copiedCells,
+          edges: copiedEdges,
+        }
+      }
 
-        return cells
+      const pasteCells = (evt) => {
+        // Get cells from actual system clipboard
+        const { cells = {}, edges = [] } = JSON.parse(evt.clipboardData.getData('text')) || {}
+
+        const delta = mxClipboard.insertCount * this.graph.gridSize
+        const defaultParent = this.graph.getDefaultParent()
+        const newCellIDs = {}
+        const allCells = []
+
+        this.graph.getModel().beginUpdate()
+
+        // Handle cells
+        Object.entries(cells).forEach(([parentID, children]) => {
+          children.forEach(({ node, ...rest }) => {
+            const parent = newCellIDs[parentID] ? this.graph.model.getCell(newCellIDs[parentID]) : defaultParent
+            const { id, geometry, value, style } = node
+
+            // Offset only the topmost cell. Children are relative and will be offset automaticially
+            if (!newCellIDs[parentID]) {
+              geometry.x += delta
+              geometry.y += delta
+            }
+
+            const newVertex = this.graph.insertVertex(parent, null, value, geometry.x, geometry.y, geometry.width, geometry.height, style)
+            allCells.push(newVertex)
+
+            newCellIDs[id] = newVertex.id
+            rest.config.stepID = newVertex.id
+
+            this.vertices[newVertex.id] = { node: newVertex, ...rest }
+          })
+        })
+
+        // Handle edges
+        edges.forEach(({ node, ...rest }) => {
+          const parent = newCellIDs[node.id] ? this.graph.model.getCell(newCellIDs[node.id]) : defaultParent
+          const { id, geometry, value, style } = node
+
+          node.source = this.vertices[newCellIDs[rest.config.parentID || node.source]].node
+          node.target = this.vertices[newCellIDs[rest.config.childID || node.target]].node
+
+          const newEdge = this.graph.insertEdge(parent, null, value, node.source, node.target, style)
+          newEdge.geometry.points = (geometry.points || []).map(({ x, y }) => {
+            return new mxPoint(x, y)
+          })
+          allCells.push(newEdge)
+
+          newCellIDs[id] = newEdge.id
+          rest.config.parentID = node.source.id
+          rest.config.childID = node.target.id
+
+          this.edges[newEdge.id] = { node: newEdge, ...rest }
+        })
+
+        Object.keys(this.vertices).forEach(vID => this.updateVertexConfig(vID))
+
+        mxClipboard.insertCount++
+        this.graph.setSelectionCells(allCells)
+        this.graph.getModel().endUpdate() // Updates the display
+      }
+
+      mxClipboard.copy = (graph, cells) => {
+        const exportableCells = graph.getExportableCells(graph.model.getTopmostCells(cells || graph.getSelectionCells()))
+        const copiedCells = copyCells(exportableCells)
+
+        // Copy to actual browser(system) clipboard
+        const editor = this.$refs.editor
+        const tempInput = document.createElement('input')
+        editor.appendChild(tempInput)
+        tempInput.setAttribute('value', JSON.stringify(copiedCells))
+        tempInput.select()
+        document.execCommand('copy')
+        editor.removeChild(tempInput)
+
+        mxClipboard.insertCount = 1
+
+        return copiedCells
       }
 
       mxClipboard.cut = (graph, cells) => {
-        cells = mxClipboard.copy(graph, cells)
-        let cutCells = []
-        Object.entries(cells).forEach(([parentID, children]) => {
-          cutCells = [...cutCells, ...children.map(({ node }) => {
-            if (node.style.includes('swimlane')) {
-              return this.graph.model.getCell(node.id)
-            } else {
-              return node
-            }
-          })]
+        const copiedCells = mxClipboard.copy(graph, cells)
+
+        const cutCells = []
+        Object.entries(copiedCells.cells).forEach(([parentID, children]) => {
+          children.forEach(({ node }) => {
+            cutCells.push(this.graph.model.getCell(node.id))
+          })
+        })
+
+        copiedCells.edges.forEach(({ node }) => {
+          cutCells.push(this.graph.model.getCell(node.id))
         })
 
         mxClipboard.insertCount = 0
-        mxClipboard.removeCells(graph, cutCells)
+        this.graph.removeCells(cutCells)
 
         return cells
       }
 
-      mxClipboard.paste = (graph) => {
-        let cells = []
-
-        if (!mxClipboard.isEmpty()) {
-          const delta = mxClipboard.insertCount * mxClipboard.STEPSIZE
-          const defaultParent = graph.getDefaultParent()
-          const newCellIDs = {}
-          const allCells = []
-          cells = mxClipboard.getCells()
-          if (cells) {
-            Object.entries(cells).forEach(([parentID, children]) => {
-              let tmpParent = newCellIDs[parentID]
-              tmpParent = graph.model.contains(tmpParent) ? tmpParent : defaultParent
-
-              const configs = []
-              const nodes = []
-
-              children.forEach(({ node, ...rest }) => {
-                nodes.push(node)
-                configs.push(rest)
-              })
-
-              graph.importCells(graph.getImportableCells(nodes), delta, delta, tmpParent).forEach((node, index) => {
-                if (node) {
-                  const rest = JSON.parse(JSON.stringify(configs[index]))
-                  // Remap ID's and Create edges/vertices entry
-
-                  if (node.edge) {
-                    rest.config.parentID = node.source.id
-                    rest.config.childID = node.target.id
-                    this.edges[node.id] = { node, ...rest }
-                  } else {
-                    newCellIDs[rest.config.stepID] = node
-                    rest.config.stepID = node.id
-                    this.vertices[node.id] = { node, ...rest }
-                  }
-                  this.redrawLabel(node.mxObjectId)
-                }
-
-                allCells.push(node)
-              })
-            })
-          }
-
-          mxClipboard.insertCount++
-          graph.setSelectionCells(allCells)
-          cells = allCells
-        }
-
-        return cells
-      }
+      // Register paste handler
+      document.querySelector('body').addEventListener('paste', pasteCells)
     },
 
     // Works on all of editor (mostly)
@@ -1039,11 +1105,6 @@ export default {
       // Ctrl + C
       this.keyHandler.controlKeys[67] = () => {
         mxClipboard.copy(this.graph, this.graph.getSelectionCells())
-      }
-
-      // Ctrl + V
-      this.keyHandler.controlKeys[86] = () => {
-        mxClipboard.paste(this.graph)
       }
 
       // Ctrl + A
@@ -1090,7 +1151,7 @@ export default {
           let dy = 0
 
           // If shift is not pressed move cell by whole grid block
-          const delta = evt.shiftKey ? 8 : 40
+          const delta = evt.shiftKey ? this.graph.gridSize : this.graph.gridSize * 5
 
           if (keyCode === 37) {
             dx = -delta
@@ -1919,7 +1980,7 @@ export default {
       this.graph.getModel().beginUpdate() // Adds cells to the model in a single step
 
       try {
-        // Add nodes
+        // Add vertices
         steps.sort((a, b) => a.meta.visual.parent - b.meta.visual.parent)
           .forEach(({ meta = {}, ...config }) => {
             const node = (meta || {}).visual
