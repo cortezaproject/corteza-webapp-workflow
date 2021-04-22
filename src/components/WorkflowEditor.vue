@@ -475,7 +475,6 @@ export default {
   data () {
     return {
       graph: undefined,
-      eventHandler: undefined,
       keyHandler: undefined,
       undoManager: undefined,
 
@@ -606,7 +605,6 @@ export default {
 
       mxEvent.disableContextMenu(this.$refs.graph)
       this.graph = new mxGraph(this.$refs.graph, null, mxConstants.DIALECT_STRICTHTML)
-      this.eventHandler = new mxGraphHandler(this.graph)
       this.keyHandler = new mxKeyHandler(this.graph)
 
       this.setup()
@@ -707,6 +705,9 @@ export default {
 
       // Enables guides
       mxGraphHandler.prototype.guidesEnabled = true
+
+      // Prevent cloning with ctrl + drag
+      mxGraphHandler.prototype.cloneEnabled = false
 
       // Alt disables guides
       mxGraphHandler.prototype.useGuidesForEvent = (evt) => {
