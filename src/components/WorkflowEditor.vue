@@ -646,8 +646,10 @@ export default {
     sidebarClose () {
       this.sidebar.show = false
       setTimeout(() => {
+        const mxObjectId = this.sidebar.item.node.mxObjectId
         this.sidebar.item = undefined
         this.sidebar.itemType = undefined
+        this.redrawLabel(mxObjectId)
       }, 300)
     },
 
@@ -665,6 +667,7 @@ export default {
         this.sidebar.item = item
         this.sidebar.itemType = itemType
         this.sidebar.show = true
+        this.redrawLabel(item.node.mxObjectId)
       } else {
         // If item already opened in sidebar, keep open
         if (this.sidebar.item && item.node.id === this.sidebar.item.node.id) {
@@ -674,13 +677,14 @@ export default {
         // Otherwise reopen completely
         this.sidebar.show = false
         this.sidebar.outEdges = (item.node.edges || []).length
-        if (!this.sidebar.show) {
-          setTimeout(() => {
-            this.sidebar.item = item
-            this.sidebar.itemType = itemType
-            this.sidebar.show = !this.sidebar.show
-          }, 300)
-        }
+        const oldMxObjectId = ((this.getSelectedItem || {}).node || {}).mxObjectId
+        this.sidebar.item = item
+        this.sidebar.itemType = itemType
+        this.redrawLabel(oldMxObjectId)
+        this.redrawLabel(item.node.mxObjectId)
+        setTimeout(() => {
+          this.sidebar.show = !this.sidebar.show
+        }, 300)
       }
     },
 
@@ -744,7 +748,7 @@ export default {
           if (vertex && vertex.config.kind !== 'visual') {
             const icon = getStyleFromKind(vertex.config).icon
             const type = vertex.config.kind.charAt(0).toUpperCase() + vertex.config.kind.slice(1)
-            const shadow = 'shadow'// ((this.getSelectedItem || {}).node || {}).id === cell.id ? 'shadow-lg' : 'shadow'
+            const shadow = ((this.getSelectedItem || {}).node || {}).id === cell.id ? 'shadow-lg' : 'shadow'
             const cog = `${process.env.BASE_URL}icons/cog.svg`
             const issue = `${process.env.BASE_URL}icons/issue.svg`
             const playIcon = `${process.env.BASE_URL}icons/play.svg`
