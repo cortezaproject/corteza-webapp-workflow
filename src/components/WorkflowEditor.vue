@@ -280,6 +280,22 @@
           class="ml-2"
         />
       </template>
+
+      <div
+        class="d-flex mb-3"
+      >
+        <import
+          :disabled="importProcessing"
+          @import="importJSON"
+        />
+
+        <export
+          v-if="workflow.workflowID && workflow.workflowID !== '0'"
+          :workflows="[workflow.workflowID]"
+          :file-name="workflow.handle"
+          class="ml-1"
+        />
+      </div>
       <workflow-configurator
         v-if="workflow.workflowID"
         :workflow="workflow"
@@ -405,6 +421,8 @@ import Tooltip from '../components/Tooltip.vue'
 import WorkflowConfigurator from '../components/Configurator/Workflow'
 import Help from '../components/Help'
 import VueJsonEditor from 'v-jsoneditor'
+import Import from '../components/Import'
+import Export from '../components/Export'
 
 const {
   mxClient,
@@ -448,15 +466,17 @@ export default {
     WorkflowConfigurator,
     Help,
     VueJsonEditor,
+    Import,
+    Export,
   },
 
   props: {
-    workflow: {
+    workflowObject: {
       type: Object,
       default: () => {},
     },
 
-    triggers: {
+    workflowTriggers: {
       type: Array,
       default: () => [],
     },
@@ -478,6 +498,8 @@ export default {
       keyHandler: undefined,
       undoManager: undefined,
 
+      workflow: {},
+      triggers: [],
       vertices: {},
       edges: {},
       issues: {},
@@ -517,6 +539,8 @@ export default {
         input: {},
         inputEdited: {},
       },
+
+      importProcessing: false,
 
       zoomLevel: 1,
     }
@@ -573,15 +597,6 @@ export default {
   },
 
   watch: {
-    'workflow.updatedAt': {
-      handler () {
-        if (!this.workflow.workflowID) return
-
-        // If worklow exist render it
-        this.render(this.workflow)
-      },
-    },
-
     'workflow.runAs': {
       immediate: true,
       handler (runAs = '0') {
@@ -593,6 +608,20 @@ export default {
         } else {
           this.runAsUser = undefined
         }
+      },
+    },
+
+    workflowObject: {
+      immediate: true,
+      handler (workflow) {
+        this.workflow = workflow
+      },
+    },
+
+    workflowTriggers: {
+      immediate: true,
+      handler (triggers) {
+        this.triggers = triggers
       },
     },
   },
@@ -2052,9 +2081,32 @@ export default {
       return encodeGraph(this.graph.getModel(), this.vertices, this.edges)
     },
 
+    importJSON (workflows = []) {
+      this.importProcessing = true
+
+      // Only render first workflow
+      const [workflow] = workflows
+
+      // Replace triggers
+      this.triggers = workflow.triggers || []
+
+      // Replace workflow steps and paths
+      this.workflow = {
+        ...this.workflow,
+        steps: workflow.steps || [],
+        paths: workflow.paths || [],
+      }
+
+      // Fresh render
+      this.render(this.workflow)
+
+      this.importProcessing = false
+      this.$root.$emit('change-detected')
+    },
+
     saveWorkflow () {
       // Just emit, let parent component take care of permission checks
-      this.$emit('save', this.getJsonModel())
+      this.$emit('save', { ...this.workflow, ...this.getJsonModel() })
     },
   },
 }

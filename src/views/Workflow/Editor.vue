@@ -1,8 +1,8 @@
 <template>
   <workflow-editor
     v-if="!processing"
-    :workflow="workflow"
-    :triggers="triggers"
+    :workflow-object="workflow"
+    :workflow-triggers="triggers"
     :change-detected="changeDetected"
     :can-create="canCreate"
     @save="saveWorkflow"
@@ -117,14 +117,15 @@ export default {
         .catch(this.defaultErrorHandler('Failed to fetch automation permissions'))
     },
 
-    async saveWorkflow ({ steps = [], paths = [], triggers = [] }) {
+    async saveWorkflow (wf) {
       try {
+        this.workflow = wf
         const isNew = !this.workflowID
+
+        const { steps = [], paths = [], triggers = [] } = this.workflow
 
         this.workflow.steps = steps
         this.workflow.paths = paths
-
-        let wf = this.workflow
 
         if (isNew) {
           // Create workflow
