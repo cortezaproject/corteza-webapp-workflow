@@ -220,7 +220,7 @@ export default {
 
       const skippedWorkflows = []
 
-      await Promise.all(workflows.map(({ triggers, ...wf }) => {
+      await Promise.all(workflows.map(({ triggers = [], ...wf }) => {
         // Create workflow
         return this.$AutomationAPI.workflowCreate({ ownedBy: this.userID, runAs: '0', ...wf })
           .then(({ workflowID }) => {
@@ -234,16 +234,16 @@ export default {
               })
             }))
           })
-          .catch(() => {
+          .catch(({ message }) => {
             // Skip workflow and add to skipped list
             if (wf.handle) {
-              skippedWorkflows.push(wf.handle)
+              skippedWorkflows.push(`${wf.handle}${message ? ' - ' + message : ''};`)
             }
           })
       }))
         .then(() => {
           if (skippedWorkflows.length) {
-            this.raiseInfoAlert(`Skipped workflows: ${skippedWorkflows.join(', ')}`)
+            this.raiseInfoAlert(`${skippedWorkflows.join(' ')}`, 'Skipped workflows')
           } else {
             this.raiseSuccessAlert('Workflows imported')
           }
