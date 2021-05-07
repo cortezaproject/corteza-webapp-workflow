@@ -494,6 +494,8 @@ export default {
 
   data () {
     return {
+      initialized: false,
+
       graph: undefined,
       keyHandler: undefined,
       undoManager: undefined,
@@ -615,6 +617,11 @@ export default {
       immediate: true,
       handler (workflow) {
         this.workflow = workflow
+
+        // Every change to workflowObject from parent component after initial render triggers rerender
+        if (this.initialized) {
+          this.render(this.workflow)
+        }
       },
     },
 
@@ -659,6 +666,8 @@ export default {
       if (this.workflow.workflowID && this.workflow.workflowID === '0') {
         this.$bvModal.show('workflow')
       }
+
+      this.initialized = true
     } catch (e) {
       console.error(e)
     }

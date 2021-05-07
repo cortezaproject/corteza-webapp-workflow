@@ -119,10 +119,9 @@ export default {
 
     async saveWorkflow (wf) {
       try {
-        this.workflow = wf
-        const isNew = !this.workflowID
+        const isNew = wf.workflowID === '0'
 
-        const { steps = [], paths = [], triggers = [] } = this.workflow
+        const { steps = [], paths = [], triggers = [] } = wf
 
         this.workflow.steps = steps
         this.workflow.paths = paths
