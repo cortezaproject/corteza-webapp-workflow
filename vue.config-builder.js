@@ -1,5 +1,4 @@
 const webpack = require('webpack')
-const exec = require('child_process').execSync
 const path = require('path')
 
 module.exports = ({ appFlavour, appName, appLabel, version, theme, packageAlias, root = path.resolve('.'), env = process.env.NODE_ENV }) => {
@@ -59,7 +58,7 @@ module.exports = ({ appFlavour, appName, appLabel, version, theme, packageAlias,
         new webpack.DefinePlugin({
           FLAVOUR: JSON.stringify(appFlavour),
           WEBAPP: JSON.stringify(appLabel),
-          VERSION: JSON.stringify(version || ('' + exec('git describe --always --tags')).trim()),
+          VERSION: JSON.stringify(version),
           BUILD_TIME: JSON.stringify((new Date()).toISOString()),
         }),
       ],

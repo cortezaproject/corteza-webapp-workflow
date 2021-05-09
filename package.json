@@ -6,6 +6,7 @@
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build --mode production",
     "lint": "vue-cli-service lint && stylelint '**/*.{vue,scss}' --fix",
+    "test:unit": "vue-cli-service test:unit",
     "cdeps": "yarn upgrade @cortezaproject/corteza-js @cortezaproject/corteza-vue"
   },
   "gitHooks": {
@@ -32,9 +33,11 @@
   "devDependencies": {
     "@vue/cli-plugin-babel": "~4.5.0",
     "@vue/cli-plugin-eslint": "~4.5.0",
+    "@vue/cli-plugin-unit-mocha": "^4.5.12",
     "@vue/cli-service": "~4.5.0",
     "@vue/eslint-config-prettier": "^6.0.0",
     "@vue/eslint-config-standard": "^5.1.0",
+    "@vue/test-utils": "^1.1.4",
     "babel-eslint": "^10.1.0",
     "babel-loader": "^7.0.0",
     "babel-preset-vue": "^2.0.2",
