@@ -2,9 +2,8 @@ const webpack = require('webpack')
 const exec = require('child_process').execSync
 const path = require('path')
 
-module.exports = ({ appFlavour, appName, appLabel, version, theme, packageAlias, root = path.resolve('.'), env = process.env.NODE_ENV }) => {
+module.exports = ({ appFlavour, appLabel, version, theme, packageAlias, root = path.resolve('.'), env = process.env.NODE_ENV }) => {
   const isDevelopment = (env === 'development')
-  const isProduction = (env === 'production')
   const isTest = (env === 'test')
 
   if (isTest || isDevelopment) {
@@ -21,7 +20,6 @@ module.exports = ({ appFlavour, appName, appLabel, version, theme, packageAlias,
     }
   }
 
-  const publicPath = isProduction ? '/' + appName : '/'
   const optimization = isTest ? {} : {
     usedExports: true,
     runtimeChunk: 'single',
@@ -37,7 +35,7 @@ module.exports = ({ appFlavour, appName, appLabel, version, theme, packageAlias,
   }
 
   return {
-    publicPath,
+    publicPath: './',
 
     // Vue ESLint does not understand that it should NOT dive into node_modules!
     //
