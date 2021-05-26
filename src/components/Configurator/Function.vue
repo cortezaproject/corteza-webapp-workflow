@@ -240,7 +240,7 @@ export default {
     functionTypes () {
       return [
         { value: '', text: 'Select function', disabled: true },
-        ...this.functions.map(({ ref, meta }) => ({ value: ref, text: meta.short })),
+        ...this.functions.map(({ ref, meta, disabled = false }) => ({ value: ref, text: meta.short, disabled })),
       ]
     },
 
