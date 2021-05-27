@@ -350,15 +350,18 @@ export default {
 
     getDefaultConstraint: {
       get () {
-        if (this.item.triggers.constraints.values) {
-          return this.item.triggers.constraints.values[0]
+        const constraints = this.item.triggers.constraints[0] || { values: [] }
+
+        if (constraints.values.length) {
+          return (this.item.triggers.constraints[0] || { values: [] }).values[0]
         }
         return ''
       },
 
       set (constraint) {
-        if (this.item.triggers.constraints.values.length) {
-          return this.item.triggers.constraints.values[0]
+        const constraints = this.item.triggers.constraints[0] || { values: [] }
+        if (constraints.values.length) {
+          return constraints.values[0]
         } else {
           this.item.triggers.constraints = [{
             values: [constraint],
