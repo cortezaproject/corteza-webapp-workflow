@@ -121,26 +121,18 @@ export default {
       try {
         const isNew = wf.workflowID === '0'
 
-        const { steps = [], paths = [], triggers = [] } = wf
+        // AC
+        if (isNew && !this.canCreate) {
+          throw new Error('Not allowed to create workflow')
+        } else if (!isNew && !this.workflow.canUpdateWorkflow) {
+          throw new Error('Not allowed to update workflow')
+        }
 
+        const { steps = [], paths = [], triggers = [] } = wf
         this.workflow.steps = steps
         this.workflow.paths = paths
 
-        if (isNew) {
-          // Create workflow
-          if (!this.canCreate) {
-            throw new Error('Not allowed to create workflow')
-          }
-
-          wf = await this.$AutomationAPI.workflowCreate(this.workflow)
-        } else {
-          if (!this.workflow.canUpdateWorkflow) {
-            throw new Error('Not allowed to update workflow')
-          }
-
-          wf = await this.$AutomationAPI.workflowUpdate(this.workflow)
-        }
-
+        // Firstly handle trigger updates
         // Delete triggers of steps that were deleted
         await Promise.all(this.triggers.filter(({ triggerID }) => {
           return !triggers.find(t => triggerID === t.triggerID)
@@ -167,20 +159,27 @@ export default {
           })).catch(() => {
             throw new Error('Make sure all trigger steps are properly configured')
           })
-
-          await this.fetchTriggers(wf.workflowID)
-
-          this.changeDetected = false
-          window.onbeforeunload = null
-
-          this.workflow = wf
-          this.raiseSuccessAlert('Workflow updated')
-
-          if (isNew) {
-            // Redirect to edit route if new
-            this.$router.push({ name: 'workflow.edit', params: { workflowID: this.workflow.workflowID } })
-          }
         })
+
+        // Secondly handle workflow updates
+        if (isNew) {
+          wf = await this.$AutomationAPI.workflowCreate(this.workflow)
+        } else {
+          wf = await this.$AutomationAPI.workflowUpdate(this.workflow)
+        }
+
+        // Lastly update all of the bits
+        await this.fetchTriggers(wf.workflowID)
+        this.changeDetected = false
+        window.onbeforeunload = null
+
+        this.workflow = wf
+        this.raiseSuccessAlert('Workflow updated')
+
+        if (isNew) {
+          // Redirect to edit route if new
+          this.$router.push({ name: 'workflow.edit', params: { workflowID: this.workflow.workflowID } })
+        }
       } catch (e) {
         this.defaultErrorHandler('Save failed')(e)
       }
