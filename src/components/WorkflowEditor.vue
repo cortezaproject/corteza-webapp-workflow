@@ -267,6 +267,9 @@
       id="workflow"
       title="Workflow configuration"
       size="lg"
+      :hide-header-close="workflow.workflowID === '0'"
+      :no-close-on-backdrop="workflow.workflowID === '0'"
+      :no-close-on-esc="workflow.workflowID === '0'"
     >
       <template #modal-title>
         Workflow Configuration
@@ -616,6 +619,11 @@ export default {
     workflowObject: {
       immediate: true,
       handler (workflow) {
+        // If first save was successful, close workflow configurator modal
+        if (workflow.workflowID !== this.workflow.workflowID) {
+          this.$bvModal.hide('workflow')
+        }
+
         this.workflow = workflow
 
         // Every change to workflowObject from parent component after initial render triggers rerender
