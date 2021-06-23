@@ -190,13 +190,13 @@
         </b-table>
 
         <b-form-group
-          v-else
+          v-else-if="item.triggers.constraints[0]"
           :label="item.triggers.eventType.replace('on', '')"
           label-class="text-primary"
           class="mt-0 mb-4 mx-4"
         >
           <b-form-input
-            v-model="getDefaultConstraint"
+            v-model="item.triggers.constraints[0].values[0]"
             @change="$root.$emit('change-detected')"
           />
         </b-form-group>
@@ -346,28 +346,6 @@ export default {
         { value: 'not like', text: 'Not like' },
 
       ]
-    },
-
-    getDefaultConstraint: {
-      get () {
-        const constraints = this.item.triggers.constraints[0] || { values: [] }
-
-        if (constraints.values.length) {
-          return (this.item.triggers.constraints[0] || { values: [] }).values[0]
-        }
-        return ''
-      },
-
-      set (constraint) {
-        const constraints = this.item.triggers.constraints[0] || { values: [] }
-        if (constraints.values.length) {
-          return constraints.values[0]
-        } else {
-          this.item.triggers.constraints = [{
-            values: [constraint],
-          }]
-        }
-      },
     },
   },
 
