@@ -1,8 +1,5 @@
 export default [
   {
-    kind: 'hr',
-  },
-  {
     title: 'Swimlane',
     kind: 'visual',
     ref: 'swimlane',

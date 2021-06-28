@@ -2,56 +2,53 @@
   <div
     id="editor"
     ref="editor"
-    class="h-100 d-flex"
+    class="d-flex w-100 h-100"
     @keydown="keybinds"
   >
+    <portal to="topbar-title">
+      {{ workflow.meta.name || workflow.handle }}
+    </portal>
+
+    <portal to="topbar-tools">
+      <b-button
+        v-b-modal.workflow
+        variant="primary"
+        size="sm"
+        class="d-flex align-items-center"
+      >
+        Edit workflow
+        <font-awesome-icon
+          :icon="['fas', 'cog']"
+          class="ml-1"
+        />
+      </b-button>
+    </portal>
+
     <b-card
-      no-body
       no-footer
+      body-class="toolbar d-flex flex-column p-2"
       class="h-100 border-right shadow-lg rounded-0"
     >
-      <b-card-header
-        class="d-flex flex-column justify-content-between align-items-center sticky-top h4 p-2"
-        header-bg-variant="white"
-        header-text-variant="white"
-        header-border-variant="primary"
+      <div
+        id="toolbar"
+        ref="toolbar"
+        class="d-flex flex-column align-items-center mt-1 overflow-auto"
+      />
+
+      <div
+        class="d-flex flex-grow-1 align-items-end justify-content-center p-3"
       >
-        <b-img
-          :src="getLogo"
-          class="mb-4"
-        />
-        <router-link
-          :to="{name: 'workflow.list'}"
+        <b-button
+          v-b-modal.help
+          variant="link"
+          class="p-0"
         >
           <font-awesome-icon
-            :icon="['fas', 'home']"
+            :icon="['far', 'question-circle']"
+            class="h4 mb-0"
           />
-        </router-link>
-      </b-card-header>
-      <b-card-body
-        class="d-flex flex-column p-1"
-      >
-        <div
-          id="toolbar"
-          ref="toolbar"
-          class="d-flex flex-column align-items-center mt-1 overflow-auto"
-        />
-
-        <div
-          class="d-flex flex-grow-1 align-items-end justify-content-center p-3"
-        >
-          <b-button
-            v-b-modal.help
-            variant="link"
-            class="p-0"
-          >
-            <font-awesome-icon
-              :icon="['far', 'question-circle']"
-              class="h4 mb-0"
-            />
-          </b-button>
-        </div>
-      </b-card-body>
+        </b-button>
+      </div>
     </b-card>
 
     <div
@@ -60,141 +57,116 @@
     />
 
     <b-card
-      no-body
       no-header
       class="w-100 h-100 border-0 shadow-sm rounded-0"
       body-class="p-0"
     >
-      <b-card-body
-        class="p-0"
+      <div
+        v-if="workflow.meta"
+        class="position-absolute pl-2 pt-2 w-50"
+        style="z-index: 1;"
+      >
+        <p
+          v-if="workflow.meta.description"
+          :class="{ 'mb-2': getRunAs }"
+          class="mb-0 text-truncate"
+          style="white-space: pre-line; max-height: 48px;"
+        >
+          {{ workflow.meta.description }}
+        </p>
+
+        <p
+          v-if="getRunAs"
+          class="mb-0 text-truncate"
+        >
+          <b>Run as:</b> <samp>{{ getRunAs }}</samp>
+        </p>
+
+        <div
+          class="d-flex align-items-center mb-1"
+        >
+          <h5
+            v-if="!workflow.enabled"
+            class="mb-0 mr-1"
+          >
+            <b-badge
+              variant="danger"
+            >
+              Disabled
+            </b-badge>
+          </h5>
+
+          <h5
+            v-if="hasIssues"
+            class="mb-0"
+          >
+            <b-badge
+              variant="danger"
+            >
+              Issues detected
+            </b-badge>
+          </h5>
+        </div>
+      </div>
+
+      <div
+        class="bg-white position-absolute m-2 zoom border border-secondary"
+        style="z-index: 1; width: fit-content;"
       >
         <div
-          v-if="workflow.meta"
-          class="position-absolute pl-3 pt-2 w-100 mw-100"
-          style="z-index: 1;"
+          class="d-flex align-items-baseline p-2"
         >
-          <div
-            class="d-flex align-items-center"
-            :class="{ 'mb-2': workflow.meta.description }"
-          >
-            <b-button
-              v-b-modal.workflow
-              variant="link"
-              class="p-0 mr-3"
-            >
-              <font-awesome-icon
-                :icon="['fas', 'cog']"
-                class="h4 mb-0"
-              />
-            </b-button>
-            <h1
-              class="mb-0 text-truncate"
-            >
-              <b>{{ workflow.meta.name || workflow.handle }}</b>
-            </h1>
-          </div>
-
-          <p
-            v-if="workflow.meta.description"
-            class="mb-0 text-truncate"
-            style="white-space: pre-line; max-width: 50%; max-height: 48px;"
-            :class="{ 'mb-2': getRunAs }"
-          >
-            {{ workflow.meta.description }}
-          </p>
-          <p
-            v-if="getRunAs"
-            class="mb-0 text-truncate"
-          >
-            <b>Run as:</b> <samp>{{ getRunAs }}</samp>
-          </p>
-
-          <div
-            class="d-flex align-items-center mb-1"
-          >
-            <h5
-              v-if="!workflow.enabled"
-              class="mb-0 mr-1"
-            >
-              <b-badge
-                variant="danger"
-              >
-                Disabled
-              </b-badge>
-            </h5>
-
-            <h5
-              v-if="hasIssues"
-              class="mb-0"
-            >
-              <b-badge
-                variant="danger"
-              >
-                Issues detected
-              </b-badge>
-            </h5>
-          </div>
-        </div>
-
-        <div
-          class="bg-white position-absolute m-2 zoom border border-secondary"
-          style="z-index: 1; width: fit-content;"
-        >
-          <div
-            class="d-flex align-items-baseline p-2"
-          >
-            {{ getZoomPercent }}
-            <b-button
-              variant="link"
-              class="ml-4 p-0"
-              @click="zoom(false)"
-            >
-              <font-awesome-icon
-                :icon="['fas', 'search-minus']"
-              />
-            </b-button>
-            <b-button
-              variant="link"
-              class="ml-1 p-0"
-              @click="zoom()"
-            >
-              <font-awesome-icon
-                :icon="['fas', 'search-plus']"
-                class="pointer"
-                @click="zoom()"
-              />
-            </b-button>
-            <b-button
-              variant="link"
-              class="ml-2 p-0 text-decoration-none"
-              @click="resetZoom()"
-            >
-              Reset
-            </b-button>
-          </div>
-        </div>
-
-        <div
-          class="d-flex flex-column flex-shrink position-absolute fixed-bottom m-2"
-          style="z-index: 1; width: fit-content;"
-        >
+          {{ getZoomPercent }}
           <b-button
-            v-if="changeDetected"
-            variant="dark"
-            class="rounded-0 py-2 px-3"
-            :disabled="!canUpdateWorkflow"
-            @click="saveWorkflow()"
+            variant="link"
+            class="ml-4 p-0"
+            @click="zoom(false)"
           >
-            Changes detected {{ `${canUpdateWorkflow ? 'Click here to save.' : ''}` }}
+            <font-awesome-icon
+              :icon="['fas', 'search-minus']"
+            />
+          </b-button>
+          <b-button
+            variant="link"
+            class="ml-1 p-0"
+            @click="zoom()"
+          >
+            <font-awesome-icon
+              :icon="['fas', 'search-plus']"
+              class="pointer"
+              @click="zoom()"
+            />
+          </b-button>
+          <b-button
+            variant="link"
+            class="ml-2 p-0 text-decoration-none"
+            @click="resetZoom()"
+          >
+            Reset
           </b-button>
         </div>
+      </div>
 
-        <div
-          id="graph"
-          ref="graph"
-          class="h-100 p-0"
-        />
-      </b-card-body>
+      <div
+        class="d-flex flex-column flex-shrink position-absolute fixed-bottom m-2"
+        style="z-index: 1; width: fit-content;"
+      >
+        <b-button
+          v-if="changeDetected"
+          variant="dark"
+          class="rounded-0 py-2 px-3"
+          :disabled="!canUpdateWorkflow"
+          @click="saveWorkflow()"
+        >
+          Changes detected {{ `${canUpdateWorkflow ? 'Click here to save.' : ''}` }}
+        </b-button>
+      </div>
+
+      <div
+        id="graph"
+        ref="graph"
+        class="h-100 p-0"
+      />
     </b-card>
 
     <!--
@@ -2129,9 +2101,14 @@ export default {
 }
 </script>
 
-<style scoped lang="scss">
+<style lang="scss" scoped>
 #graph {
   outline: none;
+}
+
+.toolbar {
+  background-color: #F3F3F5 !important;
+  width: 66px;
 }
 
 .zoom {

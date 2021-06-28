@@ -24,6 +24,7 @@
     "i18next": "^17.0.9",
     "i18next-browser-languagedetector": "^3.0.2",
     "mxgraph": "^4.2.0",
+    "portal-vue": "^2.1.7",
     "v-jsoneditor": "^1.4.2",
     "vue": "^2.6.11",
     "vue-router": "^3.4.9",

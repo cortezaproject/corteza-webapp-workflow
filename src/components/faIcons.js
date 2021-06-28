@@ -8,16 +8,20 @@ import {
   faMouse,
   faCog,
   faChevronLeft,
+  faChevronRight,
   faChevronDown,
   faExclamationTriangle,
   faSearchPlus,
   faSearchMinus,
+  faThumbtack,
+  faGripHorizontal,
 } from '@fortawesome/free-solid-svg-icons'
 
 import {
   faEdit,
   faTrashAlt,
   faQuestionCircle,
+  faUser,
 } from '@fortawesome/free-regular-svg-icons'
 
 library.add(
@@ -31,9 +35,13 @@ library.add(
   faMouse,
   faCog,
   faChevronLeft,
+  faChevronRight,
   faChevronDown,
   faExclamationTriangle,
   faQuestionCircle,
   faSearchPlus,
   faSearchMinus,
+  faUser,
+  faThumbtack,
+  faGripHorizontal,
 )
