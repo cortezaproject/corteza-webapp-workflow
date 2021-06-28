@@ -16,7 +16,7 @@
         size="sm"
         class="d-flex align-items-center"
       >
-        Edit workflow
+        Configuration
         <font-awesome-icon
           :icon="['fas', 'cog']"
           class="ml-1"
@@ -245,18 +245,10 @@
     >
       <template #modal-title>
         Workflow Configuration
-
-        <c-permissions-button
-          v-if="workflow.canGrant"
-          :title="workflow.meta.name || workflow.handle"
-          :target="workflow.meta.name || workflow.handle"
-          :resource="`automation:workflow:${workflow.workflowID}`"
-          link
-          class="ml-2"
-        />
       </template>
 
       <div
+        v-if="workflow.workflowID && workflow.workflowID !== '0'"
         class="d-flex mb-3"
       >
         <import
@@ -265,12 +257,22 @@
         />
 
         <export
-          v-if="workflow.workflowID && workflow.workflowID !== '0'"
           :workflows="[workflow.workflowID]"
           :file-name="workflow.handle"
           class="ml-1"
         />
+
+        <c-permissions-button
+          v-if="workflow.canGrant"
+          :title="workflow.meta.name || workflow.handle"
+          :target="workflow.meta.name || workflow.handle"
+          :resource="`automation:workflow:${workflow.workflowID}`"
+          button-label="Permissions"
+          button-variant="light"
+          class="btn-lg ml-1"
+        />
       </div>
+
       <workflow-configurator
         v-if="workflow.workflowID"
         :workflow="workflow"
@@ -2075,26 +2077,31 @@ export default {
     },
 
     importJSON (workflows = []) {
-      this.importProcessing = true
+      try {
+        this.importProcessing = true
 
-      // Only render first workflow
-      const [workflow] = workflows
+        // Only render first workflow
+        const [workflow] = workflows
 
-      // Replace triggers
-      this.triggers = workflow.triggers || []
+        // Replace triggers
+        this.triggers = workflow.triggers || []
 
-      // Replace workflow steps and paths
-      this.workflow = {
-        ...this.workflow,
-        steps: workflow.steps || [],
-        paths: workflow.paths || [],
+        // Replace workflow steps and paths
+        this.workflow = {
+          ...this.workflow,
+          steps: workflow.steps || [],
+          paths: workflow.paths || [],
+        }
+
+        // Fresh render
+        this.render(this.workflow)
+
+        this.importProcessing = false
+        this.$root.$emit('change-detected')
+        this.raiseSuccessAlert('Workflow imported')
+      } catch (e) {
+        this.defaultErrorHandler('Import failed')(e)
       }
-
-      // Fresh render
-      this.render(this.workflow)
-
-      this.importProcessing = false
-      this.$root.$emit('change-detected')
     },
 
     saveWorkflow () {

@@ -19,7 +19,7 @@
     >
       <b-form-file
         placeholder="Browse or drop files to upload..."
-        @change="fileUpload"
+        @input="fileUpload"
       />
 
       <h6
@@ -50,8 +50,7 @@ export default {
   },
 
   methods: {
-    fileUpload (e) {
-      const file = e.target.files[0]
+    fileUpload (file = '') {
       if (file) {
         this.processing = true
         const reader = new FileReader()
