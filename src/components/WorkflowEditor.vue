@@ -429,7 +429,9 @@ const {
   mxEllipse,
   mxCellOverlay,
   mxCellHighlight,
-} = mxgraph()
+} = mxgraph({
+  mxImageBasePath: '/icons',
+})
 
 const originPoint = -2042
 
@@ -710,7 +712,7 @@ export default {
       this.graph.zoomFactor = 1.2
 
       // Sets a background image and restricts child movement to its bounds
-      this.graph.setBackgroundImage(new mxImage(`${process.env.BASE_URL}icons/grid.svg`, 8192, 8192))
+      this.graph.setBackgroundImage(new mxImage('/icons/grid.svg', 8192, 8192))
       this.graph.maximumGraphBounds = new mxRectangle(0, 0, 8192, 8192)
       this.graph.gridSize = 8
 
@@ -767,9 +769,9 @@ export default {
             const icon = getStyleFromKind(vertex.config).icon
             const type = vertex.config.kind.charAt(0).toUpperCase() + vertex.config.kind.slice(1)
             const shadow = ((this.getSelectedItem || {}).node || {}).id === cell.id ? 'shadow-lg' : 'shadow'
-            const cog = `${process.env.BASE_URL}icons/cog.svg`
-            const issue = `${process.env.BASE_URL}icons/issue.svg`
-            const playIcon = `${process.env.BASE_URL}icons/play.svg`
+            const cog = '/icons/cog.svg'
+            const issue = '/icons/issue.svg'
+            const playIcon = '/icons/play.svg'
             const opacity = vertex.config.kind === 'trigger' && !vertex.triggers.enabled ? 'opacity: 0.7;' : ''
 
             let play = ''
@@ -814,6 +816,8 @@ export default {
 
       // Disables mxGraph console window
       mxLog.setVisible = () => {}
+      mxLog.DEBUG = false
+      mxLog.TRACE = false
 
       mxGraph.prototype.expandedImage = undefined
 
@@ -1592,7 +1596,7 @@ export default {
       }
 
       // Image for fixed point
-      mxConstraintHandler.prototype.pointImage = new mxImage(`${process.env.BASE_URL}icons/connection-point.svg`, 8, 8)
+      mxConstraintHandler.prototype.pointImage = new mxImage('/icons/connection-point.svg', 8, 8)
 
       // On hover outline for fixed point
       mxConstraintHandler.prototype.createHighlightShape = function () {
@@ -1914,7 +1918,7 @@ export default {
                 }
 
                 // Set info overlay
-                const time = new mxCellOverlay(new mxImage(`${process.env.BASE_URL}icons/clock-${error ? 'danger' : 'success'}.svg`, 16, 16), `<span>${log}</span>`)
+                const time = new mxCellOverlay(new mxImage(`/icons/clock-${error ? 'danger' : 'success'}.svg`, 16, 16), `<span>${log}</span>`)
                 this.graph.addCellOverlay(this.graph.model.getCell(stepID), time)
 
                 // Highlight cell based on error
