@@ -22,7 +22,7 @@
     </b-card-header>
 
     <b-card-body
-      v-if="item.config.arguments.length"
+      v-if="hasArguments"
       class="p-0"
     >
       <b-table
@@ -133,11 +133,6 @@ export default {
           thClass: 'pl-3 py-2',
           tdClass: 'text-truncate pointer',
         },
-        // {
-        //   key: 'type',
-        //   thClass: "py-2",
-        //   tdClass: 'text-truncate pointer'
-        // },
         {
           key: 'value',
           label: 'Expression',
@@ -145,6 +140,11 @@ export default {
           tdClass: 'position-relative pointer',
         },
       ]
+    },
+
+    hasArguments () {
+      const { config } = this.item || {}
+      return (config && (config.arguments || []).length) || []
     },
   },
 
