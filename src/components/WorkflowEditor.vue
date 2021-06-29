@@ -63,7 +63,7 @@
     >
       <div
         v-if="workflow.meta"
-        class="position-absolute pl-2 pt-2 w-50"
+        class="position-absolute pl-2 pt-2"
         style="z-index: 1;"
       >
         <p
