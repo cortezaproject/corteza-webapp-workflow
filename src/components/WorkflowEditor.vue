@@ -266,7 +266,7 @@
           v-if="workflow.canGrant"
           :title="workflow.meta.name || workflow.handle"
           :target="workflow.meta.name || workflow.handle"
-          :resource="`automation:workflow:${workflow.workflowID}`"
+          :resource="`corteza::automation:workflow/${workflow.workflowID}`"
           button-label="Permissions"
           button-variant="light"
           class="btn-lg ml-1"

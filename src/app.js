@@ -6,6 +6,7 @@ import './console-splash'
 import './plugins'
 import './mixins'
 import './components'
+import store from './store'
 
 import i18n from './i18n'
 
@@ -22,6 +23,9 @@ export default (options = {}) => {
     async created () {
       this.$auth.handle().then(({ accessTokenFn, user }) => {
         this.loaded = true
+
+        // Load effective permissions
+        this.$store.dispatch('rbac/load')
 
         // This bit removes code from the query params
         //
@@ -48,6 +52,7 @@ export default (options = {}) => {
     },
 
     router,
+    store,
     i18n: i18n(),
 
     // Any additional options we want to merge

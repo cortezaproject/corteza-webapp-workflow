@@ -46,7 +46,7 @@
 
                   <c-permissions-button
                     v-if="canGrant"
-                    resource="automation:workflow:*"
+                    resource="corteza::automation:workflow/*"
                     button-label="Permissions"
                     button-variant="light"
                     class="btn-lg ml-1"
@@ -92,7 +92,7 @@
                     v-if="w.canGrant"
                     :title="w.meta.name || w.handle"
                     :target="w.meta.name || w.handle"
-                    :resource="`automation:workflow:${w.workflowID}`"
+                    :resource="`corteza::automation:workflow/${w.workflowID}`"
                     link
                     class="btn px-2"
                   />
@@ -109,6 +109,7 @@
 <script>
 import Import from '../../components/Import'
 import Export from '../../components/Export'
+import { mapGetters } from 'vuex'
 
 export default {
   name: 'WorkflowList',
@@ -120,9 +121,6 @@ export default {
 
   data () {
     return {
-      canGrant: false,
-      canCreate: false,
-
       workflows: [],
 
       query: '',
@@ -137,6 +135,18 @@ export default {
   },
 
   computed: {
+    ...mapGetters({
+      can: 'rbac/can',
+    }),
+
+    canGrant () {
+      return this.can('automation/', 'grant')
+    },
+
+    canCreate () {
+      return this.can('automation/', 'workflow.create')
+    },
+
     tableFields () {
       return [
         {
@@ -193,20 +203,10 @@ export default {
   },
 
   created () {
-    this.fetchPermissions()
     this.fetchWorkflows()
   },
 
   methods: {
-    fetchPermissions () {
-      this.$AutomationAPI.permissionsEffective()
-        .then(rules => {
-          this.canGrant = rules.find(({ resource, operation }) => resource === 'automation' && operation === 'grant').allow
-          this.canCreate = rules.find(({ resource, operation }) => resource === 'automation' && operation === 'workflow.create').allow
-        })
-        .catch(this.defaultErrorHandler('Failed to fetch automation permissions'))
-    },
-
     fetchWorkflows () {
       this.$AutomationAPI.workflowList({ disabled: 1 })
         .then(({ set = [] }) => {

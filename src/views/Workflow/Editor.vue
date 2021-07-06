@@ -13,6 +13,7 @@
 <script>
 import WorkflowEditor from '../../components/WorkflowEditor'
 import { automation } from '@cortezaproject/corteza-js'
+import { mapGetters } from 'vuex'
 
 export default {
   name: 'Editor',
@@ -23,8 +24,6 @@ export default {
 
   data () {
     return {
-      canCreate: false,
-
       processing: true,
       workflow: {},
       triggers: [],
@@ -34,6 +33,14 @@ export default {
   },
 
   computed: {
+    ...mapGetters({
+      can: 'rbac/can',
+    }),
+
+    canCreate () {
+      return this.can('automation/', 'workflow.create')
+    },
+
     workflowID () {
       return this.$route.params.workflowID || (this.workflow.workflowID !== '0' ? this.workflow.workflowID : undefined)
     },
@@ -58,8 +65,6 @@ export default {
 
       this.changeDetected = true
     })
-
-    this.fetchPermissions()
 
     if (this.workflowID) {
       await this.fetchTriggers()
@@ -109,24 +114,9 @@ export default {
         .catch(this.defaultErrorHandler('Failed to fetch triggers'))
     },
 
-    fetchPermissions () {
-      this.$AutomationAPI.permissionsEffective()
-        .then(rules => {
-          this.canCreate = rules.find(({ resource, operation }) => resource === 'automation' && operation === 'workflow.create').allow
-        })
-        .catch(this.defaultErrorHandler('Failed to fetch automation permissions'))
-    },
-
     async saveWorkflow (wf) {
       try {
         const isNew = wf.workflowID === '0'
-
-        // AC
-        if (isNew && !this.canCreate) {
-          throw new Error('Not allowed to create workflow')
-        } else if (!isNew && !this.workflow.canUpdateWorkflow) {
-          throw new Error('Not allowed to update workflow')
-        }
 
         const { steps = [], paths = [], triggers = [] } = wf
         this.workflow.steps = steps
