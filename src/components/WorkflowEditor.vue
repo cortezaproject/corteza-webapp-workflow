@@ -375,7 +375,7 @@
         v-if="dryRun.lookup"
       >
         <small>
-          The initial scope gets injected into the workflow at execution. To load avaliable variables, input the related IDs/Handles below<br>
+          The initial scope gets injected into the workflow at execution. To load available variables, input the related IDs/Handles below<br>
           If you do not wish to load any variables, click "Configure" to modify the initial scope before running workflow<br>
           Variables that can't be loaded will be auto initialized as empty
           <br><br>
@@ -1961,7 +1961,7 @@ export default {
               this.raiseSuccessAlert('Workflow test completed', 'Test completed')
             }
           } else {
-            this.raiseWarningAlert('Trace not avaliable', 'Test completed')
+            this.raiseWarningAlert('Trace not available', 'Test completed')
           }
 
           this.dryRun.lookup = true
