@@ -102,6 +102,7 @@
           >
             {{ workflow.meta.description }}
           </p>
+
           <p
             v-if="getRunAs"
             class="mb-0 text-truncate"
@@ -112,6 +113,17 @@
           <div
             class="d-flex align-items-center mb-1"
           >
+            <h5
+              v-if="workflow.deletedAt"
+              class="mb-0"
+            >
+              <b-badge
+                variant="danger"
+              >
+                Deleted
+              </b-badge>
+            </h5>
+
             <h5
               v-if="!workflow.enabled"
               class="mb-0 mr-1"
@@ -310,7 +322,7 @@
           class="d-flex w-100"
         >
           <c-input-confirm
-            v-if="workflow.canDeleteWorkflow"
+            v-if="workflow.canDeleteWorkflow && !isDeleted"
             size="md"
             size-confirm="md"
             :borderless="false"
@@ -586,6 +598,10 @@ export default {
 
     canUpdateWorkflow () {
       return this.workflow.workflowID === '0' ? this.canCreate : this.workflow.canUpdateWorkflow
+    },
+
+    isDeleted () {
+      return this.workflow.deletedAt
     },
 
     hasIssues () {
