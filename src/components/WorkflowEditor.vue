@@ -443,7 +443,7 @@ const {
   mxCellOverlay,
   mxCellHighlight,
 } = mxgraph({
-  mxImageBasePath: '/icons',
+  mxImageBasePath: `${process.env.BASE_URL}/icons`,
 })
 
 const originPoint = -2042
@@ -539,10 +539,6 @@ export default {
   },
 
   computed: {
-    getLogo () {
-      return `${process.env.BASE_URL}favicon.ico`
-    },
-
     getSidebarItemType () {
       const { itemType } = this.sidebar
       if (itemType) {

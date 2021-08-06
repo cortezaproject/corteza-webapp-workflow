@@ -8,7 +8,6 @@ export function getStyleFromKind ({ kind = '', ref = '' }) {
   return kindToStyle[kindRef] || {}
 }
 
-// Reason for process.env.BASE_URL is a tehnicality with mxGraph and the way it uses images & icons
 // The style property tells mxGraph what internal style to use for displaying the specific step
 const kindToStyle = {
   visualSwimlane: {
