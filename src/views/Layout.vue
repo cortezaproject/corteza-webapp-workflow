@@ -6,14 +6,14 @@
       <c-topbar
         :sidebar-pinned="pinned"
         :labels="{
-          helpForum: $t('navigation.help.forum'),
-          helpDocumentation: $t('navigation.help.documentation'),
-          helpFeedback: $t('navigation.help.feedback'),
-          helpVersion: $t('navigation.help.version'),
-          userSettingsLoggedInAs: $t('navigation.userSettings.loggedInAs', { user }),
-          userSettingsProfile: $t('navigation.userSettings.profile'),
-          userSettingsChangePassword: $t('navigation.userSettings.changePassword'),
-          userSettingsLogout: $t('navigation.userSettings.logout'),
+          helpForum: $t('navigation:help.forum'),
+          helpDocumentation: $t('navigation:help.documentation'),
+          helpFeedback: $t('navigation:help.feedback'),
+          helpVersion: $t('navigation:help.version'),
+          userSettingsLoggedInAs: $t('navigation:userSettings.loggedInAs', { user }),
+          userSettingsProfile: $t('navigation:userSettings.profile'),
+          userSettingsChangePassword: $t('navigation:userSettings.changePassword'),
+          userSettingsLogout: $t('navigation:userSettings.logout'),
         }"
       >
         <template #title>

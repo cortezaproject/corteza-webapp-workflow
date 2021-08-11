@@ -7,21 +7,28 @@ import './plugins'
 import './mixins'
 import './components'
 import store from './store'
-
-import i18n from './i18n'
-
 import router from './router'
+
+import { i18n } from '@cortezaproject/corteza-vue'
 
 export default (options = {}) => {
   options = {
     el: '#app',
     name: 'workflow',
-    template: '<div v-if="loaded" class="h-100"><router-view/></div>',
+    template: '<div v-if="loaded && i18nLoaded" class="h-100"><router-view/></div>',
 
-    data: () => ({ loaded: false }),
+    data: () => ({
+      loaded: false,
+      i18nLoaded: false,
+    }),
 
     async created () {
-      this.$auth.handle().then(({ accessTokenFn, user }) => {
+      this.$i18n.i18next.on('loaded', () => {
+        this.i18nLoaded = true
+      })
+      return this.$auth.vue(this).handle().then(({ accessTokenFn, user }) => {
+        this.loaded = true
+
         // Load effective permissions
         this.$store.dispatch('rbac/load')
 
@@ -40,22 +47,25 @@ export default (options = {}) => {
           url.searchParams.delete('code')
           window.location.replace(url.toString())
         }
-      })
-        .catch((err) => {
-          if (err instanceof Error && err.message === 'Unauthenticated') {
+      }).catch((err) => {
+        if (err instanceof Error && err.message === 'Unauthenticated') {
           // user not logged-in,
           // start with authentication flow
-            this.$auth.startAuthenticationFlow()
-            return
-          }
+          this.$auth.startAuthenticationFlow()
+          return
+        }
 
-          throw err
-        })
+        throw err
+      })
     },
 
     router,
     store,
-    i18n: i18n(),
+    i18n: i18n(Vue,
+      { app: 'corteza-webapp-workflow' },
+      'navigation',
+      'permissions',
+    ),
 
     // Any additional options we want to merge
     ...options,
