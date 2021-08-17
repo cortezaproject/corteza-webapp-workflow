@@ -20,6 +20,7 @@
       <c-sidebar
         :expanded.sync="expanded"
         :pinned.sync="pinned"
+        :icon="icon"
         :disabled-routes="['root', 'workflow.list']"
       >
         <template #header-expanded>
@@ -56,6 +57,7 @@
 </template>
 
 <script>
+import icon from '../themes/corteza-base/img/icon.png'
 import { components } from '@cortezaproject/corteza-vue'
 const { CPermissionsModal, CTopbar, CSidebar } = components
 
@@ -72,6 +74,12 @@ export default {
       expanded: false,
       pinned: false,
     }
+  },
+
+  computed: {
+    icon () {
+      return this.$Settings.attachment('ui.headerLogo', icon)
+    },
   },
 
   created () {

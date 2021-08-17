@@ -22,10 +22,12 @@ export default (options = {}) => {
 
     async created () {
       this.$auth.handle().then(({ accessTokenFn, user }) => {
-        this.loaded = true
-
         // Load effective permissions
         this.$store.dispatch('rbac/load')
+
+        this.$Settings.init({ api: this.$SystemAPI }).then(() => {
+          this.loaded = true
+        })
 
         // This bit removes code from the query params
         //
