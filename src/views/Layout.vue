@@ -78,7 +78,7 @@ export default {
 
   computed: {
     icon () {
-      return this.$Settings.attachment('ui.headerLogo', icon)
+      return this.$Settings.attachment('ui.iconLogo', icon)
     },
   },
 
