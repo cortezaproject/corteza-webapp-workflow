@@ -329,7 +329,7 @@
     <b-modal
       id="issues"
       v-model="issuesModal.show"
-      title="Step issues"
+      title="Issues"
       hide-footer
     >
       <div
@@ -1993,12 +1993,18 @@ export default {
       this.issues = {}
       if (this.workflow.issues) {
         this.workflow.issues.forEach(({ culprit, description }) => {
-          if (culprit && culprit.step >= 0) {
-            const stepID = (this.workflow.steps[culprit.step] || {}).stepID
-            if (this.issues[stepID]) {
-              this.issues[stepID].push(description)
-            } else {
-              this.issues[stepID] = [description]
+          if (culprit) {
+            const { step = -1, trigger = -1 } = culprit
+            let stepID = ''
+
+            if (step >= 0) {
+              stepID = (this.workflow.steps[step] || {}).stepID
+            } else if (trigger >= 0) {
+              stepID = (this.triggers[trigger] || {}).meta?.visual?.id || ''
+            }
+
+            if (stepID) {
+              this.issues[stepID] ? this.issues[stepID].push(description) : this.issues[stepID] = [description]
             }
           }
         })
