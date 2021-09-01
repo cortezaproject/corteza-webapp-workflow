@@ -87,7 +87,7 @@
         >
           <h5
             v-if="workflow.deletedAt"
-            class="mb-0"
+            class="mb-0 mr-1"
           >
             <b-badge
               variant="danger"
@@ -109,12 +109,23 @@
 
           <h5
             v-if="hasIssues"
-            class="mb-0"
+            class="mb-0 mr-1"
           >
             <b-badge
               variant="danger"
             >
               Issues detected
+            </b-badge>
+          </h5>
+
+          <h5
+            v-if="isDeffered"
+            class="mb-0 mr-1"
+          >
+            <b-badge
+              variant="info"
+            >
+              Deffered
             </b-badge>
           </h5>
         </div>
@@ -486,6 +497,8 @@ export default {
     return {
       initialized: false,
 
+      isDeffered: false,
+
       graph: undefined,
       keyHandler: undefined,
       undoManager: undefined,
@@ -535,6 +548,8 @@ export default {
       importProcessing: false,
 
       zoomLevel: 1,
+
+      defferedKinds: ['delay', 'prompt'],
     }
   },
 
@@ -1033,7 +1048,7 @@ export default {
             newCellIDs[id] = newVertex.id
             rest.config.stepID = newVertex.id
 
-            this.vertices[newVertex.id] = { node: newVertex, ...rest }
+            this.$set(this.vertices, newVertex.id, { node: newVertex, ...rest })
           })
         })
 
@@ -1662,7 +1677,7 @@ export default {
         return stepID === cell.id
       }) || {}
 
-      this.vertices[cell.id] = {
+      this.$set(this.vertices, cell.id, {
         node: cell,
         config: {
           stepID: cell.id,
@@ -1670,7 +1685,7 @@ export default {
           ref: config.ref || '',
           ...(this.rendering ? {} : getKindFromStyle(cell)),
         },
-      }
+      })
 
       if (config.arguments) {
         this.vertices[cell.id].config.arguments = config.arguments
@@ -1692,7 +1707,7 @@ export default {
 
     updateVertexConfig (vID) {
       const { node, config } = this.vertices[vID]
-      this.vertices[vID].config = { ...config, ...(this.rendering ? {} : getKindFromStyle(node)) }
+      this.$set(this.vertices[vID], 'config', { ...config, ...(this.rendering ? {} : getKindFromStyle(node)) })
     },
 
     setValue (value) {
@@ -2010,6 +2025,8 @@ export default {
         })
       }
 
+      this.isDeffered = false
+
       const steps = workflow.steps || []
       const paths = workflow.paths || []
       const root = this.graph.getDefaultParent()
@@ -2037,6 +2054,9 @@ export default {
 
               const newCell = this.graph.insertVertex(node.parent, node.id, node.value, node.xywh[0], node.xywh[1], node.xywh[2] || width, node.xywh[3] || height, style)
               this.addCellToVertices(newCell)
+
+              // Only set if not yet true
+              this.isDeffered = this.isDeffered || this.defferedKinds.includes(config.kind)
             }
           })
 
