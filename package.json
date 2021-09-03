@@ -1,6 +1,6 @@
 {
   "name": "corteza-workflow",
-  "version": "2021.9.0-dev.3",
+  "version": "2021.9.0-dev.4",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
@@ -29,9 +29,10 @@
     "mxgraph": "^4.2.0",
     "portal-vue": "^2.1.7",
     "v-jsoneditor": "^1.4.2",
-    "vue": "^2.6.11",
+    "vue": "2.6.14",
     "vue-router": "^3.4.9",
-    "vue-select": "^3.11.2"
+    "vue-select": "^3.11.2",
+    "vuex": "^3.6.2"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "~4.5.0",
@@ -56,7 +57,7 @@
     "stylelint-config-standard": "^18.3.0",
     "stylelint-scss": "^3.14.2",
     "stylelint-webpack-plugin": "^0.10.5",
-    "vue-template-compiler": "^2.6.11"
+    "vue-template-compiler": "2.6.14"
   },
   "stylelint": {
     "plugins": [
