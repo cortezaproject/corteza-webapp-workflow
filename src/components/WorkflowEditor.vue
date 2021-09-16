@@ -1048,7 +1048,7 @@ export default {
             newCellIDs[id] = newVertex.id
             rest.config.stepID = newVertex.id
 
-            this.$set(this.vertices, newVertex.id, { node: newVertex, ...rest })
+            this.vertices[newVertex.id] = { node: newVertex, ...rest }
           })
         })
 
@@ -1677,7 +1677,7 @@ export default {
         return stepID === cell.id
       }) || {}
 
-      this.$set(this.vertices, cell.id, {
+      this.vertices[cell.id] = {
         node: cell,
         config: {
           stepID: cell.id,
@@ -1685,7 +1685,7 @@ export default {
           ref: config.ref || '',
           ...(this.rendering ? {} : getKindFromStyle(cell)),
         },
-      })
+      }
 
       if (config.arguments) {
         this.vertices[cell.id].config.arguments = config.arguments
@@ -1707,7 +1707,7 @@ export default {
 
     updateVertexConfig (vID) {
       const { node, config } = this.vertices[vID]
-      this.$set(this.vertices[vID], 'config', { ...config, ...(this.rendering ? {} : getKindFromStyle(node)) })
+      this.vertices[vID].config = { ...config, ...(this.rendering ? {} : getKindFromStyle(node)) }
     },
 
     setValue (value) {
