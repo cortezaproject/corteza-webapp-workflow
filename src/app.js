@@ -27,7 +27,11 @@ export default (options = {}) => {
         this.i18nLoaded = true
       })
       return this.$auth.vue(this).handle().then(({ accessTokenFn, user }) => {
-        this.loaded = true
+        if (user.meta.preferredLanguage) {
+          // After user is authenticated, get his preferred language
+          // and instruct i18next to change it
+          this.$i18n.i18next.changeLanguage(user.meta.preferredLanguage)
+        }
 
         // Load effective permissions
         this.$store.dispatch('rbac/load')
