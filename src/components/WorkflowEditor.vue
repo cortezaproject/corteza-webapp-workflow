@@ -789,7 +789,7 @@ export default {
 
         if (cell.edge) {
           if (cell.value) {
-            label = `<div id="openSidebar" class="text-nowrap py-1 px-3 h6 mb-0 rounded bg-white pointer" style="border: 2px solid #A7D0E3; border-radius: 5px; color: #2D2D2D;">${cell.value}</div>`
+            label = `<div id="openSidebar" class="text-nowrap py-1 px-3 mb-0 rounded bg-white pointer" style="border: 2px solid #A7D0E3; border-radius: 5px; color: #2D2D2D;">${cell.value}</div>`
           }
         } else if (this.vertices[cell.id]) {
           const vertex = this.vertices[cell.id]
@@ -817,7 +817,7 @@ export default {
             }
 
             label = `<div class="d-flex flex-column position-relative bg-white rounded step ${shadow}" style="width: 200px; height: 80px; border-radius: 5px;${opacity}">` +
-                      '<div class="d-flex flex-row align-items-center text-primary px-2 my-1 h6 mb-0 font-weight-bold" style="height: 35px;">' +
+                      '<div class="d-flex flex-row align-items-center text-primary px-2 my-1 h6 mb-0" style="height: 35px;">' +
                         `<img src="${icon}" class="mr-2"/>${type}` +
                         '<div class="d-flex h-100 ml-auto align-items-center">' +
                           play +
@@ -826,12 +826,12 @@ export default {
                           issues +
                         '</div>' +
                       '</div>' +
-                      '<div class="d-flex flex-row align-items-center hover-untruncate border-top px-2 mb-0 h6" style="height: 45px; color: #2D2D2D;">' +
+                      '<div class="d-flex flex-row align-items-center hover-untruncate border-top px-2 mb-0" style="height: 45px; color: #2D2D2D;">' +
                         `<span class="d-inline-block bg-white hover-untruncate py-2 pr-2">${cell.value || '/'}</span>` +
                       '</div>' +
                     '</div>'
           } else {
-            label = `<div id="openSidebar" class="d-flex"><span class="d-inline-block h6 mb-0 text-truncate">${cell.value || ''}</span></div>`
+            label = `<div id="openSidebar" class="d-flex"><span class="d-inline-block mb-0 text-truncate">${cell.value || ''}</span></div>`
           }
         }
 
@@ -1420,6 +1420,8 @@ export default {
       mxConstants.VERTEX_SELECTION_STROKEWIDTH = 2
       mxConstants.EDGE_SELECTION_COLOR = '#A7D0E3'
       mxConstants.EDGE_SELECTION_STROKEWIDTH = 2
+      mxConstants.DEFAULT_FONTFAMILY = 'Poppins-Regular'
+      mxConstants.DEFAULT_FONTSIZE = 13
 
       mxConstants.HANDLE_FILLCOLOR = '#4D7281'
       mxConstants.HANDLE_STROKECOLOR = 'none'
