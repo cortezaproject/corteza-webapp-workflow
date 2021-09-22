@@ -5,6 +5,7 @@
     :workflow-triggers="triggers"
     :change-detected="changeDetected"
     :can-create="canCreate"
+    class="overflow-hidden"
     @save="saveWorkflow"
     @delete="deleteWorkflow"
   />
