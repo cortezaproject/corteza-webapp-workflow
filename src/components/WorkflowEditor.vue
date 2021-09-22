@@ -812,8 +812,16 @@ export default {
             }
 
             // Add play button to triggers
-            if (!this.dryRun.processing && this.workflow.canExecuteWorkflow && vertex.triggers && vertex.triggers.triggerID) {
-              play = `<img id="testWorkflow" src="${playIcon}" class="mr-1 hide pointer" style="width: 20px;"/>`
+            if (this.workflow.canExecuteWorkflow && vertex.triggers && vertex.triggers.triggerID) {
+              if (!this.dryRun.processing) {
+                play = `<img id="testWorkflow" src="${playIcon}" class="mr-1 hide pointer" style="width: 20px;"/>`
+              } else {
+                play = `<span role="status" class="spinner-border text-success mr-1 data-toggle="tooltip" data-placement="top" style="width: 20px; height: 20px; cursor: default;" title="Testing in progress. If your workflow includes Prompt or Delay steps, it may be waiting for them to complete">
+                          <span class="sr-only">
+                            Spinning
+                          </span>
+                        </span>`
+              }
             }
 
             label = `<div class="d-flex flex-column position-relative bg-white rounded step ${shadow}" style="width: 200px; height: 80px; border-radius: 5px;${opacity}">` +
