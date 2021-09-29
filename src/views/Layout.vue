@@ -121,7 +121,7 @@ export default {
 
   methods: {
     displayToast ({ title, message, variant, countdown }) {
-      this.$bvToast.toast(message, {
+      this.$root.$bvToast.toast(message, {
         title,
         variant,
         solid: true,
