@@ -15,6 +15,7 @@ import {
   faSearchMinus,
   faThumbtack,
   faGripHorizontal,
+  faSearch,
 } from '@fortawesome/free-solid-svg-icons'
 
 import {
@@ -43,5 +44,6 @@ library.add(
   faSearchMinus,
   faUser,
   faThumbtack,
+  faSearch,
   faGripHorizontal,
 )

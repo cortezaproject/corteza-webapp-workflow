@@ -19,47 +19,63 @@
               class="py-3"
             >
               <b-row
-                class="align-items-center justify-content-between"
+                class="justify-content-between wrap-with-vertical-gutters"
                 no-gutters
               >
-                <div class="text-nowrap flex-grow-1">
-                  <b-button
-                    v-if="canCreate"
-                    variant="primary"
-                    size="lg"
-                    :to="{ name: 'workflow.create' }"
+                <div class="flex-grow-1">
+                  <div
+                    class="wrap-with-vertical-gutters"
                   >
-                    New Workflow
-                  </b-button>
+                    <b-button
+                      v-if="canCreate"
+                      variant="primary"
+                      size="lg"
+                      class="float-left mr-1"
+                      :to="{ name: 'workflow.create' }"
+                    >
+                      New Workflow
+                    </b-button>
 
-                  <import
-                    v-if="canCreate"
-                    :disabled="importProcessing"
-                    class="d-inline-block ml-1"
-                    @import="importJSON"
-                  />
+                    <import
+                      v-if="canCreate"
+                      :disabled="importProcessing"
+                      class="float-left mr-1"
+                      @import="importJSON"
+                    />
 
-                  <export
-                    :workflows="workflowIDs"
-                    class="ml-1"
-                  />
+                    <export
+                      :workflows="workflowIDs"
+                      class="float-left mr-1"
+                    />
 
-                  <c-permissions-button
-                    v-if="canGrant"
-                    resource="corteza::automation:workflow/*"
-                    button-label="Permissions"
-                    button-variant="light"
-                    class="btn-lg ml-1"
-                  />
+                    <c-permissions-button
+                      v-if="canGrant"
+                      resource="corteza::automation:workflow/*"
+                      button-label="Permissions"
+                      button-variant="light"
+                      class="float-left btn-lg"
+                    />
+                  </div>
                 </div>
 
-                <div class="flex-grow-1 mt-1">
-                  <b-input
-                    v-model.trim="query"
-                    class="mw-100"
-                    type="search"
-                    placeholder="Type here to search all workflows..."
-                  />
+                <div class="flex-grow-1">
+                  <b-input-group
+                    class="h-100 mw-100"
+                  >
+                    <b-input
+                      v-model.trim="query"
+                      class="h-100 mw-100"
+                      type="search"
+                      placeholder="Type here to search all workflows..."
+                    />
+                    <b-input-group-append>
+                      <b-input-group-text class="text-primary bg-white">
+                        <font-awesome-icon
+                          :icon="['fas', 'search']"
+                        />
+                      </b-input-group-text>
+                    </b-input-group-append>
+                  </b-input-group>
                 </div>
               </b-row>
             </b-card-header>
