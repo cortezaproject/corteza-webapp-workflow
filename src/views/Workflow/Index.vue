@@ -4,12 +4,9 @@
       List of Workflows
     </portal>
 
-    <b-container fluid>
+    <b-container fluid="xl">
       <b-row no-gutters>
-        <b-col
-          xl="8"
-          offset-xl="2"
-        >
+        <b-col>
           <b-card
             no-body
             class="shadow-sm"
