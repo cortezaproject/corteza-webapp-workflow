@@ -14,6 +14,7 @@
 <script>
 import WorkflowEditor from '../../components/WorkflowEditor'
 import { automation } from '@cortezaproject/corteza-js'
+import { throttle } from 'lodash'
 import { mapGetters } from 'vuex'
 
 export default {
@@ -115,7 +116,7 @@ export default {
         .catch(this.defaultErrorHandler('Failed to fetch triggers'))
     },
 
-    async saveWorkflow (wf) {
+    saveWorkflow: throttle(async function (wf) {
       try {
         const isNew = wf.workflowID === '0'
 
@@ -174,7 +175,7 @@ export default {
       } catch (e) {
         this.defaultErrorHandler('Save failed')(e)
       }
-    },
+    }, 500),
 
     deleteWorkflow () {
       if (this.workflow.workflowID) {
