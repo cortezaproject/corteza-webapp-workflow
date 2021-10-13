@@ -119,13 +119,13 @@
           </h5>
 
           <h5
-            v-if="isDeffered"
+            v-if="isDeferred"
             class="mb-0 mr-1"
           >
             <b-badge
               variant="info"
             >
-              Deffered
+              Deferred
             </b-badge>
           </h5>
         </div>
@@ -497,7 +497,7 @@ export default {
     return {
       initialized: false,
 
-      isDeffered: false,
+      isDeferred: false,
 
       graph: undefined,
       keyHandler: undefined,
@@ -549,7 +549,7 @@ export default {
 
       zoomLevel: 1,
 
-      defferedKinds: ['delay', 'prompt'],
+      deferredKinds: ['delay', 'prompt'],
     }
   },
 
@@ -2035,7 +2035,7 @@ export default {
         })
       }
 
-      this.isDeffered = false
+      this.isDeferred = false
 
       const steps = workflow.steps || []
       const paths = workflow.paths || []
@@ -2066,7 +2066,7 @@ export default {
               this.addCellToVertices(newCell)
 
               // Only set if not yet true
-              this.isDeffered = this.isDeffered || this.defferedKinds.includes(config.kind)
+              this.isDeferred = this.isDeferred || this.deferredKinds.includes(config.kind)
             }
           })
 
