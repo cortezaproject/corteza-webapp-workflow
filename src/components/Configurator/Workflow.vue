@@ -5,7 +5,7 @@
     >
       <b-form-input
         v-model="workflow.meta.name"
-        @change="$root.$emit('change-detected')"
+        @input="$root.$emit('change-detected')"
       />
     </b-form-group>
 
@@ -15,7 +15,7 @@
       <b-form-input
         v-model="workflow.handle"
         :state="handleState"
-        @change="$root.$emit('change-detected')"
+        @input="$root.$emit('change-detected')"
       />
     </b-form-group>
 
@@ -24,7 +24,7 @@
     >
       <b-form-textarea
         v-model="workflow.meta.description"
-        @change="$root.$emit('change-detected')"
+        @input="$root.$emit('change-detected')"
       />
     </b-form-group>
 

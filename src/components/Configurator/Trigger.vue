@@ -171,7 +171,7 @@
                 >
                   <b-form-input
                     v-model="c.values[index]"
-                    @change="$root.$emit('change-detected')"
+                    @input="$root.$emit('change-detected')"
                   />
 
                   <b-button

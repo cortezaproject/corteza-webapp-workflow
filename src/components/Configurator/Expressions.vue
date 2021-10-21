@@ -79,7 +79,7 @@
               <b-form-input
                 v-model="a.target"
                 placeholder="Target"
-                @change="$root.$emit('change-detected')"
+                @input="$root.$emit('change-detected')"
               />
             </b-form-group>
 
@@ -103,7 +103,7 @@
                 v-model="a.expr"
                 placeholder="Expression..."
                 max-rows="5"
-                @change="$root.$emit('change-detected')"
+                @input="$root.$emit('change-detected')"
               />
             </b-form-group>
           </b-card>
@@ -148,10 +148,17 @@ export default {
     },
   },
 
-  async created () {
-    this.$set(this.item.config, 'arguments', this.item.config.arguments || [])
+  watch: {
+    'item.config.stepID': {
+      immediate: true,
+      handler () {
+        this.$set(this.item.config, 'arguments', this.item.config.arguments || [])
+      },
+    },
+  },
 
-    await this.getTypes()
+  created () {
+    this.getTypes()
   },
 
   methods: {

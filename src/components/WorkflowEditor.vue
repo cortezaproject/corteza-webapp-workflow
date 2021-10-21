@@ -718,7 +718,7 @@ export default {
         this.redrawLabel(item.node.mxObjectId)
       } else {
         // If item already opened in sidebar, keep open
-        if (this.sidebar.item && item.node.id === this.sidebar.item.node.id) {
+        if (this.sidebar.item && item.config.stepID === this.sidebar.item.config.stepID) {
           return
         }
 
@@ -1028,64 +1028,66 @@ export default {
       }
 
       const pasteCells = (evt) => {
-        // Get cells from actual system clipboard
-        const { cells = {}, edges = [] } = JSON.parse(evt.clipboardData.getData('text')) || {}
+        if (evt.clipboardData.getData('text').includes('"cells":')) {
+          // Get cells from actual system clipboard
+          const { cells = {}, edges = [] } = JSON.parse(evt.clipboardData.getData('text')) || {}
 
-        const delta = mxClipboard.insertCount * this.graph.gridSize
-        const defaultParent = this.graph.getDefaultParent()
-        const newCellIDs = {}
-        const allCells = []
+          const delta = mxClipboard.insertCount * this.graph.gridSize
+          const defaultParent = this.graph.getDefaultParent()
+          const newCellIDs = {}
+          const allCells = []
 
-        this.graph.getModel().beginUpdate()
+          this.graph.getModel().beginUpdate()
 
-        // Handle cells
-        Object.entries(cells).forEach(([parentID, children]) => {
-          children.forEach(({ node, ...rest }) => {
-            const parent = newCellIDs[parentID] ? this.graph.model.getCell(newCellIDs[parentID]) : defaultParent
+          // Handle cells
+          Object.entries(cells).forEach(([parentID, children]) => {
+            children.forEach(({ node, ...rest }) => {
+              const parent = newCellIDs[parentID] ? this.graph.model.getCell(newCellIDs[parentID]) : defaultParent
+              const { id, geometry, value, style } = node
+
+              // Offset only the topmost cell. Children are relative and will be offset automaticially
+              if (!newCellIDs[parentID]) {
+                geometry.x += delta
+                geometry.y += delta
+              }
+
+              const newVertex = this.graph.insertVertex(parent, null, value, geometry.x, geometry.y, geometry.width, geometry.height, style)
+              allCells.push(newVertex)
+
+              newCellIDs[id] = newVertex.id
+              rest.config.stepID = newVertex.id
+
+              this.vertices[newVertex.id] = { node: newVertex, ...rest }
+            })
+          })
+
+          // Handle edges
+          edges.forEach(({ node, ...rest }) => {
+            const parent = newCellIDs[node.id] ? this.graph.model.getCell(newCellIDs[node.id]) : defaultParent
             const { id, geometry, value, style } = node
 
-            // Offset only the topmost cell. Children are relative and will be offset automaticially
-            if (!newCellIDs[parentID]) {
-              geometry.x += delta
-              geometry.y += delta
-            }
+            node.source = this.vertices[newCellIDs[rest.config.parentID || node.source]].node
+            node.target = this.vertices[newCellIDs[rest.config.childID || node.target]].node
 
-            const newVertex = this.graph.insertVertex(parent, null, value, geometry.x, geometry.y, geometry.width, geometry.height, style)
-            allCells.push(newVertex)
+            const newEdge = this.graph.insertEdge(parent, null, value, node.source, node.target, style)
+            newEdge.geometry.points = (geometry.points || []).map(({ x, y }) => {
+              return new mxPoint(x, y)
+            })
+            allCells.push(newEdge)
 
-            newCellIDs[id] = newVertex.id
-            rest.config.stepID = newVertex.id
+            newCellIDs[id] = newEdge.id
+            rest.config.parentID = node.source.id
+            rest.config.childID = node.target.id
 
-            this.vertices[newVertex.id] = { node: newVertex, ...rest }
+            this.edges[newEdge.id] = { node: newEdge, ...rest }
           })
-        })
 
-        // Handle edges
-        edges.forEach(({ node, ...rest }) => {
-          const parent = newCellIDs[node.id] ? this.graph.model.getCell(newCellIDs[node.id]) : defaultParent
-          const { id, geometry, value, style } = node
+          Object.keys(this.vertices).forEach(vID => this.updateVertexConfig(vID))
 
-          node.source = this.vertices[newCellIDs[rest.config.parentID || node.source]].node
-          node.target = this.vertices[newCellIDs[rest.config.childID || node.target]].node
-
-          const newEdge = this.graph.insertEdge(parent, null, value, node.source, node.target, style)
-          newEdge.geometry.points = (geometry.points || []).map(({ x, y }) => {
-            return new mxPoint(x, y)
-          })
-          allCells.push(newEdge)
-
-          newCellIDs[id] = newEdge.id
-          rest.config.parentID = node.source.id
-          rest.config.childID = node.target.id
-
-          this.edges[newEdge.id] = { node: newEdge, ...rest }
-        })
-
-        Object.keys(this.vertices).forEach(vID => this.updateVertexConfig(vID))
-
-        mxClipboard.insertCount++
-        this.graph.setSelectionCells(allCells)
-        this.graph.getModel().endUpdate() // Updates the display
+          mxClipboard.insertCount++
+          this.graph.setSelectionCells(allCells)
+          this.graph.getModel().endUpdate() // Updates the display
+        }
       }
 
       mxClipboard.copy = (graph, cells) => {
@@ -1989,6 +1991,10 @@ export default {
 
     render (workflow, initial = false) {
       this.rendering = true
+
+      if (this.sidebar.show) {
+        this.sidebarClose()
+      }
 
       const { x = originPoint, y = originPoint } = this.graph.view.translate
       const { scale } = this.graph.view

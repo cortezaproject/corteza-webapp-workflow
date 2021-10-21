@@ -137,14 +137,14 @@
                   v-else-if="a.valueType === 'value'"
                   v-model="a.value"
                   max-rows="5"
-                  @change="$root.$emit('change-detected')"
+                  @input="$root.$emit('change-detected')"
                 />
 
                 <b-form-textarea
                   v-else-if="a.valueType === 'expr'"
                   v-model="a.expr"
                   max-rows="5"
-                  @change="$root.$emit('change-detected')"
+                  @input="$root.$emit('change-detected')"
                 />
               </b-form-group>
             </b-card>
@@ -206,7 +206,7 @@
                 <b-form-input
                   v-model="a.target"
                   placeholder="Target"
-                  @change="$root.$emit('change-detected')"
+                  @input="$root.$emit('change-detected')"
                 />
               </b-form-group>
             </b-card>
@@ -310,7 +310,7 @@ export default {
   },
 
   watch: {
-    'item.node.id': {
+    'item.config.stepID': {
       immediate: true,
       async handler () {
         this.processing = true

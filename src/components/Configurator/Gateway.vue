@@ -36,7 +36,7 @@
             <b-form-input
               v-model="edge.expr"
               placeholder="Condition"
-              @change="updateEdge(edge.id, $event)"
+              @input="updateEdge(edge.id, $event)"
             />
           </b-form-group>
         </div>

@@ -23,7 +23,7 @@
         <b-form-input
           v-model="item.config.arguments[0].value"
           placeholder="Error"
-          @change="$root.$emit('change-detected')"
+          @input="$root.$emit('change-detected')"
         />
       </b-form-group>
     </b-card-body>

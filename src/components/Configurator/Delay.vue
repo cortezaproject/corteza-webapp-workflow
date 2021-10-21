@@ -26,7 +26,7 @@
           <b-form-input
             v-model="item.config.arguments[0].value"
             placeholder="10s"
-            @change="$root.$emit('change-detected')"
+            @input="$root.$emit('change-detected')"
           />
         </b-form-group>
       </b-card-body>
@@ -41,7 +41,7 @@ export default {
   extends: base,
 
   watch: {
-    'item.node.id': {
+    'item.config.stepID': {
       immediate: true,
       async handler () {
         this.processing = true

@@ -69,7 +69,7 @@ export default {
 
     // Used to detect changes in node value
     valueID () {
-      return `${this.item.node.id || '0'}-${this.item.node.value || undefined}`
+      return `${this.item.config.stepID || '0'}-${this.item.node.value || undefined}`
     },
   },
 
