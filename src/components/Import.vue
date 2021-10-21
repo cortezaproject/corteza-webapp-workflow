@@ -13,21 +13,40 @@
       size="lg"
       title="Import JSON"
       ok-only
-      ok-title="Import"
       class="d-none"
       @ok="$emit('import', workflows)"
     >
-      <b-form-file
-        placeholder="Browse or drop files to upload..."
-        @input="fileUpload"
-      />
-
-      <h6
-        v-if="processing"
-        class="my-auto ml-3 "
+      <b-form-group
+        description="NOTE: the Run as workflow property won't be imported and should be reassigned"
+        class="mb-0"
       >
-        Processing
-      </h6>
+        <b-form-file
+          placeholder="Browse or drop files to upload..."
+          @input="fileUpload"
+        />
+      </b-form-group>
+
+      <template #modal-footer>
+        <b-button
+          variant="primary"
+          size="lg"
+          :disabled="!workflows.length || processing"
+          class="d-flex justify-content-center align-items-center"
+          @click="$emit('import', workflows)"
+        >
+          <b-spinner
+            v-if="processing"
+            small
+            type="grow"
+          />
+
+          <span
+            v-else
+          >
+            Import
+          </span>
+        </b-button>
+      </template>
     </b-modal>
   </div>
 </template>
