@@ -75,6 +75,7 @@ export default {
         { action: 'Save', shortcut: 'Ctrl + S' },
         { action: 'Nudge', shortcut: 'Arrow keys - Use Shift to adjust distance' },
         { action: 'Show guides', shortcut: 'Hold Alt' },
+        { action: 'Show help', shortcut: 'Shift + ?' },
       ],
     }
   },

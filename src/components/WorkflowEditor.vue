@@ -39,6 +39,7 @@
         class="d-flex flex-grow-1 align-items-end justify-content-center p-3"
       >
         <b-button
+          ref="help"
           v-b-modal.help
           variant="link"
           class="p-0"
@@ -1138,6 +1139,10 @@ export default {
       if ((event.ctrlKey || event.metaKey) && event.key === 's') {
         this.saveWorkflow()
         event.preventDefault()
+      }
+      // Shift + ?
+      if (event.shiftKey && event.key === '?') {
+        this.$refs.help.click()
       }
     },
 
