@@ -12,14 +12,14 @@
         <h5
           class="mb-0"
         >
-          Configuration
+          {{ $t('configurator:configuration') }}
         </h5>
       </b-card-header>
       <b-card-body
         class="p-0"
       >
         <b-form-group
-          label="Offset"
+          :label="$t('general:offset')"
           label-class="text-primary"
           class="mb-0"
         >

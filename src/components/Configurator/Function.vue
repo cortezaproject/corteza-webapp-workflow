@@ -12,14 +12,14 @@
         <h5
           class="mb-0"
         >
-          Configuration
+          {{ $t('configurator:configuration') }}
         </h5>
       </b-card-header>
       <b-card-body
         class="p-0"
       >
         <b-form-group
-          label="Type*"
+          :label="$t('steps:function.configurator.type*')"
           label-class="text-primary"
           class="mb-0"
         >
@@ -51,7 +51,7 @@
         <h5
           class="mb-0"
         >
-          Arguments
+          {{ $t('steps:function.configurator.arguments') }}
         </h5>
       </b-card-header>
 
@@ -92,7 +92,7 @@
             >
               <b-form-group
                 v-if="(paramTypes[item.config.ref][a.target] || []).length > 1"
-                label="Type"
+                :label="$t('steps:function.configurator.type')"
                 label-class="text-primary"
                 class="mb-0"
               >
@@ -107,7 +107,7 @@
 
               <b-form-group
                 v-if="!a.options.length && !isWhileIterator"
-                label="Value type"
+                :label="$t('steps:function.configurator.value-type')"
                 label-class="text-primary"
               >
                 <b-form-radio-group
@@ -122,7 +122,7 @@
               </b-form-group>
 
               <b-form-group
-                label="Value"
+                :label="$t('steps:function.configurator.value')"
                 label-class="text-primary"
                 class="mb-0"
               >
@@ -165,7 +165,7 @@
         <h5
           class="mb-0"
         >
-          Results
+          {{ $t('steps:function.configurator.results') }}
         </h5>
       </b-card-header>
 
@@ -200,12 +200,12 @@
               class="bg-light"
             >
               <b-form-group
-                label="Target"
+                :label="$t('configurator:target')"
                 label-class="text-primary"
               >
                 <b-form-input
                   v-model="a.target"
-                  placeholder="Target"
+                  :placeholder="$t('configurator:target')"
                   @input="$root.$emit('change-detected')"
                 />
               </b-form-group>
@@ -239,7 +239,7 @@ export default {
   computed: {
     functionTypes () {
       return [
-        { value: '', text: 'Select function', disabled: true },
+        { value: '', text: this.$t('steps:function.configurator.select-function'), disabled: true },
         ...this.functions.map(({ ref, meta, disabled = false }) => ({ value: ref, text: meta.short, disabled })),
       ]
     },
@@ -248,7 +248,7 @@ export default {
       return [
         {
           key: 'target',
-          label: 'Name',
+          label: this.$t('steps:function.configurator.name'),
           thClass: 'pl-3 py-2',
           tdClass: 'text-truncate pointer',
         },
@@ -279,7 +279,7 @@ export default {
         },
         {
           key: 'expr',
-          label: 'Result',
+          label: this.$t('steps:function.configurator.result'),
           thClass: 'pr-3 py-2',
           tdClass: 'text-truncate pointer',
         },
@@ -288,13 +288,13 @@ export default {
 
     valueTypes () {
       return [
-        { text: 'Expression', value: 'expr' },
-        { text: 'Constant', value: 'value' },
+        { text: this.$t('steps:function.configurator.expression'), value: 'expr' },
+        { text: this.$t('steps:function.configurator.constant'), value: 'value' },
       ]
     },
 
     defaultOptions () {
-      return [{ value: null, text: 'Select an option', disabled: true }]
+      return [{ value: null, text: this.$t('steps:function.configurator.option-select'), disabled: true }]
     },
 
     functionDescription () {
@@ -412,7 +412,7 @@ export default {
         .then(({ set }) => {
           this.functions = set.filter(({ kind = '' }) => kind !== 'iterator').sort((a, b) => a.meta.short.localeCompare(b.meta.short))
         })
-        .catch(this.defaultErrorHandler('Failed to fetch functions'))
+        .catch(this.defaultErrorHandler(this.$t('notification:failed-fetch-functions')))
     },
 
     async getTypes () {
@@ -420,7 +420,7 @@ export default {
         .then(({ set }) => {
           this.types = set
         })
-        .catch(this.defaultErrorHandler('Failed to fetch types'))
+        .catch(this.defaultErrorHandler(this.$t('notification:fetch-types-failed')))
     },
 
     valueTypeChanged (valueType, index) {

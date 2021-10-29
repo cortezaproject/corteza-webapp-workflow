@@ -5,23 +5,23 @@
       size="lg"
       @click="show = true"
     >
-      Import
+      {{ $t('general:import.label') }}
     </b-button>
 
     <b-modal
       v-model="show"
       size="lg"
-      title="Import JSON"
+      :title="$t('general:import.json')"
       ok-only
       class="d-none"
       @ok="$emit('import', workflows)"
     >
       <b-form-group
-        description="NOTE: the Run as workflow property won't be imported and should be reassigned"
+        :description="$t('general:import.reassign-run-as')"
         class="mb-0"
       >
         <b-form-file
-          placeholder="Browse or drop files to upload..."
+          :placeholder="$t('general:import.upload-files')"
           @input="fileUpload"
         />
       </b-form-group>
@@ -43,7 +43,7 @@
           <span
             v-else
           >
-            Import
+            {{ $t('general:import.label') }}
           </span>
         </b-button>
       </template>
@@ -81,14 +81,14 @@ export default {
             const { workflows = [] } = JSON.parse(evt.target.result)
             this.workflows = workflows
           } catch (err) {
-            this.defaultErrorHandler('Failed to load file')(err.message)
+            this.defaultErrorHandler(this.$t('notification:failed-load-file'))(err.message)
           } finally {
             this.processing = false
           }
         }
 
         reader.onerror = () => {
-          this.defaultErrorHandler('Failed to load file')
+          this.defaultErrorHandler(this.$t('notification:failed-load-file'))
           this.processing = false
         }
       }

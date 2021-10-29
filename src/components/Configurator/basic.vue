@@ -1,7 +1,7 @@
 <template>
   <div>
     <b-form-group
-      label="Label"
+      :label="$t('general:label')"
       label-class="text-primary"
     >
       <b-form-input

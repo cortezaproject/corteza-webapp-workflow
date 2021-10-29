@@ -10,7 +10,7 @@
       <h5
         class="d-flex align-items-center mb-0"
       >
-        Expressions
+        {{ $t('steps:expressions.label') }}
         <a
           :href="documentationURL"
           target="_blank"
@@ -26,7 +26,7 @@
         class="align-top border-0 ml-auto"
         @click="addArgument()"
       >
-        + Add Expression
+        {{ $t('steps:expressions.configurator.add-expression') }}
       </b-button>
     </b-card-header>
 
@@ -82,18 +82,18 @@
             class="bg-light"
           >
             <b-form-group
-              label="Target"
+              :label="$t('configurator:target')"
               label-class="text-primary"
             >
               <b-form-input
                 v-model="a.target"
-                placeholder="Target"
+                :placeholder="$t('configurator:target')"
                 @input="$root.$emit('change-detected')"
               />
             </b-form-group>
 
             <b-form-group
-              label="Type"
+              :label="$t('steps:expressions.configurator.type')"
               label-class="text-primary"
             >
               <b-form-select
@@ -104,13 +104,13 @@
             </b-form-group>
 
             <b-form-group
-              label="Expression"
+              :label="$t('steps:expressions.configurator.expression')"
               label-class="text-primary"
               class="mb-0"
             >
               <b-form-textarea
                 v-model="a.expr"
-                placeholder="Expression..."
+                :placeholder="$t('steps:expressions.configurator.expression-placeholder')"
                 max-rows="5"
                 @input="$root.$emit('change-detected')"
               />
@@ -144,7 +144,7 @@ export default {
         },
         {
           key: 'value',
-          label: 'Expression',
+          label: this.$t('steps:expressions.configurator.expression'),
           thClass: 'py-2 pr-3',
           tdClass: 'position-relative pointer',
         },
@@ -197,7 +197,7 @@ export default {
         .then(({ set }) => {
           this.fieldTypes = set
         })
-        .catch(this.defaultErrorHandler('Failed to fetch types'))
+        .catch(this.defaultErrorHandler(this.$t('notification:fetch-types-failed')))
     },
 
     rowClass (item, type) {

@@ -1,7 +1,7 @@
 <template>
   <div>
     <b-form-group
-      label="Label"
+      :label="$t('general:label')"
     >
       <b-form-input
         v-model="workflow.meta.name"
@@ -10,7 +10,7 @@
     </b-form-group>
 
     <b-form-group
-      label="Handle"
+      :label="$t('general:handle')"
     >
       <b-form-input
         v-model="workflow.handle"
@@ -24,7 +24,7 @@
     </b-form-group>
 
     <b-form-group
-      label="Description"
+      :label="$t('general:description')"
     >
       <b-form-textarea
         v-model="workflow.meta.description"
@@ -33,8 +33,8 @@
     </b-form-group>
 
     <b-form-group
-      label="Run as"
-      description="When not explicitly set, workflow will be executed by user that invoked it"
+      :label="$t('configurator:workflow.run-as')"
+      :description="$t('configurator:workflow.not-setup-properly')"
     >
       <vue-select
         :options="user.options"
@@ -51,7 +51,7 @@
         v-model="workflow.enabled"
         @change="$root.$emit('change-detected')"
       >
-        Enabled
+        {{ $t('general:enabled') }}
       </b-form-checkbox>
     </b-form-group>
   </div>

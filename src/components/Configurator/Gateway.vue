@@ -11,7 +11,7 @@
         <h5
           class="mb-0"
         >
-          Configuration
+          {{ $t('configurator:configuration') }}
         </h5>
       </b-card-header>
 
@@ -21,7 +21,7 @@
         <var
           v-if="outEdges < 2"
         >
-          Gateway must be source of at least two paths
+          {{ $t('steps:gateway.configurator.two-paths') }}
         </var>
 
         <div
@@ -35,7 +35,7 @@
           >
             <b-form-input
               v-model="edge.expr"
-              placeholder="Condition"
+              :placeholder="$t('steps:gateway.configurator.condition')"
               @input="updateEdge(edge.id, $event)"
             />
           </b-form-group>

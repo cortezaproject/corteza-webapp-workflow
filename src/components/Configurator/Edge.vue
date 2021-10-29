@@ -1,6 +1,6 @@
 <template>
   <div>
-    Edge
+    {{ $t('configurator:edge') }}
   </div>
 </template>
 

@@ -1,7 +1,7 @@
 <template>
   <div class="h-100 py-3 flex-grow-1 overflow-auto">
     <portal to="topbar-title">
-      List of Workflows
+      {{ $t('general:workflow-list') }}
     </portal>
 
     <b-container fluid="xl">
@@ -30,7 +30,7 @@
                       class="float-left mr-1"
                       :to="{ name: 'workflow.create' }"
                     >
-                      New Workflow
+                      {{ $t('general:new-workflow') }}
                     </b-button>
 
                     <import
@@ -48,7 +48,7 @@
                     <c-permissions-button
                       v-if="canGrant"
                       resource="corteza::automation:workflow/*"
-                      button-label="Permissions"
+                      :button-label="$t('general:permissions')"
                       button-variant="light"
                       class="float-left btn-lg"
                     />
@@ -63,7 +63,7 @@
                       v-model.trim="query"
                       class="h-100 mw-100"
                       type="search"
-                      placeholder="Type here to search all workflows..."
+                      :placeholder="$t('general:search-workflows')"
                     />
                     <b-input-group-append>
                       <b-input-group-text class="text-primary bg-white">
@@ -164,7 +164,7 @@ export default {
       return [
         {
           key: 'handle',
-          label: 'Name',
+          label: this.$t('general:name'),
           sortable: true,
           tdClass: 'align-middle text-nowrap',
           class: 'pl-4',
@@ -225,7 +225,7 @@ export default {
         .then(({ set = [] }) => {
           this.workflows = set
         })
-        .catch(this.defaultErrorHandler('Failed to fetch workflows'))
+        .catch(this.defaultErrorHandler(this.$t('notification:failed-fetch-workflows')))
     },
 
     async importJSON (workflows = []) {
@@ -256,12 +256,12 @@ export default {
       }))
         .then(() => {
           if (skippedWorkflows.length) {
-            this.raiseInfoAlert(`${skippedWorkflows.join(' ')}`, 'Skipped workflows')
+            this.raiseInfoAlert(`${skippedWorkflows.join(' ')}`, this.$t('notification:import.skipped-workflows'))
           } else {
-            this.raiseSuccessAlert('Workflows imported')
+            this.raiseSuccessAlert(this.$t('notification:import.imported-workflows'))
           }
         })
-        .catch(this.defaultErrorHandler('Failed to import'))
+        .catch(this.defaultErrorHandler(this.$t('notification:import.failed-import')))
 
       await this.fetchWorkflows()
 

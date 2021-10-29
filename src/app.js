@@ -67,9 +67,15 @@ export default (options = {}) => {
     store,
     i18n: i18n(Vue,
       { app: 'corteza-webapp-workflow' },
+      'configurator',
+      'editor',
+      'help',
+      'general',
       'navigation',
+      'notification',
       'permissions',
       'configurator',
+      'steps',
     ),
 
     // Any additional options we want to merge

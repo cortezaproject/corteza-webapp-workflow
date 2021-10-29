@@ -5,7 +5,7 @@
     size="lg"
     @click="jsonExport(workflows)"
   >
-    Export
+    {{ $t('general:export') }}
   </b-button>
 </template>
 
@@ -48,7 +48,7 @@ export default {
             })
           })
         })
-        .catch(this.defaultErrorHandler('Failed to fetch triggers'))
+        .catch(this.defaultErrorHandler(this.$t('notification:failed-fetch-triggers')))
 
       // Get workflows, add related triggers
       await this.$AutomationAPI.workflowList({ workflowID: workflowIDs, disabled: 1 })
@@ -65,7 +65,7 @@ export default {
             }
           })
         })
-        .catch(this.defaultErrorHandler('Failed to fetch workflows'))
+        .catch(this.defaultErrorHandler(this.$t('notification:failed-fetch-workflows')))
 
       // Save file
       const blob = new Blob([JSON.stringify({ workflows }, null, 2)], { type: 'application/json' })

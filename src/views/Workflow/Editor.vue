@@ -78,7 +78,7 @@ export default {
         enabled: true,
         handle: '',
         meta: {
-          name: 'Unnamed Workflow',
+          name: this.$t('general:unnamed-workflow'),
         },
       })
     }
@@ -88,7 +88,7 @@ export default {
 
   beforeRouteLeave (to, from, next) {
     if (this.changeDetected) {
-      next(window.confirm('You have unsaved changes, are you sure you want to exit?'))
+      next(window.confirm(this.$t('notification:confirm-unsaved-changes')))
     } else {
       window.onbeforeunload = null
       next()
@@ -105,7 +105,7 @@ export default {
         .then(wf => {
           this.workflow = wf
         })
-        .catch(this.defaultErrorHandler('Failed to fetch workflow'))
+        .catch(this.defaultErrorHandler(this.$t('notification:failed-fetch-workflow')))
     },
 
     async fetchTriggers (workflowID = this.workflowID) {
@@ -113,7 +113,7 @@ export default {
         .then(({ set = [] }) => {
           this.triggers = set
         })
-        .catch(this.defaultErrorHandler('Failed to fetch triggers'))
+        .catch(this.defaultErrorHandler(this.$t('notification:failed-fetch-triggers')))
     },
 
     saveWorkflow: throttle(async function (wf) {
@@ -149,7 +149,7 @@ export default {
               })
             }
           })).catch(() => {
-            throw new Error('Make sure all trigger steps are properly configured')
+            throw new Error(this.$t('notification:configure-triggers'))
           })
         })
 
@@ -166,14 +166,14 @@ export default {
         window.onbeforeunload = null
 
         this.workflow = wf
-        this.raiseSuccessAlert('Workflow updated')
+        this.raiseSuccessAlert(this.$t('notification:updated-workflow'))
 
         if (isNew) {
           // Redirect to edit route if new
           this.$router.push({ name: 'workflow.edit', params: { workflowID: this.workflow.workflowID } })
         }
       } catch (e) {
-        this.defaultErrorHandler('Save failed')(e)
+        this.defaultErrorHandler(this.$t('notification:failed-save'))(e)
       }
     }, 500),
 
@@ -185,9 +185,9 @@ export default {
             this.workflow = {}
             this.$router.push({ name: 'workflow.list' })
 
-            this.raiseSuccessAlert('Workflow deleted')
+            this.raiseSuccessAlert(this.$t('notification:deleted-workflow'))
           })
-          .catch(this.defaultErrorHandler('Failed to delete workflow'))
+          .catch(this.defaultErrorHandler(this.$t('notification:delete-failed')))
       }
     },
   },

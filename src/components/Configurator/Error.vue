@@ -9,20 +9,20 @@
       <h5
         class="mb-0"
       >
-        Configuration
+        {{ $t('configurator:configuration') }}
       </h5>
     </b-card-header>
     <b-card-body
       class="p-0"
     >
       <b-form-group
-        label="Error message(expression)"
+        :label="$t('general:error-expression')"
         label-class="text-primary"
         class="mb-0"
       >
         <b-form-input
           v-model="item.config.arguments[0].value"
-          placeholder="Error"
+          :placeholder="$t('general:error')"
           @input="$root.$emit('change-detected')"
         />
       </b-form-group>

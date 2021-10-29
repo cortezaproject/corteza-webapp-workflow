@@ -10,14 +10,14 @@
         <h5
           class="mb-0"
         >
-          Configuration
+          {{ $t('configurator:configuration') }}
         </h5>
       </b-card-header>
       <b-card-body
         class="p-0"
       >
         <b-form-group
-          label="Resource*"
+          :label="$t('steps:trigger.configurator.resource*')"
           label-class="text-primary"
         >
           <b-form-select
@@ -30,7 +30,7 @@
         <b-form-group
           v-if="item.triggers.resourceType"
           label-class="text-primary"
-          label="Event*"
+          :label="$t('steps:trigger.configurator.event*')"
         >
           <b-form-select
             v-model="item.triggers.eventType"
@@ -47,7 +47,7 @@
             class="text-primary"
             @change="enabledChanged()"
           >
-            Enabled
+            {{ $t('general:enabled') }}
           </b-form-checkbox>
         </b-form-group>
       </b-card-body>
@@ -65,7 +65,7 @@
         <h5
           class="mb-0"
         >
-          Constraints
+          {{ $t('steps:trigger.configurator.constraints') }}
         </h5>
         <b-button
           v-if="constraintNameTypes.length > 1"
@@ -73,7 +73,7 @@
           class="align-top border-0 ml-3"
           @click="addConstraint()"
         >
-          + Add Constraints
+          {{ $t('steps:trigger.configurator.add-constraints') }}
         </b-button>
       </b-card-header>
       <b-card-body
@@ -127,7 +127,7 @@
               class="bg-light"
             >
               <b-form-group
-                label="Resource"
+                :label="$t('steps:trigger.configurator.resource')"
                 label-class="text-primary"
               >
                 <b-form-select
@@ -138,7 +138,7 @@
               </b-form-group>
 
               <b-form-group
-                label="Operator"
+                :label="$t('steps:trigger.configurator.operator')"
                 label-class="text-primary"
               >
                 <b-form-select
@@ -159,7 +159,7 @@
                       class="align-top border-0 p-0 ml-2"
                       @click="c.values.push('')"
                     >
-                      + Add
+                      {{ $t('steps:trigger.configurator.add') }}
                     </b-button>
                   </div>
                 </template>
@@ -215,7 +215,7 @@
         <h5
           class="mb-0"
         >
-          Initial Scope
+          {{ $t('steps:trigger.configurator.initial-scope') }}
         </h5>
       </b-card-header>
       <b-card-body
@@ -257,14 +257,14 @@ export default {
   computed: {
     resourceTypeOptions () {
       return [
-        { value: null, text: 'Select resource type', disabled: true },
+        { value: null, text: this.$t('steps:trigger.configurator.select-resource-type'), disabled: true },
         ...this.resourceTypes,
       ]
     },
 
     eventTypeOptions () {
       return [
-        { value: null, text: 'Select event type', disabled: true },
+        { value: null, text: this.$t('steps:trigger.configurator.select-event-type'), disabled: true },
         ...this.eventTypes.filter(({ resourceType }) => resourceType === this.item.triggers.resourceType)
           .map(({ eventType }) => eventType),
       ]
@@ -290,7 +290,7 @@ export default {
         },
         {
           key: 'op',
-          label: 'Operator',
+          label: this.$t('steps:trigger.configurator.operator'),
           thClass: 'py-2 operator text-center',
           tdClass: 'pl-0 text-truncate text-center pointer',
         },
@@ -321,7 +321,7 @@ export default {
       const constraints = this.eventType.constraints || []
 
       return [
-        { value: null, text: 'Select constraint type', disabled: true },
+        { value: null, text: this.$t('steps:trigger.configurator.select-constraint-type'), disabled: true },
         ...constraints.reduce((cons, { name }) => {
           if (!name.includes('*')) {
             cons.push({
@@ -339,11 +339,11 @@ export default {
 
     constraintOperatorTypes () {
       return [
-        { value: null, text: 'Operator', disabled: true },
+        { value: null, text: this.$t('steps:trigger.configurator.operator'), disabled: true },
         { value: '=', text: '=' },
         { value: '!=', text: '!=' },
-        { value: 'like', text: 'Like' },
-        { value: 'not like', text: 'Not like' },
+        { value: 'like', text: this.$t('steps:trigger.configurator.like') },
+        { value: 'not like', text: this.$t('steps:trigger.configurator.not-like') },
 
       ]
     },
@@ -377,7 +377,7 @@ export default {
             }
           })
         })
-        .catch(this.defaultErrorHandler('Failed to fetch event types'))
+        .catch(this.defaultErrorHandler(this.$t('steps:trigger.configurator.failed-fetch-event-types')))
     },
 
     addConstraint () {

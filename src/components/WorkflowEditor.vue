@@ -16,7 +16,7 @@
         size="sm"
         class="d-flex align-items-center"
       >
-        Configuration
+        {{ $t('configurator:configuration') }}
         <font-awesome-icon
           :icon="['fas', 'cog']"
           class="ml-1"
@@ -80,7 +80,7 @@
           v-if="getRunAs"
           class="mb-0 text-truncate"
         >
-          <b>Run as:</b> <samp>{{ getRunAs }}</samp>
+          <b>{{ $t('editor:run-as') }}</b> <samp>{{ getRunAs }}</samp>
         </p>
 
         <div
@@ -93,7 +93,7 @@
             <b-badge
               variant="danger"
             >
-              Deleted
+              {{ $t('editor:deleted') }}
             </b-badge>
           </h5>
 
@@ -104,7 +104,7 @@
             <b-badge
               variant="danger"
             >
-              Disabled
+              {{ $t('editor:disabled') }}
             </b-badge>
           </h5>
 
@@ -115,7 +115,7 @@
             <b-badge
               variant="danger"
             >
-              Issues detected
+              {{ $t('editor:detected-issues') }}
             </b-badge>
           </h5>
 
@@ -126,7 +126,7 @@
             <b-badge
               variant="info"
             >
-              Deferred
+              {{ $t('editor:deferred') }}
             </b-badge>
           </h5>
 
@@ -137,7 +137,7 @@
             <b-badge
               variant="warning"
             >
-              Trigger paths changed
+              {{ $t('notification:trigger-paths-changed') }}
             </b-badge>
           </h5>
         </div>
@@ -176,7 +176,7 @@
             class="ml-2 p-0 text-decoration-none"
             @click="resetZoom()"
           >
-            Reset
+            {{ $t('editor:reset') }}
           </b-button>
         </div>
       </div>
@@ -192,7 +192,7 @@
           :disabled="!canUpdateWorkflow"
           @click="saveWorkflow()"
         >
-          Changes detected {{ `${canUpdateWorkflow ? 'Click here to save.' : ''}` }}
+          {{ $t('editor:detected-changes') + `${canUpdateWorkflow ? this.$t('editor:click-to-save') : ''}` }}
         </b-button>
       </div>
 
@@ -237,7 +237,7 @@
           <div
             class="ml-auto"
           >
-            ID: <var>{{ getSelectedItem.node.id }}</var>
+            {{ $t('editor:id') }} <var>{{ getSelectedItem.node.id }}</var>
           </div>
         </div>
       </template>
@@ -263,7 +263,7 @@
             :borderless="false"
             @confirmed="sidebarDelete()"
           >
-            Delete
+            {{ $t('editor:delete') }}
           </c-input-confirm>
         </div>
       </template>
@@ -271,14 +271,14 @@
 
     <b-modal
       id="workflow"
-      title="Workflow configuration"
+      :title="$t('editor:workflow-configuration')"
       size="lg"
       :hide-header-close="workflow.workflowID === '0'"
       :no-close-on-backdrop="workflow.workflowID === '0'"
       :no-close-on-esc="workflow.workflowID === '0'"
     >
       <template #modal-title>
-        Workflow Configuration
+        {{ $t('editor:workflow-configuration') }}
       </template>
 
       <div
@@ -301,7 +301,7 @@
           :title="workflow.meta.name || workflow.handle"
           :target="workflow.meta.name || workflow.handle"
           :resource="`corteza::automation:workflow/${workflow.workflowID}`"
-          button-label="Permissions"
+          :button-label="$t('general:permissions')"
           button-variant="light"
           class="btn-lg ml-1"
         />
@@ -324,7 +324,7 @@
             :borderless="false"
             @confirmed="$emit('delete')"
           >
-            Delete
+            {{ $t('editor:delete') }}
           </c-input-confirm>
 
           <b-button
@@ -332,7 +332,7 @@
             class="ml-auto"
             @click="saveWorkflow()"
           >
-            Save
+            {{ $t('editor:save') }}
           </b-button>
         </div>
       </template>
@@ -340,7 +340,7 @@
 
     <b-modal
       id="help"
-      title="Help"
+      :title="$t('editor:help')"
       size="lg"
       scrollable
       hide-footer
@@ -352,7 +352,7 @@
     <b-modal
       id="issues"
       v-model="issuesModal.show"
-      title="Issues"
+      :title="$t('editor:issues')"
       hide-footer
     >
       <div
@@ -369,12 +369,12 @@
       id="dry-run"
       v-model="dryRun.show"
       size="lg"
-      title="Initial scope"
+      :title="$t('editor:initial-scope')"
       scrollable
       :body-class="dryRun.lookup ? '' : 'p-1'"
       :ok-only="dryRun.lookup"
-      :ok-title="`${dryRun.lookup ? 'Load and Configure' : 'Run Workflow'}`"
-      cancel-title="Back"
+      :ok-title="`${dryRun.lookup ? this.$t('editor:load-and-configure') : this.$t('editor:run-workflow')}`"
+      :cancel-title="$t('editor:back')"
       ok-variant="success"
       @cancel.prevent="dryRun.lookup = true"
       @ok="dryRunOk"
@@ -383,11 +383,11 @@
         v-if="dryRun.lookup"
       >
         <small>
-          The initial scope gets injected into the workflow at execution. To load available variables, input the related IDs/Handles below<br>
-          If you do not wish to load any variables, click "Configure" to modify the initial scope before running workflow<br>
-          Variables that can't be loaded will be auto initialized as empty
+          {{ $t('editor:input-ids-or-handles') }}<br>
+          {{ $t('editor:modify-initial-scope-if-no-variables-are-loaded') }}<br>
+          {{ $t('editor:auto-initialize-empty-variable') }}
           <br><br>
-          WARNING: If prompts are used in the workflow, make sure that the related webapp is also opened. Otherwise workflow will timeout
+          {{ $t('editor:open-webapp-on-prompt-use') }}
         </small>
         <div
           v-for="(p, index) in Object.values(dryRun.initialScope)"
@@ -659,7 +659,7 @@ export default {
   mounted () {
     try {
       if (!mxClient.isBrowserSupported()) {
-        throw new Error(mxUtils.error('Browser is not supported!', 200, false))
+        throw new Error(mxUtils.error(this.$t('editor:unsupported-browser'), 200, false))
       }
 
       mxEvent.disableContextMenu(this.$refs.graph)
@@ -900,7 +900,8 @@ export default {
         return cell
       }
 
-      const addCell = ({ title, icon, tooltip = '', width = 60, height = 60, style }) => {
+      const addCell = ({ icon, width = 60, height = 60, style }) => {
+        const { label, tooltip } = this.translateCell(style)
         const cell = new mxCell(
           null,
           new mxGeometry(0, 0, width, height),
@@ -908,7 +909,7 @@ export default {
         )
         cell.setVertex(true)
 
-        this.addToolbarItem(title, this.graph, this.toolbar, cell, icon, tooltip)
+        this.addToolbarItem(label, this.graph, this.toolbar, cell, icon, tooltip)
       }
 
       toolbarConfig.forEach(cell => {
@@ -1529,6 +1530,13 @@ export default {
       this.graph.getStylesheet().putCellStyle('swimlane', style)
     },
 
+    translateCell (style) {
+      return {
+        label: this.$t(`steps:${style}.label`),
+        tooltip: this.$t(`steps:${style}.tooltip`),
+      }
+    },
+
     cellOverlay () {
       mxCellOverlay.prototype.defaultOverlap = 1.2
     },
@@ -1777,13 +1785,13 @@ export default {
     async loadTestScope () {
       // Can only test saved workflow
       if (this.changeDetected) {
-        this.raiseWarningAlert('Save workflow first to test it', 'Test failed')
+        this.raiseWarningAlert(this.$t('notification:save-workflow'), this.$t('notification:failed-test'))
         return
       }
 
       // Can only test valid workflow
       if (this.hasIssues) {
-        this.raiseWarningAlert('Resolve issues to test workflow', 'Test failed')
+        this.raiseWarningAlert(this.$t('notification:resolve-issues'), this.$t('notification:failed-test'))
         return
       }
 
@@ -1814,16 +1822,16 @@ export default {
             let lookup = false
             if (et.length) {
               this.dryRun.initialScope = et.reduce((initialScope, p) => {
-                let label = `${p.name}${lookupableTypes.includes(p.name) ? ' (ID)' : ''}`
+                let label = `${p.name}${lookupableTypes.includes(p.name) ? this.$t('editor:id-parenthesis') : ''}`
                 if (p.type === 'ComposeNamespace' || p.type === 'ComposeModule') {
-                  label = `${p.name} (Handle)`
+                  label = `${p.name} ${this.$t('editor:handle')}`
                 }
 
                 let description = ''
                 if (p.type === 'ComposeRecord') {
-                  description = 'Namespace and Module required'
+                  description = this.$t('editor:required-namespace-and-module')
                 } else if (p.type === 'ComposeModule' || p.name === 'page' || p.name === 'oldPage') {
-                  description = 'Namespace required'
+                  description = this.$t('editor:required-namespace')
                 }
 
                 initialScope[p.name] = ({
@@ -1844,17 +1852,17 @@ export default {
                   this.dryRun.lookup = lookup
                   this.dryRun.show = true
                 })
-                .catch(this.defaultErrorHandler('Failed to load initial scope'))
+                .catch(this.defaultErrorHandler(this.$t('notification:initial-scope-load-failed')))
             } else {
               // If no constraints, just run
               this.dryRun.initialScope = {}
               this.testWorkflow()
             }
           } else {
-            this.raiseWarningAlert('Event type not found', 'Test failed')
+            this.raiseWarningAlert(this.$t('notification:event-type-not-found'), this.$t('notification:failed-test'))
           }
         })
-        .catch(this.defaultErrorHandler('Failed to fetch event types'))
+        .catch(this.defaultErrorHandler(this.$t('notification:event-type-fetch-failed')))
     },
 
     async dryRunOk (e) {
@@ -1867,7 +1875,7 @@ export default {
             this.dryRun.inputEdited = input
             this.dryRun.lookup = false
           })
-          .catch(this.defaultErrorHandler('Failed to load initial scope'))
+          .catch(this.defaultErrorHandler(this.$t('notification:initial-scope-load-failed')))
       } else {
         this.testWorkflow(this.dryRun.inputEdited)
       }
@@ -1893,7 +1901,7 @@ export default {
 
       const cells = {}
 
-      this.raiseInfoAlert('Workflow test started', 'Test in progress')
+      this.raiseInfoAlert(this.$t('notification:started-test'), this.$t('notification:test-in-progress'))
       await this.$AutomationAPI.workflowExec(testParams)
         .then(({ error = false, trace }) => {
           if (trace) {
@@ -1927,7 +1935,7 @@ export default {
             Object.entries(cells).forEach(([stepID, frames]) => {
               if (stepID !== '0') {
                 let error = frames[0].error
-                let log = `#${frames[0].index + 1} - ${frames[0].stepTime}ms${error ? ' - ERROR: ' + error : ''}`
+                let log = `#${frames[0].index + 1} - ${frames[0].stepTime}ms${error ? this.$t('notification:error') + error : ''}`
                 if (frames.length < 2) {
                   const [cell] = frames
                   // If first cell, dont paint parent edge
@@ -1958,7 +1966,7 @@ export default {
                         time.max = stepTime
                       }
 
-                      log = `${log}<br>#${index + 1} - ${stepTime}ms${error ? ' - ERROR: ' + error : ''}`
+                      log = `${log}<br>#${index + 1} - ${stepTime}ms${error ? this.$t('notification:error') + error : ''}`
                     }
 
                     time.sum += stepTime
@@ -1989,15 +1997,15 @@ export default {
             if (error) {
               throw new Error(error)
             } else {
-              this.raiseSuccessAlert('Workflow test completed', 'Test completed')
+              this.raiseSuccessAlert(this.$t('notification:workflow-test-completed'), this.$t('notification:test-completed'))
             }
           } else {
-            this.raiseWarningAlert('Trace not available', 'Test completed')
+            this.raiseWarningAlert(this.$t('notification:trace-unavailable'), this.$t('notification:test-completed'))
           }
 
           this.dryRun.lookup = true
         })
-        .catch(this.defaultErrorHandler('Test failed'))
+        .catch(this.defaultErrorHandler(this.$t('notification:failed-test')))
         .finally(() => {
           this.dryRun.processing = false
           this.redrawLabel(this.graph.model.getCell(this.dryRun.cellID).mxObjectId)
@@ -2166,9 +2174,9 @@ export default {
 
         this.importProcessing = false
         this.$root.$emit('change-detected')
-        this.raiseSuccessAlert('Workflow imported')
+        this.raiseSuccessAlert(this.$t('notification:imported-workflow'))
       } catch (e) {
-        this.defaultErrorHandler('Import failed')(e)
+        this.defaultErrorHandler(this.$t('notification:import-failed'))(e)
       }
     },
 

@@ -12,7 +12,7 @@
         <h5
           class="mb-0"
         >
-          General
+          {{ $t('general:general') }}
         </h5>
       </b-card-header>
       <b-card-body
