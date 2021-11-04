@@ -17,6 +17,9 @@
         :state="handleState"
         @input="$root.$emit('change-detected')"
       />
+      <b-form-invalid-feedback :state="handleState">
+        {{ $t('workflow.invalid-handle-characters') }}
+      </b-form-invalid-feedback>
     </b-form-group>
 
     <b-form-group
@@ -58,6 +61,9 @@ import { debounce } from 'lodash'
 import { VueSelect } from 'vue-select'
 
 export default {
+  i18nOptions: {
+    namespaces: 'configurator',
+  },
   components: {
     VueSelect,
   },
@@ -86,8 +92,8 @@ export default {
   computed: {
     handleState () {
       const { handle } = this.workflow
-      if (!handle || handle.length === 0 || handle.length > 64) {
-        return false
+      if (!handle || handle.length === 0) {
+        return null
       }
 
       return /^[A-Za-z][0-9A-Za-z_\-.]*[A-Za-z0-9]$/.test(handle)

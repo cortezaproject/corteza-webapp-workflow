@@ -69,6 +69,7 @@ export default (options = {}) => {
       { app: 'corteza-webapp-workflow' },
       'navigation',
       'permissions',
+      'configurator',
     ),
 
     // Any additional options we want to merge
