@@ -15,6 +15,7 @@
       <b-form-input
         v-model="workflow.handle"
         :state="handleState"
+        :placeholder="$t('workflow.placeholder-handle')"
         @input="$root.$emit('change-detected')"
       />
       <b-form-invalid-feedback :state="handleState">
