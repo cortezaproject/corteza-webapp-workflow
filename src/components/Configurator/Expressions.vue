@@ -8,13 +8,22 @@
       class="d-flex align-items-center bg-white py-4"
     >
       <h5
-        class="mb-0"
+        class="d-flex align-items-center mb-0"
       >
         Expressions
+        <a
+          :href="documentationURL"
+          target="_blank"
+          class="d-flex align-items-center h6 mb-0 ml-1"
+        >
+          <font-awesome-icon
+            :icon="['far', 'question-circle']"
+          />
+        </a>
       </h5>
       <b-button
         variant="primary"
-        class="align-top border-0 ml-3"
+        class="align-top border-0 ml-auto"
         @click="addArgument()"
       >
         + Add Expression
@@ -145,6 +154,12 @@ export default {
     hasArguments () {
       const { config } = this.item || {}
       return (config && (config.arguments || []).length) || []
+    },
+
+    documentationURL () {
+      // eslint-disable-next-line no-undef
+      const [year, month] = VERSION.split('.')
+      return `https://docs.cortezaproject.org/corteza-docs/${year}.${month}/integrator-guide/expr/index.html`
     },
   },
 
