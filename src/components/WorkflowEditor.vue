@@ -520,7 +520,6 @@ export default {
       toolbar: undefined,
 
       edgeConnected: false,
-      // edgeLayout: undefined,
 
       rendering: false,
 
@@ -1299,7 +1298,6 @@ export default {
           this.edges[node.id].node.value = `${outPaths.length === 1 ? 'Body' : 'End'}`
         }
 
-        // this.edgeLayout.execute(this.graph.getDefaultParent())
         this.edgeConnected = true
       })
 
@@ -2063,7 +2061,6 @@ export default {
         // Updates vertices now that edges are present
         Object.keys(this.vertices).forEach(vID => this.updateVertexConfig(vID))
       } finally {
-        // this.edgeLayout.execute(this.graph.getDefaultParent())
         this.graph.view.scale = scale
         this.graph.view.setTranslate(x || originPoint, y || originPoint)
 
