@@ -120,13 +120,24 @@
           </h5>
 
           <h5
-            v-if="isDeferred"
+            v-if="deffered"
             class="mb-0 mr-1"
           >
             <b-badge
               variant="info"
             >
               Deferred
+            </b-badge>
+          </h5>
+
+          <h5
+            v-if="triggersPathsChanged"
+            class="mb-0 mr-1"
+          >
+            <b-badge
+              variant="warning"
+            >
+              Trigger paths changed
             </b-badge>
           </h5>
         </div>
@@ -498,7 +509,8 @@ export default {
     return {
       initialized: false,
 
-      isDeferred: false,
+      deffered: false,
+      triggersPathsChanged: false,
 
       graph: undefined,
       keyHandler: undefined,
@@ -1301,6 +1313,26 @@ export default {
         this.edgeConnected = true
       })
 
+      this.graph.addListener(mxEvent.CELL_CONNECTED, (sender, evt) => {
+        if (!this.rendering) {
+          // If trigger was reconnected, check if all triggers are still connected to the previous stepID
+          const edge = evt.getProperty('edge')
+          const source = this.vertices[edge.source.id]
+          if (source.config.kind === 'trigger') {
+            // If trigger already existed and stepID changed
+            this.triggersPathsChanged = [...this.triggers].some(({ stepID, meta = {} }) => {
+              const [triggerEdge] = this.vertices[meta.visual.id].node.edges
+
+              if (triggerEdge) {
+                return triggerEdge.target.id !== stepID
+              }
+
+              return false
+            })
+          }
+        }
+      })
+
       this.graph.addListener(mxEvent.CELLS_ADDED, (sender, evt) => {
         if (!this.rendering) {
           const cells = evt.getProperty('cells')
@@ -2003,7 +2035,8 @@ export default {
         })
       }
 
-      this.isDeferred = false
+      this.deffered = false
+      this.triggersPathsChanged = false
 
       const steps = workflow.steps || []
       const paths = workflow.paths || []
@@ -2034,7 +2067,7 @@ export default {
               this.addCellToVertices(newCell)
 
               // Only set if not yet true
-              this.isDeferred = this.isDeferred || this.deferredKinds.includes(config.kind)
+              this.deffered = this.deffered || this.deferredKinds.includes(config.kind)
             }
           })
 
