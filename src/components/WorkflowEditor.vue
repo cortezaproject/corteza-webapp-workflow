@@ -1140,10 +1140,6 @@ export default {
         this.saveWorkflow()
         event.preventDefault()
       }
-      // Shift + ?
-      if (event.shiftKey && event.key === '?') {
-        this.$refs.help.click()
-      }
     },
 
     // Only works when canvas is focused
@@ -1213,6 +1209,13 @@ export default {
           this.graph.view.setTranslate(originPoint, originPoint)
         }
       }
+
+      // Shift + ?
+      this.keyHandler.bindKey(191, (event) => {
+        if (event.shiftKey && event.key === '?') {
+          this.$refs.help.click()
+        }
+      })
 
       // Nudge
       const nudge = (keyCode, evt) => {
