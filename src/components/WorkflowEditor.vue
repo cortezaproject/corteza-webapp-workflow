@@ -1490,50 +1490,6 @@ export default {
       style[mxConstants.STYLE_STROKEWIDTH] = 0
       style[mxConstants.STYLE_STROKEWIDTH] = 2
       this.graph.getStylesheet().putCellStyle('swimlane', style)
-
-      // // Symbol (custom shape) styling
-      // style = mxUtils.clone(this.graph.getStylesheet().getDefaultVertexStyle())
-      // style[mxConstants.STYLE_SHAPE] = mxConstants.SHAPE_IMAGE
-      // style[mxConstants.STYLE_PERIMETER] = mxPerimeter.RectanglePerimeter
-      // style[mxConstants.STYLE_FONTSIZE] = 13
-      // style[mxConstants.STYLE_ALIGN] = mxConstants.ALIGN_CENTER
-      // style[mxConstants.STYLE_VERTICAL_ALIGN] = mxConstants.ALIGN_TOP
-      // style[mxConstants.STYLE_VERTICAL_LABEL_POSITION] = mxConstants.ALIGN_BOTTOM
-      // this.graph.getStylesheet().putCellStyle('symbol', style)
-
-      // // Function
-      // style = mxUtils.clone(this.graph.getStylesheet().getCellStyle('symbol'))
-      // style[mxConstants.STYLE_ALIGN] = mxConstants.ALIGN_CENTER
-      // style[mxConstants.STYLE_VERTICAL_ALIGN] = mxConstants.ALIGN_MIDDLE
-      // style[mxConstants.STYLE_VERTICAL_LABEL_POSITION] = mxConstants.ALIGN_MIDDLE
-      // this.graph.getStylesheet().putCellStyle('function', style)
-
-      // // Iterator
-      // // style = mxUtils.clone(this.graph.getStylesheet().getCellStyle('symbol'))
-      // // this.graph.getStylesheet().putCellStyle('iterator', style)
-
-      // // Event
-      // style = mxUtils.clone(this.graph.getStylesheet().getCellStyle('symbol'))
-      // style[mxConstants.STYLE_PERIMETER] = mxPerimeter.EllipsePerimeter
-      // style[mxConstants.STYLE_ALIGN] = mxConstants.ALIGN_CENTER
-      // style[mxConstants.STYLE_VERTICAL_ALIGN] = mxConstants.ALIGN_CENTER
-      // style[mxConstants.STYLE_VERTICAL_LABEL_POSITION] = mxConstants.ALIGN_MIDDLE
-      // this.graph.getStylesheet().putCellStyle('event', style)
-
-      // // Error handler
-      // style = mxUtils.clone(this.graph.getStylesheet().getCellStyle('event'))
-      // this.graph.getStylesheet().putCellStyle('error-handler', style)
-
-      // // Gateway
-      // style = mxUtils.clone(this.graph.getStylesheet().getCellStyle('symbol'))
-      // style[mxConstants.STYLE_PERIMETER] = mxPerimeter.RhombusPerimeter
-      // style[mxConstants.STYLE_VERTICAL_LABEL_POSITION] = mxConstants.ALIGN_TOP
-      // style[mxConstants.STYLE_VERTICAL_ALIGN] = mxConstants.ALIGN_BOTTOM
-      // this.graph.getStylesheet().putCellStyle('gateway', style)
-
-      // // Expression
-      // style = mxUtils.clone(this.graph.getStylesheet().getCellStyle('symbol'))
-      // this.graph.getStylesheet().putCellStyle('expressions', style)
     },
 
     cellOverlay () {
