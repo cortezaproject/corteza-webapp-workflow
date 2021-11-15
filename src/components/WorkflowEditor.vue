@@ -434,6 +434,7 @@ import Help from '../components/Help'
 import VueJsonEditor from 'v-jsoneditor'
 import Import from '../components/Import'
 import Export from '../components/Export'
+import { NoID } from '@cortezaproject/corteza-js'
 
 const {
   mxClient,
@@ -1320,11 +1321,14 @@ export default {
           const source = this.vertices[edge.source.id]
           if (source.config.kind === 'trigger') {
             // If trigger already existed and stepID changed
-            this.triggersPathsChanged = [...this.triggers].some(({ stepID, meta = {} }) => {
-              const [triggerEdge] = this.vertices[meta.visual.id].node.edges
+            this.triggersPathsChanged = [...this.triggers].some(({ stepID = '0', meta = {} }) => {
+              if (stepID !== NoID) {
+                let [triggerEdge] = this.vertices[meta.visual.id].node.edges || []
+                triggerEdge = this.graph.model.getCell(triggerEdge.id)
 
-              if (triggerEdge) {
-                return triggerEdge.target.id !== stepID
+                if (triggerEdge && triggerEdge.target) {
+                  return triggerEdge.target.id !== stepID
+                }
               }
 
               return false
@@ -1545,7 +1549,19 @@ export default {
       }
 
       this.graph.getAllConnectionConstraints = function (terminal, source = false) {
-        if (terminal != null && this.model.isVertex(terminal.cell) && !terminal.cell.style.includes('swimlane')) {
+        if (!terminal) {
+          return null
+        }
+
+        const { cell } = terminal
+        let isConnectable = this.model.isVertex(cell) && !cell.style.includes('swimlane')
+
+        // Only one outbound connection per trigger
+        if (cell.style.includes('trigger') && cell.edges) {
+          isConnectable = isConnectable && !cell.edges.length
+        }
+
+        if (isConnectable) {
           let possibleConnections = [
             [0, 0],
             [0.25, 0],
@@ -1567,7 +1583,7 @@ export default {
 
           // Allows for multiple inbound edges on the same point, but not outbound from the same point
           if (source) {
-            const edges = terminal.cell.edges || []
+            const edges = cell.edges || []
             edges.forEach(({ source, target, style }) => {
               const points = {}
               if (style) {
@@ -1580,10 +1596,10 @@ export default {
 
                 possibleConnections = possibleConnections.filter(([x, y]) => {
                   // Outgoing edge, check exitX/Y
-                  if (source.id === terminal.cell.id) {
+                  if (source.id === cell.id) {
                     // Filter out exit point
                     return !(x === points.exitX && y === points.exitY)
-                  } else if (target.id === terminal.cell.id) {
+                  } else if (target.id === cell.id) {
                     // Incoming edge
                     return !(x === points.entryX && y === points.entryY)
                   }
@@ -1591,6 +1607,11 @@ export default {
                 })
               }
             })
+          } else {
+            // Prevent triggers from being connected to
+            if (cell.style.includes('trigger')) {
+              possibleConnections = []
+            }
           }
 
           return possibleConnections.map(([x, y]) => {
