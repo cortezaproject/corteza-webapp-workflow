@@ -133,12 +133,26 @@
                   @change="$root.$emit('change-detected')"
                 />
 
-                <b-form-textarea
+                <div
                   v-else-if="a.valueType === 'value'"
-                  v-model="a.value"
-                  max-rows="5"
-                  @input="$root.$emit('change-detected')"
-                />
+                >
+                  <b-form-checkbox
+                    v-if="a.type === 'Boolean'"
+                    v-model="a.value"
+                    value="true"
+                    unchecked-value="false"
+                    @input="$root.$emit('change-detected')"
+                  >
+                    {{ a.target }}
+                  </b-form-checkbox>
+
+                  <b-form-textarea
+                    v-else
+                    v-model="a.value"
+                    max-rows="5"
+                    @input="$root.$emit('change-detected')"
+                  />
+                </div>
 
                 <b-form-textarea
                   v-else-if="a.valueType === 'expr'"
@@ -426,6 +440,11 @@ export default {
     valueTypeChanged (valueType, index) {
       const oldType = valueType === 'value' ? 'expr' : 'value'
       this.args[index][valueType] = this.args[index][oldType]
+
+      if (!this.args[index].value && this.args[index].type === 'Boolean' && valueType === 'value') {
+        this.args[index].value = 'false'
+      }
+
       this.$root.$emit('change-detected')
     },
 
