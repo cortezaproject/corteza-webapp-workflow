@@ -411,7 +411,7 @@
       >
         <vue-json-editor
           :value="dryRun.input"
-          :options="{ name: 'Initial Scope' }"
+          :options="{ name: $t('editor:initial-scope') }"
           class="h-100"
           @input="onDryRunEdit"
         />
