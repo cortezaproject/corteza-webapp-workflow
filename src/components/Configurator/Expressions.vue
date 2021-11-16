@@ -1,140 +1,198 @@
 <template>
-  <b-card
-    class="flex-grow-1 rounded-0"
-    body-class="p-0"
-  >
-    <b-card-header
-      header-tag="header"
-      class="d-flex align-items-center bg-white py-4"
+  <div>
+    <b-card
+      class="flex-grow-1 rounded-0"
+      body-class="p-0"
     >
-      <h5
-        class="d-flex align-items-center mb-0"
+      <b-card-header
+        header-tag="header"
+        class="d-flex align-items-center bg-white py-4"
       >
-        {{ $t('steps:expressions.label') }}
-        <a
-          :href="documentationURL"
-          target="_blank"
-          class="d-flex align-items-center h6 mb-0 ml-1"
+        <h5
+          class="d-flex align-items-center mb-0"
         >
-          <font-awesome-icon
-            :icon="['far', 'question-circle']"
-          />
-        </a>
-      </h5>
-      <b-button
-        variant="primary"
-        class="align-top border-0 ml-auto"
-        @click="addArgument()"
-      >
-        {{ $t('steps:expressions.configurator.add-expression') }}
-      </b-button>
-    </b-card-header>
-
-    <b-card-body
-      v-if="hasArguments"
-      class="p-0"
-    >
-      <b-table
-        id="arguments"
-        fixed
-        borderless
-        hover
-        head-row-variant="secondary"
-        details-td-class="bg-white"
-        :items="item.config.arguments"
-        :fields="argumentFields"
-        :tbody-tr-class="rowClass"
-        @row-clicked="item=>$set(item, '_showDetails', !item._showDetails)"
-      >
-        <template #cell(target)="{ item: a }">
-          <var>{{ a.target }}</var>
-          <samp> ({{ a.type }})</samp>
-        </template>
-
-        <template #cell(type)="{ item: a }">
-          <var>{{ a.type }}</var>
-        </template>
-
-        <template #cell(value)="{ item: a, index }">
-          <div
-            class="text-truncate"
-            :class="{ 'w-75': a._showDetails}"
-          >
-            <samp>{{ a.expr }}</samp>
-          </div>
-
-          <b-button
-            v-if="a._showDetails"
-            variant="outline-danger"
-            class="position-absolute trash border-0"
-            @click="removeArgument(index)"
+          {{ $t('steps:expressions.label') }}
+          <a
+            :href="documentationURL"
+            target="_blank"
+            class="d-flex align-items-center h6 mb-0 ml-1"
           >
             <font-awesome-icon
-              :icon="['far', 'trash-alt']"
+              :icon="['far', 'question-circle']"
             />
-          </b-button>
-        </template>
+          </a>
+        </h5>
+        <b-button
+          variant="primary"
+          class="align-top border-0 ml-auto"
+          @click="addArgument()"
+        >
+          {{ $t('steps:expressions.configurator.add-expression') }}
+        </b-button>
+      </b-card-header>
 
-        <template #row-details="{ item: a }">
-          <div class="arrow-up" />
+      <b-card-body
+        v-if="hasArguments"
+        class="p-0"
+      >
+        <b-table
+          id="arguments"
+          fixed
+          borderless
+          hover
+          head-row-variant="secondary"
+          details-td-class="bg-white"
+          :items="item.config.arguments"
+          :fields="argumentFields"
+          :tbody-tr-class="rowClass"
+          @row-clicked="item=>$set(item, '_showDetails', !item._showDetails)"
+        >
+          <template #cell(target)="{ item: a }">
+            <var>{{ a.target }}</var>
+            <samp> ({{ a.type }})</samp>
+          </template>
 
-          <b-card
-            class="bg-light"
-          >
-            <b-form-group
-              :label="$t('configurator:target')"
-              label-class="text-primary"
+          <template #cell(type)="{ item: a }">
+            <var>{{ a.type }}</var>
+          </template>
+
+          <template #cell(value)="{ item: a, index }">
+            <div
+              class="text-truncate"
+              :class="{ 'w-75': a._showDetails}"
             >
-              <b-form-input
-                v-model="a.target"
-                :placeholder="$t('configurator:target')"
-                @input="$root.$emit('change-detected')"
-              />
-            </b-form-group>
+              <samp>{{ a.expr }}</samp>
+            </div>
 
-            <b-form-group
-              :label="$t('steps:expressions.configurator.type')"
-              label-class="text-primary"
+            <b-button
+              v-if="a._showDetails"
+              variant="outline-danger"
+              class="position-absolute trash border-0"
+              @click="removeArgument(index)"
             >
-              <b-form-select
-                v-model="a.type"
-                :options="fieldTypes"
-                @change="$root.$emit('change-detected')"
+              <font-awesome-icon
+                :icon="['far', 'trash-alt']"
               />
-            </b-form-group>
+            </b-button>
+          </template>
 
-            <b-form-group
-              :label="$t('steps:expressions.configurator.expression')"
-              label-class="text-primary"
-              class="mb-0"
+          <template #row-details="{ item: a, index }">
+            <div class="arrow-up" />
+
+            <b-card
+              class="bg-light"
             >
-              <b-form-textarea
-                v-model="a.expr"
-                :placeholder="$t('steps:expressions.configurator.expression-placeholder')"
-                max-rows="5"
-                @input="$root.$emit('change-detected')"
-              />
-            </b-form-group>
-          </b-card>
-        </template>
-      </b-table>
-    </b-card-body>
-  </b-card>
+              <b-form-group
+                :label="$t('configurator:target')"
+                label-class="text-primary"
+              >
+                <b-form-input
+                  v-model="a.target"
+                  :placeholder="$t('configurator:target')"
+                  @input="$root.$emit('change-detected')"
+                />
+              </b-form-group>
+
+              <b-form-group
+                :label="$t('steps:expressions.configurator.type')"
+                label-class="text-primary"
+              >
+                <b-form-select
+                  v-model="a.type"
+                  :options="fieldTypes"
+                  @change="$root.$emit('change-detected')"
+                />
+              </b-form-group>
+
+              <b-form-group
+                label-class="d-flex align-items-center text-primary"
+                class="mb-0"
+              >
+                <template #label>
+                  {{ $t('steps:expressions.configurator.expression') }}
+                  <b-button
+                    variant="link"
+                    class="p-0"
+                    @click="openInEditor(index)"
+                  >
+                    <font-awesome-icon
+                      :icon="['fas', 'external-link-alt']"
+                      class="ml-1"
+                    />
+                  </b-button>
+                </template>
+
+                <expression-editor
+                  :value.sync="a.expr"
+                  lang="javascript"
+                  show-line-numbers
+                  @input="$root.$emit('change-detected')"
+                />
+              </b-form-group>
+            </b-card>
+          </template>
+        </b-table>
+      </b-card-body>
+    </b-card>
+
+    <b-modal
+      id="expression-editor"
+      :visible="!!expressionEditor.currentExpression"
+      :title="$t('editor:editor')"
+      size="lg"
+      :ok-title="$t('general:save')"
+      :cancel-title="$t('general:cancel')"
+      body-class="p-0"
+      @ok="saveExpression"
+      @hidden="resetExpression"
+    >
+      <expression-editor
+        :value.sync="currentExpressionValue"
+        height="500"
+        lang="javascript"
+        font-size="18px"
+        show-line-numbers
+        :border="false"
+      />
+    </b-modal>
+  </div>
 </template>
 
 <script>
 import base from './base'
+import ExpressionEditor from '../ExpressionEditor.vue'
 
 export default {
+  components: {
+    ExpressionEditor,
+  },
+
   extends: base,
 
   data () {
     return {
       fieldTypes: [],
+
+      expressionEditor: {
+        currentIndex: undefined,
+        currentExpression: undefined,
+      },
     }
   },
 
   computed: {
+    currentExpressionValue: {
+      get () {
+        return this.expressionEditor.currentExpression ? this.expressionEditor.currentExpression.expr : ''
+      },
+
+      set (value) {
+        if (this.expressionEditor.currentExpression) {
+          this.expressionEditor.currentExpression.expr = value
+        }
+      },
+    },
+
     argumentFields () {
       return [
         {
@@ -190,6 +248,31 @@ export default {
     removeArgument (index) {
       this.item.config.arguments.splice(index, 1)
       this.$root.$emit('change-detected')
+    },
+
+    openInEditor (index = -1) {
+      this.expressionEditor = {
+        currentIndex: index >= -1 ? index : undefined,
+        currentExpression: index >= 0 ? { ...this.item.config.arguments[index] } : undefined,
+      }
+    },
+
+    saveExpression () {
+      if (this.expressionEditor.currentIndex >= 0) {
+        const args = [...this.item.config.arguments]
+        args[this.expressionEditor.currentIndex] = this.expressionEditor.currentExpression
+        this.$set(this.item.config, 'arguments', args)
+        this.$root.$emit('change-detected')
+      }
+
+      this.resetExpression()
+    },
+
+    resetExpression () {
+      this.expressionEditor = {
+        currentIndex: undefined,
+        currentExpression: undefined,
+      }
     },
 
     async getTypes () {

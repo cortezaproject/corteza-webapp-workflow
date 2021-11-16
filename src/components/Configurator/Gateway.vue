@@ -33,9 +33,11 @@
             :label="edge.value"
             label-class="text-primary"
           >
-            <b-form-input
-              v-model="edge.expr"
-              :placeholder="$t('steps:gateway.configurator.condition')"
+            <expression-editor
+              :value.sync="edge.expr"
+              lang="javascript"
+              height="60"
+              show-line-numbers
               @input="updateEdge(edge.id, $event)"
             />
           </b-form-group>
@@ -47,8 +49,13 @@
 
 <script>
 import base from './base'
+import ExpressionEditor from '../ExpressionEditor.vue'
 
 export default {
+
+  components: {
+    ExpressionEditor,
+  },
   extends: base,
 
   computed: {

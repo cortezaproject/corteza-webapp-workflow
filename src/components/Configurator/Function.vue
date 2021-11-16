@@ -122,10 +122,24 @@
               </b-form-group>
 
               <b-form-group
-                :label="$t('steps:function.configurator.value')"
-                label-class="text-primary"
+                label-class="d-flex align-items-center text-primary"
                 class="mb-0"
               >
+                <template #label>
+                  {{ $t('steps:function.configurator.value') }}
+                  <b-button
+                    v-if="a.type !== 'Boolean' && !a.options.length"
+                    variant="link"
+                    class="p-0"
+                    @click="openInEditor(index)"
+                  >
+                    <font-awesome-icon
+                      :icon="['fas', 'external-link-alt']"
+                      class="ml-1"
+                    />
+                  </b-button>
+                </template>
+
                 <b-form-select
                   v-if="a.options.length"
                   v-model="a.value"
@@ -146,18 +160,18 @@
                     {{ a.target }}
                   </b-form-checkbox>
 
-                  <b-form-textarea
+                  <expression-editor
                     v-else
-                    v-model="a.value"
-                    max-rows="5"
+                    :value.sync="a.value"
                     @input="$root.$emit('change-detected')"
                   />
                 </div>
 
-                <b-form-textarea
+                <expression-editor
                   v-else-if="a.valueType === 'expr'"
-                  v-model="a.expr"
-                  max-rows="5"
+                  :value.sync="a.expr"
+                  lang="javascript"
+                  show-line-numbers
                   @input="$root.$emit('change-detected')"
                 />
               </b-form-group>
@@ -228,13 +242,39 @@
         </b-table>
       </b-card-body>
     </b-card>
+
+    <b-modal
+      id="expression-editor"
+      :visible="!!expressionEditor.currentExpression"
+      :title="$t('editor:editor')"
+      size="lg"
+      :ok-title="$t('general:save')"
+      :cancel-title="$t('general:cancel')"
+      body-class="p-0"
+      @ok="saveExpression"
+      @hidden="resetExpression"
+    >
+      <expression-editor
+        :value.sync="currentExpressionValue"
+        :lang="expressionEditor.lang"
+        height="500"
+        font-size="20px"
+        show-line-numbers
+        :border="false"
+      />
+    </b-modal>
   </div>
 </template>
 
 <script>
 import base from './base'
+import ExpressionEditor from '../ExpressionEditor.vue'
 
 export default {
+
+  components: {
+    ExpressionEditor,
+  },
   extends: base,
 
   data () {
@@ -247,10 +287,32 @@ export default {
 
       paramTypes: {},
       resultTypes: {},
+
+      expressionEditor: {
+        currentIndex: undefined,
+        currentExpression: undefined,
+        lang: 'javascript',
+      },
     }
   },
 
   computed: {
+    // Used for expression editor modal
+    currentExpressionValue: {
+      get () {
+        const { currentExpression } = this.expressionEditor
+        return currentExpression ? currentExpression[currentExpression.valueType] : ''
+      },
+
+      set (value) {
+        const { currentExpression } = this.expressionEditor
+
+        if (currentExpression) {
+          currentExpression[currentExpression.valueType] = value
+        }
+      },
+    },
+
     functionTypes () {
       return [
         { value: '', text: this.$t('steps:function.configurator.select-function'), disabled: true },
@@ -418,6 +480,34 @@ export default {
             expr: res.expr || result.name,
           }
         }) || []
+      }
+    },
+
+    openInEditor (index = -1) {
+      this.expressionEditor = {
+        currentIndex: index >= -1 ? index : undefined,
+        currentExpression: index >= 0 ? { ...this.args[index] } : undefined,
+      }
+
+      this.expressionEditor.lang = this.expressionEditor.currentExpression.valueType === 'expr' ? 'javascript' : 'text'
+    },
+
+    saveExpression () {
+      const { currentIndex = -1, currentExpression } = this.expressionEditor
+      if (currentIndex >= 0) {
+        this.args[currentIndex] = currentExpression
+        this.$set(this.args, currentIndex, currentExpression)
+        this.$root.$emit('change-detected')
+      }
+
+      this.resetExpression()
+    },
+
+    resetExpression () {
+      this.expressionEditor = {
+        currentIndex: undefined,
+        currentExpression: undefined,
+        lang: 'javascript',
       }
     },
 
