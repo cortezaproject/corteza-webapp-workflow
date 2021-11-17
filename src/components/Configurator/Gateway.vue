@@ -38,6 +38,7 @@
               lang="javascript"
               height="60"
               show-line-numbers
+              :show-popout="false"
               @input="updateEdge(edge.id, $event)"
             />
           </b-form-group>
@@ -52,10 +53,10 @@ import base from './base'
 import ExpressionEditor from '../ExpressionEditor.vue'
 
 export default {
-
   components: {
     ExpressionEditor,
   },
+
   extends: base,
 
   computed: {

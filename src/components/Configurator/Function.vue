@@ -89,12 +89,11 @@
 
             <b-card
               class="bg-light"
+              body-class="px-4 pb-3"
             >
               <b-form-group
                 v-if="(paramTypes[item.config.ref][a.target] || []).length > 1"
-                :label="$t('steps:function.configurator.type')"
                 label-class="text-primary"
-                class="mb-0"
               >
                 <b-form-select
                   v-model="a.type"
@@ -102,44 +101,12 @@
                   :disabled="(paramTypes[item.config.ref][a.target] || []).length <= 1"
                   @change="$root.$emit('change-detected')"
                 />
-                <hr>
-              </b-form-group>
-
-              <b-form-group
-                v-if="!a.options.length && !isWhileIterator"
-                :label="$t('steps:function.configurator.value-type')"
-                label-class="text-primary"
-              >
-                <b-form-radio-group
-                  id="value-types"
-                  v-model="a.valueType"
-                  :options="valueTypes"
-                  button-variant="outline-primary"
-                  buttons
-                  class="w-100 bg-white"
-                  @change="valueTypeChanged($event, index)"
-                />
               </b-form-group>
 
               <b-form-group
                 label-class="d-flex align-items-center text-primary"
                 class="mb-0"
               >
-                <template #label>
-                  {{ $t('steps:function.configurator.value') }}
-                  <b-button
-                    v-if="a.type !== 'Boolean' && !a.options.length"
-                    variant="link"
-                    class="p-0"
-                    @click="openInEditor(index)"
-                  >
-                    <font-awesome-icon
-                      :icon="['fas', 'external-link-alt']"
-                      class="ml-1"
-                    />
-                  </b-button>
-                </template>
-
                 <b-form-select
                   v-if="a.options.length"
                   v-model="a.value"
@@ -163,6 +130,7 @@
                   <expression-editor
                     v-else
                     :value.sync="a.value"
+                    @open="openInEditor(index)"
                     @input="$root.$emit('change-detected')"
                   />
                 </div>
@@ -172,8 +140,34 @@
                   :value.sync="a.expr"
                   lang="javascript"
                   show-line-numbers
+                  @open="openInEditor(index)"
                   @input="$root.$emit('change-detected')"
                 />
+
+                <b-form-checkbox
+                  v-if="!a.options.length && !isWhileIterator"
+                  v-model="a.valueType"
+                  value="expr"
+                  unchecked-value="value"
+                  class="mt-1"
+                  @change="valueTypeChanged($event, index)"
+                >
+                  <div
+                    class="d-flex align-items-center justify-content-center"
+                  >
+                    {{ $t('steps:function.configurator.expression') }}
+                    <a
+                      :href="documentationURL"
+                      target="_blank"
+                      class="d-flex align-items-center h6 mb-0 ml-1"
+                    >
+                      <font-awesome-icon
+                        :icon="['far', 'question-circle']"
+                        class="ml-1"
+                      />
+                    </a>
+                  </div>
+                </b-form-checkbox>
               </b-form-group>
             </b-card>
           </template>
@@ -226,10 +220,12 @@
 
             <b-card
               class="bg-light"
+              body-class="px-4 pb-3"
             >
               <b-form-group
                 :label="$t('configurator:target')"
                 label-class="text-primary"
+                class="mb-0"
               >
                 <b-form-input
                   v-model="a.target"
@@ -258,9 +254,10 @@
         :value.sync="currentExpressionValue"
         :lang="expressionEditor.lang"
         height="500"
-        font-size="20px"
+        font-size="18px"
         show-line-numbers
         :border="false"
+        :show-popout="false"
       />
     </b-modal>
   </div>
@@ -382,6 +379,12 @@ export default {
         return this.item.config.kind === 'iterator' && this.item.config.ref === 'loopDo'
       }
       return false
+    },
+
+    documentationURL () {
+      // eslint-disable-next-line no-undef
+      const [year, month] = VERSION.split('.')
+      return `https://docs.cortezaproject.org/corteza-docs/${year}.${month}/integrator-guide/expr/index.html`
     },
   },
 

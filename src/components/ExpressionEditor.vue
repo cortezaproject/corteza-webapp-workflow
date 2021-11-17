@@ -1,15 +1,30 @@
 <template>
-  <ace-editor
-    v-model="expressionValue"
-    :lang="lang"
-    :mode="lang"
-    theme="chrome"
-    width="100%"
-    :height="height"
-    :class="{ 'border': border }"
-    v-on="$listeners"
-    @init="editorInit"
-  />
+  <div
+    class="position-relative"
+  >
+    <ace-editor
+      v-model="expressionValue"
+      :lang="lang"
+      :mode="lang"
+      theme="chrome"
+      width="100%"
+      :height="height"
+      :class="{ 'border': border }"
+      v-on="$listeners"
+      @init="editorInit"
+    />
+
+    <b-button
+      v-if="showPopout"
+      variant="link"
+      class="popout position-absolute px-2 py-1"
+      @click="$emit('open')"
+    >
+      <font-awesome-icon
+        :icon="['fas', 'external-link-alt']"
+      />
+    </b-button>
+  </div>
 </template>
 
 <script>
@@ -50,6 +65,11 @@ export default {
       type: Boolean,
       default: true,
     },
+
+    showPopout: {
+      type: Boolean,
+      default: true,
+    },
   },
 
   computed: {
@@ -80,16 +100,6 @@ export default {
         displayIndentGuides: this.lang !== 'text',
         useWorker: false,
       })
-
-      editor.session.on('changeMode', (e, session) => {
-        if (session.getMode().$id === 'brace/mode/javascript') {
-          if (session.$worker) {
-            session.$worker.send('changeOptions', [{
-              asi: true, // disable "Missing semicolon." warning in editor for JavaScript
-            }])
-          }
-        }
-      })
     },
   },
 }
@@ -100,5 +110,10 @@ export default {
   background-color: #FFF;
   border: 2px solid #E4E9EF;
   border-radius: 0.25rem;
+}
+
+.popout {
+  bottom: 0;
+  right: 0;
 }
 </style>

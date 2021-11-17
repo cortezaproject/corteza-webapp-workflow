@@ -81,9 +81,9 @@
 
             <b-card
               class="bg-light"
+              body-class="px-4 pb-3"
             >
               <b-form-group
-                :label="$t('configurator:target')"
                 label-class="text-primary"
               >
                 <b-form-input
@@ -94,7 +94,6 @@
               </b-form-group>
 
               <b-form-group
-                :label="$t('steps:expressions.configurator.type')"
                 label-class="text-primary"
               >
                 <b-form-select
@@ -105,27 +104,13 @@
               </b-form-group>
 
               <b-form-group
-                label-class="d-flex align-items-center text-primary"
                 class="mb-0"
               >
-                <template #label>
-                  {{ $t('steps:expressions.configurator.expression') }}
-                  <b-button
-                    variant="link"
-                    class="p-0"
-                    @click="openInEditor(index)"
-                  >
-                    <font-awesome-icon
-                      :icon="['fas', 'external-link-alt']"
-                      class="ml-1"
-                    />
-                  </b-button>
-                </template>
-
                 <expression-editor
                   :value.sync="a.expr"
                   lang="javascript"
                   show-line-numbers
+                  @open="openInEditor(index)"
                   @input="$root.$emit('change-detected')"
                 />
               </b-form-group>
@@ -153,6 +138,7 @@
         font-size="18px"
         show-line-numbers
         :border="false"
+        :show-popout="false"
       />
     </b-modal>
   </div>
