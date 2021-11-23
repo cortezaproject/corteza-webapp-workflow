@@ -21,7 +21,7 @@
       @click="$emit('open')"
     >
       <font-awesome-icon
-        :icon="['fas', 'external-link-alt']"
+        :icon="['fas', 'expand-alt']"
       />
     </b-button>
   </div>
@@ -113,6 +113,7 @@ export default {
 }
 
 .popout {
+  z-index: 7;
   bottom: 0;
   right: 0;
 }
