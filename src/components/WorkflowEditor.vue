@@ -2006,6 +2006,8 @@ export default {
             } else {
               this.raiseSuccessAlert(this.$t('notification:workflow-test-completed'), this.$t('notification:test-completed'))
             }
+          } else if (error) {
+            throw new Error(error)
           } else {
             this.raiseWarningAlert(this.$t('notification:trace-unavailable'), this.$t('notification:test-completed'))
           }
