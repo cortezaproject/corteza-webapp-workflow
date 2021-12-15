@@ -360,7 +360,7 @@
         :key="index"
       >
         <p>
-          <code>{{ issue[0].toUpperCase() + issue.slice(1).toLowerCase() }}</code>
+          <code>{{ issue[0].toUpperCase() + issue.slice(1) }}</code>
         </p>
       </div>
     </b-modal>
