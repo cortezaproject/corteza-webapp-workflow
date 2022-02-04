@@ -1440,6 +1440,7 @@ export default {
           cells.forEach(cell => {
             if (cell && cell.vertex) {
               if (!this.rendering) {
+                cell.defaultName = true
                 this.addCellToVertices(cell)
                 this.graph.setSelectionCells([cell])
               }
@@ -1838,7 +1839,7 @@ export default {
         defaultName = false,
         arguments: args = [],
         results = [],
-        meta = { visual: {} },
+        meta = {},
       } = (this.workflow.steps || []).find(({ stepID }) => {
         return stepID === cell.id
       }) || {}
@@ -1849,7 +1850,7 @@ export default {
           stepID: cell.id,
           kind: kind || '',
           ref: ref || '',
-          defaultName: defaultName || meta.visual.defaultName,
+          defaultName: defaultName || meta.visual?.defaultName || cell.defaultName || false,
           ...(this.rendering ? {} : getKindFromStyle(cell)),
         },
       }
