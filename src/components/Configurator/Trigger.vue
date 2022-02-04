@@ -195,9 +195,16 @@
           label-class="text-primary"
           class="mt-0 mb-4 mx-4"
         >
-          <b-form-input
+          <c-input-date-time
+            v-if="item.triggers.eventType === 'onTimestamp'"
             v-model="item.triggers.constraints[0].values[0]"
-            @change="$root.$emit('change-detected')"
+            @input="$root.$emit('change-detected')"
+          />
+
+          <b-form-input
+            v-else
+            v-model="item.triggers.constraints[0].values[0]"
+            @input="$root.$emit('change-detected')"
           />
         </b-form-group>
       </b-card-body>
@@ -241,8 +248,14 @@
 
 <script>
 import base from './base'
+import { components } from '@cortezaproject/corteza-vue'
+const { CInputDateTime } = components
 
 export default {
+  components: {
+    CInputDateTime,
+  },
+
   extends: base,
 
   data () {
