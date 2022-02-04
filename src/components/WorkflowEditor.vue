@@ -807,9 +807,16 @@ export default {
       this.graph.getLabel = cell => {
         let label = mxGraph.prototype.getLabel.apply(this, arguments)
 
+        // Used to encode html labels to prevent security issues
+        const encodeHTML = value => {
+          return value.replace(/[\u00A0-\u9999<>&]/gim, i => {
+            return '&#' + i.charCodeAt(0) + ';'
+          })
+        }
+
         if (cell.edge) {
           if (cell.value) {
-            label = `<div id="openSidebar" class="text-nowrap py-1 px-3 mb-0 rounded bg-white pointer" style="border: 2px solid #A7D0E3; border-radius: 5px; color: #2D2D2D;">${cell.value}</div>`
+            label = `<div id="openSidebar" class="text-nowrap py-1 px-3 mb-0 rounded bg-white pointer" style="border: 2px solid #A7D0E3; border-radius: 5px; color: #2D2D2D;">${encodeHTML(cell.value)}</div>`
           }
         } else if (this.vertices[cell.id]) {
           const vertex = this.vertices[cell.id]
@@ -838,7 +845,7 @@ export default {
               values = cell.edges
                 .filter(({ source }) => cell.id === source.id)
                 .map(({ id }) => this.edges[id])
-                .map(({ node, config }) => `<tr><td><var>${node.value}<var/></td><td><code>${config.expr || ''}</code></td></tr>`)
+                .map(({ node, config }) => `<tr><td><var>${encodeHTML(node.value)}<var/></td><td><code>${encodeHTML(config.expr || '')}</code></td></tr>`)
                 .join('')
             } else if (['expressions', 'function', 'prompt', 'iterator'].includes(kind)) {
               let { arguments: args = [], results = [], ref } = vertex.config || {}
@@ -852,13 +859,13 @@ export default {
               if (args.length && kind !== 'expressions') {
                 values.push('<tr class="title"><td><b>Arguments</b></td><td/></tr>')
               }
-              args = args.map(({ target = '', type = 'Any', expr = '', value = '' }) => `<tr><td><var>${target}<var/> <samp>(${type})</samp></td><td><code>${expr || value}</code></td></tr>`)
+              args = args.map(({ target = '', type = 'Any', expr = '', value = '' }) => `<tr><td><var>${encodeHTML(target)}<var/> <samp>(${type})</samp></td><td><code>${encodeHTML(expr || value)}</code></td></tr>`)
 
               if (results.length) {
                 args.push('<tr class="title border-top"><td><b>Results</b></td><td /></tr>')
               }
 
-              results = results.map(({ target = '', type = 'Any', expr = '', value = '' }) => `<tr><td><var>${target}<var/> <samp>(${type})</samp></td><td><code>${expr || value}</code></td></tr>`)
+              results = results.map(({ target = '', type = 'Any', expr = '', value = '' }) => `<tr><td><var>${encodeHTML(target)}<var/> <samp>(${type})</samp></td><td><code>${encodeHTML(expr || value)}</code></td></tr>`)
               values = [...values, ...args, ...results].join('')
             } else if (kind === 'trigger') {
               let { resourceType = '', eventType = '', constraints = [] } = vertex.triggers || {}
@@ -876,7 +883,7 @@ export default {
               if (constraints.length && eventType && eventType !== 'onManual') {
                 values.push('<tr class="title"><td><b>Constraints</b></td><td/><td/></tr>')
                 constraints = constraints.map(({ name = '', op = '', values = '' }) => {
-                  return `<tr><td><samp>${name || eventType.includes('on') ? eventType.replace('on', '') : ''}<var/></td><td><samp>${op}</samp></td><td><code>${values.join(' or ')}</code></td></tr>`
+                  return `<tr><td><samp>${name || eventType.includes('on') ? eventType.replace('on', '') : ''}<var/></td><td><samp>${op}</samp></td><td><code>${encodeHTML(values.join(' or '))}</code></td></tr>`
                 })
               } else {
                 constraints = []
@@ -927,13 +934,13 @@ export default {
                       '</div>' +
                       `<div class="label d-flex flex-column flex-grow-1 bg-white border-top ${values ? 'wide-label' : ''}">` +
                         '<div class="d-flex flex-grow-1 align-items-start">' +
-                          `<span class="d-inline-block hover-untruncate bg-white p-2 h-100 align-middle">${cell.value || '/'}</span>` +
+                          `<span class="d-inline-block hover-untruncate bg-white p-2 h-100 align-middle">${encodeHTML(cell.value || '/')}</span>` +
                         '</div>' +
                         values +
                       '</div>' +
                     '</div>'
           } else {
-            label = `<div id="openSidebar" class="d-flex"><span class="d-inline-block mb-0 text-truncate">${cell.value || ''}</span></div>`
+            label = `<div id="openSidebar" class="d-flex"><span class="d-inline-block mb-0 text-truncate">${encodeHTML(cell.value || '')}</span></div>`
           }
         }
 
