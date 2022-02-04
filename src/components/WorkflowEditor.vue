@@ -562,6 +562,10 @@ export default {
 
       zoomLevel: 1,
 
+      currentLabel: undefined,
+
+      functions: [],
+
       deferredKinds: ['delay', 'prompt'],
     }
   },
@@ -678,6 +682,8 @@ export default {
 
       this.styling()
       this.connectionHandler()
+
+      this.getFunctionTypes()
 
       this.$root.$on('trigger-updated', ({ mxObjectId }) => {
         this.redrawLabel(mxObjectId)
@@ -806,14 +812,15 @@ export default {
           }
         } else if (this.vertices[cell.id]) {
           const vertex = this.vertices[cell.id]
-          if (vertex && vertex.config.kind !== 'visual') {
+          const { kind } = vertex.config
+          if (vertex && kind !== 'visual') {
             const icon = getStyleFromKind(vertex.config).icon
-            const type = vertex.config.kind.charAt(0).toUpperCase() + vertex.config.kind.slice(1)
+            const type = kind.charAt(0).toUpperCase() + kind.slice(1)
             const shadow = ((this.getSelectedItem || {}).node || {}).id === cell.id ? 'shadow-lg' : 'shadow'
             const cog = 'icons/cog.svg'
             const issue = 'icons/issue.svg'
             const playIcon = 'icons/play.svg'
-            const opacity = vertex.config.kind === 'trigger' && !vertex.triggers.enabled ? 'opacity: 0.7;' : ''
+            const opacity = kind === 'trigger' && !vertex.triggers.enabled ? 'opacity: 0.7;' : ''
 
             let play = ''
             let issues = ''
@@ -822,6 +829,76 @@ export default {
               issues = `<img id="openIssues" src="${issue}" class="ml-2 pointer" style="width: 20px;"/>`
             } else {
               id = `<span class="show id-label">${cell.id}</span>`
+            }
+
+            let values = []
+
+            if (kind === 'gateway' && cell.edges) {
+              values = cell.edges
+                .filter(({ source }) => cell.id === source.id)
+                .map(({ id }) => this.edges[id])
+                .map(({ node, config }) => `<tr><td><var>${node.value}<var/></td><td><code>${config.expr || ''}</code></td></tr>`)
+                .join('')
+            } else if (['expressions', 'function', 'prompt', 'iterator'].includes(kind)) {
+              let { arguments: args = [], results = [], ref } = vertex.config || {}
+
+              const functionLabel = (this.functions.find(f => f.ref === ref) || { meta: {} }).meta.short || ''
+
+              if (functionLabel) {
+                values.push(`<tr><td><b class="text-primary">${functionLabel}</b></td><td/>`)
+              }
+
+              if (args.length && kind !== 'expressions') {
+                values.push('<tr class="title"><td><b>Arguments</b></td><td/></tr>')
+              }
+              args = args.map(({ target = '', type = 'Any', expr = '', value = '' }) => `<tr><td><var>${target}<var/> <samp>(${type})</samp></td><td><code>${expr || value}</code></td></tr>`)
+
+              if (results.length) {
+                args.push('<tr class="title border-top"><td><b>Results</b></td><td /></tr>')
+              }
+
+              results = results.map(({ target = '', type = 'Any', expr = '', value = '' }) => `<tr><td><var>${target}<var/> <samp>(${type})</samp></td><td><code>${expr || value}</code></td></tr>`)
+              values = [...values, ...args, ...results].join('')
+            } else if (kind === 'trigger') {
+              let { resourceType = '', eventType = '', constraints = [] } = vertex.triggers || {}
+
+              if (resourceType) {
+                resourceType = resourceType.split(':').map(s => {
+                  return s[0].toUpperCase() + s.slice(1).toLowerCase()
+                }).join(' ')
+              }
+
+              values.push('<tr class="title"><td><b>Configuration</b></td><td/><td/></tr>')
+              values.push(`<tr><td><var>Resource<var/></td><td/><td><code>${resourceType || ''}</code></td></tr>`)
+              values.push(`<tr><td><var>Event<var/></td><td/><td><code>${eventType || ''}</code></td></tr>`)
+
+              if (constraints.length && eventType && eventType !== 'onManual') {
+                values.push('<tr class="title"><td><b>Constraints</b></td><td/><td/></tr>')
+                constraints = constraints.map(({ name = '', op = '', values = '' }) => {
+                  return `<tr><td><samp>${name || eventType.includes('on') ? eventType.replace('on', '') : ''}<var/></td><td><samp>${op}</samp></td><td><code>${values.join(' or ')}</code></td></tr>`
+                })
+              } else {
+                constraints = []
+              }
+
+              values = [
+                ...values,
+                ...constraints,
+              ]
+
+              values = values.join('')
+            } else {
+              values = ''
+            }
+
+            if (values) {
+              values = values
+                ? '<div class="step-values hide-label">' +
+                  '<table class="table bg-white shadow mb-0">' +
+                    values +
+                  '</table>' +
+                '</div>'
+                : ''
             }
 
             // Add play button to triggers
@@ -847,8 +924,11 @@ export default {
                           issues +
                         '</div>' +
                       '</div>' +
-                      '<div class="d-flex flex-row align-items-center hover-untruncate border-top px-2 mb-0" style="height: 45px; color: #2D2D2D;">' +
-                        `<span class="d-inline-block bg-white hover-untruncate py-2 pr-2">${cell.value || '/'}</span>` +
+                      `<div class="label d-flex flex-column flex-grow-1 bg-white border-top ${values ? 'wide-label' : ''}">` +
+                        '<div class="d-flex flex-grow-1 align-items-start">' +
+                          `<span class="d-inline-block hover-untruncate bg-white p-2 h-100 align-middle">${cell.value || '/'}</span>` +
+                        '</div>' +
+                        values +
                       '</div>' +
                     '</div>'
           } else {
@@ -1397,46 +1477,6 @@ export default {
         })
       })
 
-      // Click event
-      this.graph.addListener(mxEvent.CLICK, (sender, evt) => {
-        // Prevent click event handling if edge was just connected
-        if (this.edgeConnected) {
-          this.edgeConnected = false
-          return
-        }
-
-        const event = evt.getProperty('event')
-        const cell = evt.getProperty('cell')
-
-        if (event) {
-          if (mxEvent.isControlDown(event) || (mxClient.IS_MAC && mxEvent.isMetaDown(event))) {
-            // Prevent sidebar opening/closing when CTRL(CMD) is pressed while clicking
-          } else if (cell) {
-            // If clicked on Cog icon
-            if (event.target.id === 'openSidebar') {
-              const item = cell.edge ? this.edges[cell.id] : this.vertices[cell.id]
-              const itemType = cell.edge ? 'edge' : item.config.kind
-              this.sidebarReopen(item, itemType)
-            } else if (event.target.id === 'openIssues') {
-              this.issuesModal.issues = this.issues[cell.id]
-              this.issuesModal.show = true
-            } else if (event.target.id === 'testWorkflow') {
-              this.dryRun.cellID = cell.id
-              this.loadTestScope()
-            }
-          } else if (!event.defaultPrevented) {
-            // If click is on background and is not multiple selection, deselect all selected cells
-            this.graph.getSelectionModel().clear()
-            this.sidebar.show = false
-            if (this.getSelectedItem) {
-              this.sidebarClose()
-            }
-          }
-        }
-
-        evt.consume()
-      })
-
       this.graph.addListener(mxEvent.DOUBLE_CLICK, (sender, evt) => {
         const event = evt.getProperty('event')
         const cell = evt.getProperty('cell')
@@ -1465,6 +1505,72 @@ export default {
         this.zoom(up)
         mxEvent.consume(event)
       }, this.graph.container)
+
+      // On hover, bring cell to foreground
+      this.graph.addMouseListener({
+        mouseMove: (sender, evt) => {
+          if (this.currentLabel !== null && evt.getState() === this.currentLabel) {
+            return
+          }
+
+          let tmp = sender.view.getState(evt.getCell())
+
+          // Ignores everything but vertices
+          if (tmp !== null && !sender.getModel().isVertex(tmp.cell)) {
+            tmp = null
+          }
+
+          if (tmp !== this.currentLabel) {
+            this.currentLabel = tmp
+            if (this.currentLabel?.cell) {
+              this.rendering = true
+              sender.orderCells(false, [this.currentLabel.cell])
+              this.rendering = false
+            }
+          }
+        },
+        mouseUp: (sender, evt) => {
+          evt.consume()
+        },
+        mouseDown: (sender, evt) => {
+          // Prevent click event handling if edge was just connected
+          if (this.edgeConnected) {
+            this.edgeConnected = false
+            return
+          }
+
+          const event = evt.evt
+          const cell = evt.state?.cell
+
+          if (event) {
+            if (mxEvent.isControlDown(event) || (mxClient.IS_MAC && mxEvent.isMetaDown(event))) {
+              // Prevent sidebar opening/closing when CTRL(CMD) is pressed while clicking
+            } else if (cell) {
+              // If clicked on Cog icon
+              if (event.target.id === 'openSidebar') {
+                const item = cell.edge ? this.edges[cell.id] : this.vertices[cell.id]
+                const itemType = cell.edge ? 'edge' : item.config.kind
+                this.sidebarReopen(item, itemType)
+              } else if (event.target.id === 'openIssues') {
+                this.issuesModal.issues = this.issues[cell.id]
+                this.issuesModal.show = true
+              } else if (event.target.id === 'testWorkflow') {
+                this.dryRun.cellID = cell.id
+                this.loadTestScope()
+              }
+            } else if (!event.defaultPrevented) {
+              // If click is on background and is not multiple selection, deselect all selected cells
+              this.graph.getSelectionModel().clear()
+              this.sidebar.show = false
+              if (this.getSelectedItem) {
+                this.sidebarClose()
+              }
+            }
+          }
+
+          evt.consume()
+        },
+      })
 
       this.graph.model.addListener(mxEvent.CHANGE, (sender, evt) => {
         if (!this.rendering) {
@@ -2193,6 +2299,14 @@ export default {
       // Just emit, let parent component take care of permission checks
       this.$emit('save', { ...this.workflow, ...this.getJsonModel() })
     },
+
+    async getFunctionTypes () {
+      return this.$AutomationAPI.functionList()
+        .then(({ set }) => {
+          this.functions = set.sort((a, b) => a.meta.short.localeCompare(b.meta.short))
+        })
+        .catch(this.defaultErrorHandler(this.$t('notification:failed-fetch-functions')))
+    },
   },
 }
 </script>
@@ -2230,6 +2344,16 @@ export default {
   display: none;
 }
 
+.hide-label {
+  display: none;
+}
+
+.step:hover .hide-label {
+  text-align: justify;
+  border-top: 1px dotted #dee2e6;
+  display: flex;
+}
+
 .id-label {
   position: absolute;
   font-size: 8px;
@@ -2238,14 +2362,31 @@ export default {
 }
 
 .hover-untruncate {
+  text-align: left;
+  line-height: 18px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.step:hover .hover-untruncate {
+.label:hover .hover-untruncate {
   overflow: visible;
   text-overflow: initial;
+  white-space: nowrap;
+}
+
+.step-values td, th {
+  text-align: left;
+  padding: 8px;
+  white-space: nowrap;
+}
+
+.step-values tr.title {
+  background-color: white !important;
+}
+
+.step-values tr.title th {
+  border-top: none;
 }
 
 #toolbar > hr {
