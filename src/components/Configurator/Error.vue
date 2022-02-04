@@ -23,7 +23,7 @@
         <b-form-input
           v-model="item.config.arguments[0].value"
           :placeholder="$t('general:error')"
-          @input="$root.$emit('change-detected')"
+          @input="valueChanged"
         />
       </b-form-group>
     </b-card-body>
@@ -44,6 +44,15 @@ export default {
         value: '',
       },
     ])
+  },
+
+  methods: {
+    valueChanged (value) {
+      this.$emit('update-default-value', {
+        value: `Stop workflow with error "${value}"`,
+        force: !this.item.node.value,
+      })
+    },
   },
 }
 </script>

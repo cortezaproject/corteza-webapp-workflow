@@ -6,6 +6,7 @@
     >
       <b-form-input
         v-model="label"
+        @input="$emit('update-value', $event)"
       />
     </b-form-group>
 
@@ -65,29 +66,6 @@ export default {
         return source.style
       }
       return undefined
-    },
-
-    // Used to detect changes in node value
-    valueID () {
-      return `${this.item.config.stepID || '0'}-${this.item.node.value || undefined}`
-    },
-  },
-
-  watch: {
-    // Used to detect changes in node value(label)
-    valueID: {
-      handler (newValueID, oldValueID) {
-        // get ID and label value
-        let [nID, ...nValue] = newValueID.split('-')
-        let [oID, ...oValue] = oldValueID.split('-')
-        nValue = nValue.join('-')
-        oValue = oValue.join('-')
-        if (nID === oID) {
-          if (nValue !== oValue) {
-            this.$emit('update-value', this.item.node.value)
-          }
-        }
-      },
     },
   },
 }

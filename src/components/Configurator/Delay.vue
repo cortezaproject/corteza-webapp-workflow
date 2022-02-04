@@ -26,7 +26,7 @@
           <b-form-input
             v-model="item.config.arguments[0].value"
             placeholder="10s"
-            @input="$root.$emit('change-detected')"
+            @input="valueChanged"
           />
         </b-form-group>
       </b-card-body>
@@ -54,6 +54,17 @@ export default {
 
         this.processing = false
       },
+    },
+  },
+
+  methods: {
+    valueChanged (value) {
+      this.$emit('update-default-value', {
+        value: `Delay workflow execution for ${value}`,
+        force: !this.item.node.value,
+      })
+
+      this.$root.$emit('change-detected')
     },
   },
 }

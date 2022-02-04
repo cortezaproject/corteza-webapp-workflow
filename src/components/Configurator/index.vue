@@ -31,6 +31,7 @@
       :item.sync="item"
       :edges.sync="edges"
       :out-edges="outEdges"
+      @update-default-value="updateDefaultName"
     />
   </div>
 </template>
@@ -68,6 +69,14 @@ export default {
       }
 
       return undefined
+    },
+  },
+
+  methods: {
+    updateDefaultName ({ value, force = false }) {
+      if (force || this.item.config.defaultName || this.item.config.defaultName === undefined) {
+        this.$emit('update-default-value', value)
+      }
     },
   },
 }

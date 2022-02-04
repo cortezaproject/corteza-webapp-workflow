@@ -248,6 +248,7 @@
         :edges.sync="edges"
         :out-edges="sidebar.outEdges"
         @update-value="setValue($event)"
+        @update-default-value="setValue($event, true)"
       />
 
       <template
@@ -982,8 +983,18 @@ export default {
 
       const addCell = ({ icon, width = 60, height = 60, style }) => {
         const { label, tooltip } = this.translateCell(style)
+        let value = tooltip
+
+        if (['break', 'continue'].includes(style)) {
+          value = style === 'break' ? 'Stop iterator exectution' : 'Skip current iteration'
+        } else if (style.includes('gateway')) {
+          value = style.split('gateway')[1]
+        } else if (style === 'expressions') {
+          value = 'Define and mutate scope variables'
+        }
+
         const cell = new mxCell(
-          null,
+          value,
           new mxGeometry(0, 0, width, height),
           style,
         )
@@ -1821,7 +1832,14 @@ export default {
         return ((meta || {}).visual || {}).id === cell.id
       })
 
-      const config = (this.workflow.steps || []).find(({ stepID }) => {
+      const {
+        kind = '',
+        ref = '',
+        defaultName = false,
+        arguments: args = [],
+        results = [],
+        meta = { visual: {} },
+      } = (this.workflow.steps || []).find(({ stepID }) => {
         return stepID === cell.id
       }) || {}
 
@@ -1829,18 +1847,19 @@ export default {
         node: cell,
         config: {
           stepID: cell.id,
-          kind: config.kind || '',
-          ref: config.ref || '',
+          kind: kind || '',
+          ref: ref || '',
+          defaultName: defaultName || meta.visual.defaultName,
           ...(this.rendering ? {} : getKindFromStyle(cell)),
         },
       }
 
-      if (config.arguments) {
-        this.vertices[cell.id].config.arguments = config.arguments
+      if (args) {
+        this.vertices[cell.id].config.arguments = args
       }
 
-      if (config.results) {
-        this.vertices[cell.id].config.results = config.results
+      if (results) {
+        this.vertices[cell.id].config.results = results
       }
 
       if (triggers || cell.style === 'trigger') {
@@ -1858,8 +1877,9 @@ export default {
       this.vertices[vID].config = { ...config, ...(this.rendering ? {} : getKindFromStyle(node)) }
     },
 
-    setValue (value) {
+    setValue (value, defaultName = false) {
       this.graph.model.setValue(this.sidebar.item.node, value)
+      this.vertices[this.sidebar.item.node.id].config.defaultName = defaultName
     },
 
     zoom (up = true) {
@@ -2150,6 +2170,7 @@ export default {
         this.workflow.steps.push({
           stepID: meta.visual.id,
           kind: 'trigger',
+          defaultName: meta.visual.defaultName || false,
           meta,
         })
 
@@ -2369,7 +2390,7 @@ export default {
   white-space: nowrap;
 }
 
-.label:hover .hover-untruncate {
+.step:hover .hover-untruncate {
   overflow: visible;
   text-overflow: initial;
   white-space: nowrap;

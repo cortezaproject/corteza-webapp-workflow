@@ -9,9 +9,12 @@ export function encodeGraph (model, vertices, edges) {
     }).forEach(cell => {
       const triggerEdges = []
 
+      const defaultName = vertices[cell.id].config.defaultName || false
+
       cell = {
         id: cell.id,
         value: cell.value,
+        defaultName,
         xywh: [
           cell.geometry.x || 0,
           cell.geometry.y || 0,

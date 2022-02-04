@@ -26,7 +26,7 @@
           <b-form-select
             v-model="item.config.ref"
             :options="functionTypes"
-            @change="setParams"
+            @change="functionChanged"
           />
         </b-form-group>
 
@@ -528,6 +528,15 @@ export default {
           this.types = set
         })
         .catch(this.defaultErrorHandler(this.$t('notification:fetch-types-failed')))
+    },
+
+    functionChanged (functionRef) {
+      this.setParams(functionRef)
+
+      this.$emit('update-default-value', {
+        value: (this.functionTypes.find(({ value }) => value === functionRef) || { meta: {} }).text,
+        force: !this.item.node.value,
+      })
     },
 
     valueTypeChanged (valueType, index) {

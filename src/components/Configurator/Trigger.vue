@@ -400,12 +400,14 @@ export default {
       this.item.triggers.eventType = null
       this.item.triggers.constraints = []
       this.$root.$emit('change-detected')
+      this.updateDefaultName()
     },
 
     eventChanged () {
       this.item.triggers.constraints = []
       this.addConstraint()
       this.$root.$emit('change-detected')
+      this.updateDefaultName()
     },
 
     enabledChanged () {
@@ -418,6 +420,17 @@ export default {
         return item._showDetails ? 'border-thick' : 'border-thick-transparent'
       } else if (type === 'row-details') {
         return ''
+      }
+    },
+
+    updateDefaultName () {
+      let { resourceType, eventType } = this.item.triggers
+
+      if (resourceType) {
+        eventType = eventType || ''
+        let value = [resourceType.split(':').join(' '), eventType].filter(v => v).join(' - ')
+        value = value.charAt(0).toUpperCase() + value.slice(1)
+        this.$emit('update-default-value', { value, force: !this.item.node.value })
       }
     },
   },
