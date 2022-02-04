@@ -2371,7 +2371,6 @@ export default {
 
 .step:hover .hide-label {
   text-align: justify;
-  border-top: 1px dotted #dee2e6;
   display: flex;
 }
 
@@ -2393,7 +2392,7 @@ export default {
 .step:hover .hover-untruncate {
   overflow: visible;
   text-overflow: initial;
-  white-space: nowrap;
+  white-space: initial;
 }
 
 .step-values td, th {
