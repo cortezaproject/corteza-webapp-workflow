@@ -107,20 +107,21 @@
                 label-class="d-flex align-items-center text-primary"
                 class="mb-0"
               >
-                <b-form-select
-                  v-if="a.options.length"
-                  v-model="a.value"
-                  :options="[...defaultOptions, ...a.options]"
-                  @change="$root.$emit('change-detected')"
-                />
-
                 <div
-                  v-else-if="a.valueType === 'value'"
+                  v-if="a.valueType === 'value'"
                 >
+                  <b-form-select
+                    v-if="a.input.type === 'select'"
+                    v-model="a.value"
+                    :options="[...defaultOptions, ...a.input.properties.options]"
+                    @change="$root.$emit('change-detected')"
+                  />
+
                   <b-form-checkbox
-                    v-if="a.type === 'Boolean'"
+                    v-else-if="a.type === 'Boolean'"
                     v-model="a.value"
                     value="true"
+                    size="md"
                     unchecked-value="false"
                     @input="$root.$emit('change-detected')"
                   >
@@ -143,32 +144,34 @@
                   @open="openInEditor(index)"
                   @input="$root.$emit('change-detected')"
                 />
-
-                <b-form-checkbox
-                  v-if="!a.options.length && !isWhileIterator"
-                  v-model="a.valueType"
-                  value="expr"
-                  unchecked-value="value"
-                  class="mt-1"
-                  @change="valueTypeChanged($event, index)"
-                >
-                  <div
-                    class="d-flex align-items-center justify-content-center"
-                  >
-                    {{ $t('steps:function.configurator.expression') }}
-                    <a
-                      :href="documentationURL"
-                      target="_blank"
-                      class="d-flex align-items-center h6 mb-0 ml-1"
-                    >
-                      <font-awesome-icon
-                        :icon="['far', 'question-circle']"
-                        class="ml-1"
-                      />
-                    </a>
-                  </div>
-                </b-form-checkbox>
               </b-form-group>
+
+              <b-form-checkbox
+                v-if="!isWhileIterator"
+                v-model="a.valueType"
+                value="expr"
+                unchecked-value="value"
+                switch
+                size="sm"
+                class="float-right mr-2 mt-2"
+                @change="valueTypeChanged($event, index)"
+              >
+                <div
+                  class="d-flex"
+                >
+                  {{ $t('steps:function.configurator.expression') }}
+                  <a
+                    :href="documentationURL"
+                    target="_blank"
+                    class="d-flex align-items-center h6 mb-0 ml-1"
+                  >
+                    <font-awesome-icon
+                      :icon="['far', 'question-circle']"
+                      class="ml-1"
+                    />
+                  </a>
+                </div>
+              </b-form-checkbox>
             </b-card>
           </template>
         </b-table>
@@ -453,15 +456,16 @@ export default {
 
         this.args = func.parameters?.map(param => {
           const arg = this.item.config.arguments.find(({ target }) => target === param.name) || {}
+          const { input = {} } = (param.meta || {}).visual || {}
           return {
             name: param.name,
             target: param.name,
             type: arg.type || this.paramTypes[func.ref][param.name][0],
-            valueType: this.getValueType(arg, ((param.meta || {}).visual || {}).options),
+            valueType: this.getValueType(arg, arg.type || this.paramTypes[func.ref][param.name][0], input),
             value: arg.value || null,
             expr: arg.expr || arg.source || null,
             required: param.required || false,
-            options: ((param.meta || {}).visual || {}).options || [],
+            input,
           }
         }) || []
 
@@ -550,9 +554,9 @@ export default {
       this.$root.$emit('change-detected')
     },
 
-    getValueType (item, options = []) {
-      if (options.length || this.isWhileIterator) {
-        return 'value'
+    getValueType (item, type, input = {}) {
+      if (['Boolean'].includes(type) || ['select'].includes(input.type) || this.isWhileIterator) {
+        return item.expr ? 'expr' : 'value'
       } else {
         return item.value ? 'value' : 'expr'
       }
