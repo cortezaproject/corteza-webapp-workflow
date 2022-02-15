@@ -570,16 +570,20 @@ export default {
 </script>
 
 <style lang="scss">
+tr.b-table-details > td {
+  padding-top: 0;
+}
+
 .border-thick {
   border-left: 4px solid #A7D0E3;
 }
 
 .border-thick-transparent {
-  border-left: 4px solid transparent;
+  border-left: none;
 }
 
-tr.b-table-details > td {
-  padding-top: 0;
+.border-thick-transparent td:first-child {
+  padding-left: calc(0.75rem + 2px);
 }
 </style>
 
