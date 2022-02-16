@@ -266,6 +266,12 @@
           >
             {{ $t('editor:delete') }}
           </c-input-confirm>
+
+          <div
+            class="ml-auto"
+          >
+            <portal-target name="sidebar-footer" />
+          </div>
         </div>
       </template>
     </b-sidebar>

@@ -22,13 +22,16 @@
             />
           </a>
         </h5>
-        <b-button
-          variant="primary"
-          class="align-top border-0 ml-auto"
-          @click="addArgument()"
-        >
-          {{ $t('steps:expressions.configurator.add-expression') }}
-        </b-button>
+
+        <portal to="sidebar-footer">
+          <b-button
+            variant="primary"
+            class="align-top border-0 ml-auto"
+            @click="addArgument()"
+          >
+            {{ $t('steps:expressions.configurator.add-expression') }}
+          </b-button>
+        </portal>
       </b-card-header>
 
       <b-card-body
