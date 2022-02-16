@@ -214,6 +214,7 @@
       lazy
       no-enforce-focus
       width="500px"
+      :no-header="!sidebar.item"
       header-class="bg-white border-bottom border-light p-2"
       body-class="bg-white"
       footer-class="bg-white border-top border-light p-1"
@@ -222,7 +223,6 @@
         #header
       >
         <div
-          v-if="sidebar.item"
           class="d-flex align-items-center w-100 h5 mb-0 p-2"
         >
           <b-img
@@ -242,14 +242,19 @@
         </div>
       </template>
 
-      <configurator
-        v-if="sidebar.item"
-        :item.sync="sidebar.item"
-        :edges.sync="edges"
-        :out-edges="sidebar.outEdges"
-        @update-value="setValue($event)"
-        @update-default-value="setValue($event, true)"
-      />
+      <transition
+        name="component-fade"
+        mode="out-in"
+      >
+        <configurator
+          v-if="sidebar.showItem"
+          :item.sync="sidebar.item"
+          :edges.sync="edges"
+          :out-edges="sidebar.outEdges"
+          @update-value="setValue($event)"
+          @update-default-value="setValue($event, true)"
+        />
+      </transition>
 
       <template
         #footer
@@ -548,6 +553,7 @@ export default {
         itemType: undefined,
         outEdges: 0,
         show: false,
+        showItem: false,
       },
 
       issuesModal: {
@@ -719,8 +725,10 @@ export default {
 
     sidebarClose () {
       this.sidebar.show = false
+
       setTimeout(() => {
         const mxObjectId = this.sidebar.item.node.mxObjectId
+        this.sidebar.showItem = false
         this.sidebar.item = undefined
         this.sidebar.itemType = undefined
         this.redrawLabel(mxObjectId)
@@ -735,12 +743,14 @@ export default {
     },
 
     sidebarReopen (item, itemType) {
+      this.sidebar.outEdges = (item.node.edges || []).length
+
       // If not open, just open sidebar
       if (!this.sidebar.show) {
-        this.sidebar.outEdges = (item.node.edges || []).length
         this.sidebar.item = item
         this.sidebar.itemType = itemType
         this.sidebar.show = true
+        this.sidebar.showItem = true
         this.redrawLabel(item.node.mxObjectId)
       } else {
         // If item already opened in sidebar, keep open
@@ -748,17 +758,16 @@ export default {
           return
         }
 
-        // Otherwise reopen completely
-        this.sidebar.show = false
-        this.sidebar.outEdges = (item.node.edges || []).length
+        // Otherwise fade item in and out
         const oldMxObjectId = ((this.getSelectedItem || {}).node || {}).mxObjectId
+        this.sidebar.showItem = false
         this.sidebar.item = item
         this.sidebar.itemType = itemType
         this.redrawLabel(oldMxObjectId)
         this.redrawLabel(item.node.mxObjectId)
         setTimeout(() => {
-          this.sidebar.show = !this.sidebar.show
-        }, 300)
+          this.sidebar.showItem = true
+        }, 100)
       }
     },
 
@@ -2359,6 +2368,14 @@ export default {
 .zoom {
   right: 0;
   bottom: 0;
+}
+
+.component-fade-enter-active, .component-fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.component-fade-enter, .component-fade-leave-to {
+  opacity: 0;
 }
 </style>
 
