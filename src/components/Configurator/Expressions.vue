@@ -95,6 +95,7 @@
 
               <b-form-group
                 label-class="text-primary"
+                :description="getTypeDescription(a.type)"
               >
                 <vue-select
                   v-model="a.type"
@@ -278,6 +279,15 @@ export default {
       } else if (type === 'row-details') {
         return ''
       }
+    },
+
+    getTypeDescription (type) {
+      // This will be moved to backend field type information
+      const typeDescriptions = {
+        ID: 'Make sure to provide the ID in double quotes if you\'re using a literal value. Example "123"',
+      }
+
+      return typeDescriptions[type]
     },
   },
 }
