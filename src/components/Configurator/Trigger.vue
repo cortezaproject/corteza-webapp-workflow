@@ -20,10 +20,13 @@
           :label="$t('steps:trigger.configurator.resource*')"
           label-class="text-primary"
         >
-          <b-form-select
+          <vue-select
             v-model="item.triggers.resourceType"
             :options="resourceTypeOptions"
-            @change="resourceChanged()"
+            label="text"
+            :reduce="r => r.value"
+            :placeholder="$t('steps:trigger.configurator.select-resource-type')"
+            @input="resourceChanged"
           />
         </b-form-group>
 
@@ -32,10 +35,13 @@
           label-class="text-primary"
           :label="$t('steps:trigger.configurator.event*')"
         >
-          <b-form-select
+          <vue-select
             v-model="item.triggers.eventType"
             :options="eventTypeOptions"
-            @change="eventChanged()"
+            label="eventType"
+            :reduce="e => e.eventType"
+            :placeholder="$t('steps:trigger.configurator.select-event-type')"
+            @input="eventChanged"
           />
         </b-form-group>
 
@@ -68,7 +74,7 @@
           {{ $t('steps:trigger.configurator.constraints') }}
         </h5>
         <b-button
-          v-if="constraintNameTypes.length > 1"
+          v-if="constraintNameTypes.length"
           variant="primary"
           class="align-top border-0 ml-3"
           @click="addConstraint()"
@@ -80,7 +86,7 @@
         class="p-0"
       >
         <b-table
-          v-if="constraintNameTypes.length > 1"
+          v-if="constraintNameTypes.length"
           id="constraints"
           fixed
           borderless
@@ -130,10 +136,13 @@
                 :label="$t('steps:trigger.configurator.resource')"
                 label-class="text-primary"
               >
-                <b-form-select
+                <vue-select
                   v-model="c.name"
                   :options="constraintNameTypes"
-                  @change="$root.$emit('change-detected')"
+                  label="text"
+                  :reduce="c => c.value"
+                  :placeholder="$t('steps:trigger.configurator.select-constraint-type')"
+                  @input="$root.$emit('change-detected')"
                 />
               </b-form-group>
 
@@ -141,10 +150,13 @@
                 :label="$t('steps:trigger.configurator.operator')"
                 label-class="text-primary"
               >
-                <b-form-select
+                <vue-select
                   v-model="c.op"
                   :options="constraintOperatorTypes"
-                  @change="$root.$emit('change-detected')"
+                  label="text"
+                  :reduce="c => c.value"
+                  :placeholder="$t('steps:trigger.configurator.select-operator')"
+                  @input="$root.$emit('change-detected')"
                 />
               </b-form-group>
 
@@ -248,12 +260,14 @@
 
 <script>
 import base from './base'
+import { VueSelect } from 'vue-select'
 import { components } from '@cortezaproject/corteza-vue'
 const { CInputDateTime } = components
 
 export default {
   components: {
     CInputDateTime,
+    VueSelect,
   },
 
   extends: base,
@@ -269,18 +283,11 @@ export default {
 
   computed: {
     resourceTypeOptions () {
-      return [
-        { value: null, text: this.$t('steps:trigger.configurator.select-resource-type'), disabled: true },
-        ...this.resourceTypes,
-      ]
+      return this.resourceTypes
     },
 
     eventTypeOptions () {
-      return [
-        { value: null, text: this.$t('steps:trigger.configurator.select-event-type'), disabled: true },
-        ...this.eventTypes.filter(({ resourceType }) => resourceType === this.item.triggers.resourceType)
-          .map(({ eventType }) => eventType),
-      ]
+      return this.eventTypes.filter(({ resourceType }) => resourceType === this.item.triggers.resourceType)
     },
 
     eventType () {
@@ -289,7 +296,7 @@ export default {
 
     showConstraints () {
       if (this.item.triggers.resourceType && this.item.triggers.eventType) {
-        return this.constraintNameTypes.length > 1 ? true : this.item.triggers.eventType !== 'onManual'
+        return this.constraintNameTypes.length ? true : this.item.triggers.eventType !== 'onManual'
       }
       return false
     },
@@ -333,28 +340,24 @@ export default {
     constraintNameTypes () {
       const constraints = this.eventType.constraints || []
 
-      return [
-        { value: null, text: this.$t('steps:trigger.configurator.select-constraint-type'), disabled: true },
-        ...constraints.reduce((cons, { name }) => {
-          if (!name.includes('*')) {
-            cons.push({
-              value: name,
-              text: name.split('.').map(s => {
-                return s[0].toUpperCase() + s.slice(1).toLowerCase()
-              }).join(' '),
-            })
-          }
+      return constraints.reduce((cons, { name }) => {
+        if (!name.includes('*')) {
+          cons.push({
+            value: name,
+            text: name.split('.').map(s => {
+              return s[0].toUpperCase() + s.slice(1).toLowerCase()
+            }).join(' '),
+          })
+        }
 
-          return cons
-        }, []),
-      ]
+        return cons
+      }, [])
     },
 
     constraintOperatorTypes () {
       return [
-        { value: null, text: this.$t('steps:trigger.configurator.operator'), disabled: true },
-        { value: '=', text: '=' },
-        { value: '!=', text: '!=' },
+        { value: '=', text: this.$t('steps:trigger.configurator.equal') },
+        { value: '!=', text: this.$t('steps:trigger.configurator.not-equal') },
         { value: 'like', text: this.$t('steps:trigger.configurator.like') },
         { value: 'not like', text: this.$t('steps:trigger.configurator.not-like') },
 

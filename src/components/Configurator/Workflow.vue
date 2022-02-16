@@ -39,7 +39,6 @@
       <vue-select
         :options="user.options"
         :get-option-label="getOptionLabel"
-        :get-option-key="getOptionKey"
         :value="user.value"
         @search="search"
         @input="updateRunAs"

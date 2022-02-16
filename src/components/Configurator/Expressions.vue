@@ -96,10 +96,11 @@
               <b-form-group
                 label-class="text-primary"
               >
-                <b-form-select
+                <vue-select
                   v-model="a.type"
                   :options="fieldTypes"
-                  @change="$root.$emit('change-detected')"
+                  :clearable="false"
+                  @input="$root.$emit('change-detected')"
                 />
               </b-form-group>
 
@@ -146,11 +147,13 @@
 
 <script>
 import base from './base'
+import { VueSelect } from 'vue-select'
 import ExpressionEditor from '../ExpressionEditor.vue'
 
 export default {
   components: {
     ExpressionEditor,
+    VueSelect,
   },
 
   extends: base,

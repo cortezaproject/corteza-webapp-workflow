@@ -23,10 +23,14 @@
           label-class="text-primary"
           class="mb-0"
         >
-          <b-form-select
+          <vue-select
             v-model="item.config.ref"
             :options="functionTypes"
-            @change="functionChanged"
+            label="text"
+            :selectable="f => !f.disabled"
+            :reduce="f => f.value"
+            :placeholder="$t('steps:function.configurator.select-function')"
+            @input="functionChanged"
           />
         </b-form-group>
 
@@ -95,11 +99,11 @@
                 v-if="(paramTypes[item.config.ref][a.target] || []).length > 1"
                 label-class="text-primary"
               >
-                <b-form-select
+                <vue-select
                   v-model="a.type"
                   :options="(paramTypes[item.config.ref][a.target] || [])"
-                  :disabled="(paramTypes[item.config.ref][a.target] || []).length <= 1"
-                  @change="$root.$emit('change-detected')"
+                  :clearable="false"
+                  @input="$root.$emit('change-detected')"
                 />
               </b-form-group>
 
@@ -110,11 +114,14 @@
                 <div
                   v-if="a.valueType === 'value'"
                 >
-                  <b-form-select
+                  <vue-select
                     v-if="a.input.type === 'select'"
                     v-model="a.value"
-                    :options="[...defaultOptions, ...a.input.properties.options]"
-                    @change="$root.$emit('change-detected')"
+                    :options="a.input.properties.options"
+                    label="text"
+                    :reduce="a => a.value"
+                    :placeholder="$t('steps:function.configurator.option-select')"
+                    @input="$root.$emit('change-detected')"
                   />
 
                   <b-form-checkbox
@@ -226,8 +233,6 @@
               body-class="px-4 pb-3"
             >
               <b-form-group
-                :label="$t('configurator:target')"
-                label-class="text-primary"
                 class="mb-0"
               >
                 <b-form-input
@@ -268,13 +273,15 @@
 
 <script>
 import base from './base'
+import { VueSelect } from 'vue-select'
 import ExpressionEditor from '../ExpressionEditor.vue'
 
 export default {
-
   components: {
     ExpressionEditor,
+    VueSelect,
   },
+
   extends: base,
 
   data () {
@@ -314,10 +321,7 @@ export default {
     },
 
     functionTypes () {
-      return [
-        { value: '', text: this.$t('steps:function.configurator.select-function'), disabled: true },
-        ...this.functions.map(({ ref, meta, disabled = false }) => ({ value: ref, text: meta.short, disabled })),
-      ]
+      return this.functions.map(({ ref, meta, disabled = false }) => ({ value: ref, text: meta.short, disabled }))
     },
 
     argumentFields () {
