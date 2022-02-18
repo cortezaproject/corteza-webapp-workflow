@@ -25,6 +25,7 @@
             :options="resourceTypeOptions"
             label="text"
             :reduce="r => r.value"
+            :filter="resTypeFilter"
             :placeholder="$t('steps:trigger.configurator.select-resource-type')"
             @input="resourceChanged"
           />
@@ -40,6 +41,7 @@
             :options="eventTypeOptions"
             label="eventType"
             :reduce="e => e.eventType"
+            :filter="evtTypeFilter"
             :placeholder="$t('steps:trigger.configurator.select-event-type')"
             @input="eventChanged"
           />
@@ -141,6 +143,7 @@
                   :options="constraintNameTypes"
                   label="text"
                   :reduce="c => c.value"
+                  :filter="constrFilter"
                   :placeholder="$t('steps:trigger.configurator.select-constraint-type')"
                   @input="$root.$emit('change-detected')"
                 />
@@ -262,6 +265,7 @@
 import base from './base'
 import { VueSelect } from 'vue-select'
 import { components } from '@cortezaproject/corteza-vue'
+import { objectSearchMaker } from '../../lib/filter'
 const { CInputDateTime } = components
 
 export default {
@@ -379,6 +383,10 @@ export default {
   },
 
   methods: {
+    resTypeFilter: objectSearchMaker('text'),
+    evtTypeFilter: objectSearchMaker('eventType'),
+    constrFilter: objectSearchMaker('text'),
+
     async getEventTypes () {
       return this.$AutomationAPI.eventTypesList()
         .then(({ set }) => {

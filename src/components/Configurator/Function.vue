@@ -29,6 +29,7 @@
             label="text"
             :selectable="f => !f.disabled"
             :reduce="f => f.value"
+            :filter="functionFilter"
             :placeholder="$t('steps:function.configurator.select-function')"
             @input="functionChanged"
           />
@@ -102,6 +103,7 @@
                 <vue-select
                   v-model="a.type"
                   :options="(paramTypes[item.config.ref][a.target] || [])"
+                  :filter="argTypeFilter"
                   :clearable="false"
                   @input="$root.$emit('change-detected')"
                 />
@@ -119,6 +121,7 @@
                     v-model="a.value"
                     :options="a.input.properties.options"
                     label="text"
+                    :filter="varFilter"
                     :reduce="a => a.value"
                     :placeholder="$t('steps:function.configurator.option-select')"
                     @input="$root.$emit('change-detected')"
@@ -275,6 +278,7 @@
 import base from './base'
 import { VueSelect } from 'vue-select'
 import ExpressionEditor from '../ExpressionEditor.vue'
+import { objectSearchMaker, stringSearchMaker } from '../../lib/filter'
 
 export default {
   components: {
@@ -439,6 +443,10 @@ export default {
   },
 
   methods: {
+    functionFilter: objectSearchMaker('text'),
+    argTypeFilter: stringSearchMaker(),
+    varFilter: objectSearchMaker('text'),
+
     setParams (fName, immediate = false) {
       this.args = []
       this.results = []

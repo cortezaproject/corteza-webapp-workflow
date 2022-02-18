@@ -104,6 +104,7 @@
                   v-model="a.type"
                   :options="fieldTypes"
                   :clearable="false"
+                  :filter="varFilter"
                   @input="$root.$emit('change-detected')"
                 />
               </b-form-group>
@@ -153,6 +154,7 @@
 import base from './base'
 import { VueSelect } from 'vue-select'
 import ExpressionEditor from '../ExpressionEditor.vue'
+import { stringSearchMaker } from '../../lib/filter'
 
 export default {
   components: {
@@ -228,6 +230,8 @@ export default {
   },
 
   methods: {
+    varFilter: stringSearchMaker(),
+
     addArgument () {
       this.item.config.arguments.push({
         target: '',
