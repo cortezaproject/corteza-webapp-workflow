@@ -823,10 +823,14 @@ export default {
         let label = mxGraph.prototype.getLabel.apply(this, arguments)
 
         // Used to encode html labels to prevent security issues
-        const encodeHTML = value => {
-          return value.replace(/[\u00A0-\u9999<>&]/gim, i => {
-            return '&#' + i.charCodeAt(0) + ';'
-          })
+        const encodeHTML = (value = '') => {
+          if (value) {
+            return value.replace(/[\u00A0-\u9999<>&]/gim, i => {
+              return '&#' + i.charCodeAt(0) + ';'
+            })
+          }
+
+          return value
         }
 
         if (cell.edge) {
