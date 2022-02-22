@@ -715,6 +715,10 @@ export default {
     }
   },
 
+  beforeDestroy () {
+    this.keyHandler.destroy()
+  },
+
   methods: {
     deleteSelectedCells () {
       if (this.sidebar.item && this.graph.getSelectionModel().isSelected(this.sidebar.item.node)) {
