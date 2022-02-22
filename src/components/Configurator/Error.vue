@@ -20,9 +20,12 @@
         label-class="text-primary"
         class="mb-0"
       >
-        <b-form-input
-          v-model="item.config.arguments[0].value"
-          :placeholder="$t('general:error')"
+        <expression-editor
+          :value.sync="item.config.arguments[0].expr"
+          lang="javascript"
+          font-size="18px"
+          show-line-numbers
+          :border="false"
           @input="valueChanged"
         />
       </b-form-group>
@@ -32,24 +35,39 @@
 
 <script>
 import base from './base'
+import ExpressionEditor from '../ExpressionEditor'
 
 export default {
+
+  components: {
+    ExpressionEditor,
+  },
   extends: base,
 
-  async created () {
-    this.$set(this.item.config, 'arguments', this.item.config.arguments || [
-      {
-        target: 'message',
-        type: 'String',
-        value: '',
-      },
-    ])
+  created () {
+    let args = [{
+      target: 'message',
+      type: 'String',
+      expr: '',
+    }]
+
+    if (this.item.config.arguments && this.item.config.arguments.length) {
+      args = this.item.config.arguments.map(({ target, type, value, expr }) => {
+        return {
+          target,
+          type,
+          expr: expr || (value ? `"${value}"` : ''),
+        }
+      })
+    }
+
+    this.$set(this.item.config, 'arguments', args)
   },
 
   methods: {
     valueChanged (value) {
       this.$emit('update-default-value', {
-        value: `Stop workflow with error "${value}"`,
+        value: `Stop workflow with error: ${value}`,
         force: !this.item.node.value,
       })
     },

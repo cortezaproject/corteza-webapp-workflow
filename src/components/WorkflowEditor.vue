@@ -1869,7 +1869,7 @@ export default {
         kind = '',
         ref = '',
         defaultName = false,
-        arguments: args = [],
+        arguments: args,
         results = [],
         meta = {},
       } = (this.workflow.steps || []).find(({ stepID }) => {
