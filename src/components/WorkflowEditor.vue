@@ -1080,8 +1080,14 @@ export default {
             const parent = newCellIDs[node.id] ? this.graph.model.getCell(newCellIDs[node.id]) : defaultParent
             const { id, geometry, value, style } = node
 
-            node.source = this.vertices[newCellIDs[rest.config.parentID || node.source]].node
-            node.target = this.vertices[newCellIDs[rest.config.childID || node.target]].node
+            const source = (this.vertices[newCellIDs[rest.config.parentID || node.source]] || {}).node
+            const target = (this.vertices[newCellIDs[rest.config.childID || node.target]] || {}).node
+            if (!source || !target) {
+              return
+            }
+
+            node.source = source
+            node.target = target
 
             const newEdge = this.graph.insertEdge(parent, null, value, node.source, node.target, style)
             newEdge.geometry.points = (geometry.points || []).map(({ x, y }) => {
