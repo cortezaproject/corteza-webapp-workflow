@@ -577,7 +577,8 @@ export default {
 
       currentLabel: undefined,
 
-      functions: [],
+      eventTypes: [],
+      functionTypes: [],
 
       deferredKinds: ['delay', 'prompt'],
     }
@@ -696,6 +697,7 @@ export default {
       this.styling()
       this.connectionHandler()
 
+      this.getEventTypes()
       this.getFunctionTypes()
 
       this.$root.$on('trigger-updated', ({ mxObjectId }) => {
@@ -868,30 +870,41 @@ export default {
               values = cell.edges
                 .filter(({ source }) => cell.id === source.id)
                 .map(({ id }) => this.edges[id])
-                .map(({ node, config }) => `<tr><td><var>${encodeHTML(node.value)}<var/></td><td><code>${encodeHTML(config.expr || '')}</code></td></tr>`)
+                .map(({ node, config }) => `<tr><td><var>${encodeHTML(node.value)}</var></td><td><code>${encodeHTML(config.expr || '')}</code></td></tr>`)
                 .join('')
             } else if (['expressions', 'function', 'prompt', 'iterator'].includes(kind)) {
               let { arguments: args = [], results = [], ref } = vertex.config || {}
 
-              const functionLabel = (this.functions.find(f => f.ref === ref) || { meta: {} }).meta.short || ''
+              const { meta = {}, results: functionResults = [] } = this.functionTypes.find(f => f.ref === ref) || {}
+
+              const functionLabel = meta.short
+
+              console.log(functionResults)
+              console.log(results)
 
               if (functionLabel) {
-                values.push(`<tr><td><b class="text-primary">${functionLabel}</b></td><td/>`)
+                values.push(`<tr><td><b class="text-primary">${functionLabel}</b></td></tr>`)
               }
 
               if (args.length && kind !== 'expressions') {
                 values.push('<tr class="title"><td><b>Arguments</b></td><td/></tr>')
               }
-              args = args.map(({ target = '', type = 'Any', expr = '', value = '' }) => `<tr><td><var>${encodeHTML(target)}<var/> <samp>(${type})</samp></td><td><code>${encodeHTML(expr || value)}</code></td></tr>`)
+              args = args.map(({ target = '', type = 'Any', expr = '', value = '' }) => `<tr><td><var>${encodeHTML(target)}</var> <samp>(${type})</samp></td><td><code>${encodeHTML(expr || value)}</code></td></tr>`)
 
               if (results.length) {
                 args.push('<tr class="title border-top"><td><b>Results</b></td><td /></tr>')
               }
 
-              results = results.map(({ target = '', type = 'Any', expr = '', value = '' }) => `<tr><td><var>${encodeHTML(target)}<var/> <samp>(${type})</samp></td><td><code>${encodeHTML(expr || value)}</code></td></tr>`)
+              results = results.map(({ target = '', expr = '', value = '' }) => {
+                const { types = [] } = functionResults.find(({ name }) => name === expr || name === value) || {}
+                const type = types.length ? `(${types[0]})` : ''
+                return `<tr><td><code>${encodeHTML(target)}</code> <samp>${type}</samp></td><td><var>${encodeHTML(expr || value)}</var></td></tr>`
+              })
+
               values = [...values, ...args, ...results].join('')
             } else if (kind === 'trigger') {
               let { resourceType = '', eventType = '', constraints = [] } = vertex.triggers || {}
+              let { properties = [] } = this.eventTypes.find(et => resourceType === et.resourceType && eventType === et.eventType) || {}
 
               if (resourceType) {
                 resourceType = resourceType.split(':').map(s => {
@@ -900,24 +913,39 @@ export default {
               }
 
               values.push('<tr class="title"><td><b>Configuration</b></td><td/><td/></tr>')
-              values.push(`<tr><td><var>Resource<var/></td><td/><td><code>${resourceType || ''}</code></td></tr>`)
-              values.push(`<tr><td><var>Event<var/></td><td/><td><code>${eventType || ''}</code></td></tr>`)
+              values.push(`<tr><td><var>Resource</var></td><td/><td><code>${resourceType || ''}</code></td></tr>`)
+              values.push(`<tr><td><var>Event</var></td><td/><td><code>${eventType || ''}</code></td></tr>`)
 
               if (constraints.length && eventType && eventType !== 'onManual') {
-                values.push('<tr class="title"><td><b>Constraints</b></td><td/><td/></tr>')
-                constraints = constraints.map(({ name = '', op = '', values = '' }) => {
-                  return `<tr><td><samp>${name || eventType.includes('on') ? eventType.replace('on', '') : ''}<var/></td><td><samp>${op}</samp></td><td><code>${encodeHTML(values.join(' or '))}</code></td></tr>`
-                })
+                constraints = [
+                  '<tr class="title"><td><b>Constraints</b></td><td/><td/></tr>',
+                  ...constraints.map(({ name = '', op = '', values = '' }) => {
+                    return `<tr><td><samp>${name || eventType.includes('on') ? eventType.replace('on', '') : ''}</var></td><td><samp>${op}</samp></td><td><code>${encodeHTML(values.join(' or '))}</code></td></tr>`
+                  }),
+                ]
               } else {
                 constraints = []
+              }
+
+              if (properties.length) {
+                properties = [
+                  '<tr class="title"><td><b>Initial scope</b></td><td/><td/></tr>',
+                  ...properties.map(({ name = '', type = '' }) => {
+                    return `<tr><td><var>${name}</var></td><td/><td><samp>${type || 'Any'}</samp></td><td/></tr>`
+                  }),
+                ]
               }
 
               values = [
                 ...values,
                 ...constraints,
-              ]
+                ...properties,
+              ].join('')
+            } else if (kind === 'error') {
+              const { arguments: args = [] } = vertex.config || {}
+              const { expr, value } = args[0] || {}
 
-              values = values.join('')
+              values = `<tr><td><var>Message</var></td><td><code>${encodeHTML(expr || value)}</code></td></tr>`
             } else {
               values = ''
             }
@@ -1984,55 +2012,51 @@ export default {
 
       // Assume trigger is valid since workflow is saved and has no issues
       const { resourceType, eventType } = this.vertices[this.dryRun.cellID].triggers
-      await this.$AutomationAPI.eventTypesList()
-        .then(({ set }) => {
-          const et = (set.find(et => resourceType === et.resourceType && eventType === et.eventType) || {}).properties
-          if (et) {
-            // Flag to check if lookup should be opened, or JSON editor
-            let lookup = false
-            if (et.length) {
-              this.dryRun.initialScope = et.reduce((initialScope, p) => {
-                let label = `${p.name}${lookupableTypes.includes(p.name) ? this.$t('editor:id-parenthesis') : ''}`
-                if (p.type === 'ComposeNamespace' || p.type === 'ComposeModule') {
-                  label = `${p.name} ${this.$t('editor:handle')}`
-                }
-
-                let description = ''
-                if (p.type === 'ComposeRecord') {
-                  description = this.$t('editor:required-namespace-and-module')
-                } else if (p.type === 'ComposeModule' || p.name === 'page' || p.name === 'oldPage') {
-                  description = this.$t('editor:required-namespace')
-                }
-
-                initialScope[p.name] = ({
-                  label,
-                  value: (this.dryRun.initialScope[p.name] || {}).value,
-                  lookup: lookupableTypes.includes(p.name),
-                  description,
-                })
-
-                lookup = lookup ? true : lookupableTypes.includes(p.name)
-                return initialScope
-              }, {})
-
-              // Set initial values for unlookable types
-              encodeInput(this.dryRun.initialScope, this.$ComposeAPI, this.$SystemAPI)
-                .then(input => {
-                  this.dryRun.input = input
-                  this.dryRun.lookup = lookup
-                  this.dryRun.show = true
-                })
-                .catch(this.defaultErrorHandler(this.$t('notification:initial-scope-load-failed')))
-            } else {
-              // If no constraints, just run
-              this.dryRun.initialScope = {}
-              this.testWorkflow()
+      const et = (this.eventTypes.find(et => resourceType === et.resourceType && eventType === et.eventType) || {}).properties
+      if (et) {
+        // Flag to check if lookup should be opened, or JSON editor
+        let lookup = false
+        if (et.length) {
+          this.dryRun.initialScope = et.reduce((initialScope, p) => {
+            let label = `${p.name}${lookupableTypes.includes(p.name) ? this.$t('editor:id-parenthesis') : ''}`
+            if (p.type === 'ComposeNamespace' || p.type === 'ComposeModule') {
+              label = `${p.name} ${this.$t('editor:handle')}`
             }
-          } else {
-            this.raiseWarningAlert(this.$t('notification:event-type-not-found'), this.$t('notification:failed-test'))
-          }
-        })
-        .catch(this.defaultErrorHandler(this.$t('notification:event-type-fetch-failed')))
+
+            let description = ''
+            if (p.type === 'ComposeRecord') {
+              description = this.$t('editor:required-namespace-and-module')
+            } else if (p.type === 'ComposeModule' || p.name === 'page' || p.name === 'oldPage') {
+              description = this.$t('editor:required-namespace')
+            }
+
+            initialScope[p.name] = ({
+              label,
+              value: (this.dryRun.initialScope[p.name] || {}).value,
+              lookup: lookupableTypes.includes(p.name),
+              description,
+            })
+
+            lookup = lookup ? true : lookupableTypes.includes(p.name)
+            return initialScope
+          }, {})
+
+          // Set initial values for unlookable types
+          encodeInput(this.dryRun.initialScope, this.$ComposeAPI, this.$SystemAPI)
+            .then(input => {
+              this.dryRun.input = input
+              this.dryRun.lookup = lookup
+              this.dryRun.show = true
+            })
+            .catch(this.defaultErrorHandler(this.$t('notification:initial-scope-load-failed')))
+        } else {
+          // If no constraints, just run
+          this.dryRun.initialScope = {}
+          this.testWorkflow()
+        }
+      } else {
+        this.raiseWarningAlert(this.$t('notification:event-type-not-found'), this.$t('notification:failed-test'))
+      }
     },
 
     async dryRunOk (e) {
@@ -2361,9 +2385,17 @@ export default {
     async getFunctionTypes () {
       return this.$AutomationAPI.functionList()
         .then(({ set }) => {
-          this.functions = set.sort((a, b) => a.meta.short.localeCompare(b.meta.short))
+          this.functionTypes = set
         })
         .catch(this.defaultErrorHandler(this.$t('notification:failed-fetch-functions')))
+    },
+
+    async getEventTypes () {
+      return this.$AutomationAPI.eventTypesList()
+        .then(({ set }) => {
+          this.eventTypes = set
+        })
+        .catch(this.defaultErrorHandler(this.$t('notification:failed-fetch-event-types')))
     },
   },
 }
