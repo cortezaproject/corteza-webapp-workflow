@@ -879,9 +879,6 @@ export default {
 
               const functionLabel = meta.short
 
-              console.log(functionResults)
-              console.log(results)
-
               if (functionLabel) {
                 values.push(`<tr><td><b class="text-primary">${functionLabel}</b></td></tr>`)
               }
@@ -941,11 +938,13 @@ export default {
                 ...constraints,
                 ...properties,
               ].join('')
-            } else if (kind === 'error') {
+            } else if (['error', 'delay'].includes(kind)) {
               const { arguments: args = [] } = vertex.config || {}
-              const { expr, value } = args[0] || {}
+              const { target, expr, value } = args[0] || {}
 
-              values = `<tr><td><var>Message</var></td><td><code>${encodeHTML(expr || value)}</code></td></tr>`
+              if (target) {
+                values = `<tr><td><var>${target}</var></td><td><code>${encodeHTML(expr || value)}</code></td></tr>`
+              }
             } else {
               values = ''
             }
@@ -2395,7 +2394,7 @@ export default {
         .then(({ set }) => {
           this.eventTypes = set
         })
-        .catch(this.defaultErrorHandler(this.$t('notification:failed-fetch-event-types')))
+        .catch(this.defaultErrorHandler(this.$t('notification:event-type-fetch-failed')))
     },
   },
 }

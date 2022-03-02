@@ -1,7 +1,5 @@
 <template>
-  <div
-    v-if="!processing"
-  >
+  <div>
     <b-card
       class="flex-grow-1 border-bottom border-light rounded-0"
     >
@@ -19,13 +17,16 @@
         class="p-0"
       >
         <b-form-group
-          :label="$t('general:offset')"
+          :label="$t('general:offset-expression')"
           label-class="text-primary"
           class="mb-0"
         >
-          <b-form-input
-            v-model="item.config.arguments[0].value"
-            placeholder="10s"
+          <expression-editor
+            :value.sync="item.config.arguments[0].expr"
+            lang="javascript"
+            font-size="18px"
+            show-line-numbers
+            :border="false"
             @input="valueChanged"
           />
         </b-form-group>
@@ -36,23 +37,36 @@
 
 <script>
 import base from './base'
+import ExpressionEditor from '../ExpressionEditor'
 
 export default {
+  components: {
+    ExpressionEditor,
+  },
+
   extends: base,
 
   watch: {
     'item.config.stepID': {
       immediate: true,
-      async handler () {
-        this.processing = true
-
-        this.$set(this.item.config, 'arguments', this.item.config.arguments || [{
+      handler () {
+        let args = [{
           target: 'offset',
           type: 'Duration',
-          value: '',
-        }])
+          expr: '',
+        }]
 
-        this.processing = false
+        if (this.item.config.arguments && this.item.config.arguments.length) {
+          args = this.item.config.arguments.map(({ target, type, value, expr }) => {
+            return {
+              target,
+              type,
+              expr: expr || (value ? `"${value}"` : ''),
+            }
+          })
+        }
+
+        this.$set(this.item.config, 'arguments', args)
       },
     },
   },
