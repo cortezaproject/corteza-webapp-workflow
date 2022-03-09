@@ -183,16 +183,27 @@
 
       <div
         class="d-flex flex-column flex-shrink position-absolute fixed-bottom m-2"
-        style="z-index: 1; width: fit-content;"
+        style="z-index: 1; width: 20vw;"
       >
         <b-button
           v-if="changeDetected"
           variant="dark"
+          :disabled="processingSave || !canUpdateWorkflow"
+          block
           class="rounded-0 py-2 px-3"
-          :disabled="!canUpdateWorkflow"
           @click="saveWorkflow()"
         >
-          {{ $t('editor:detected-changes') + `${canUpdateWorkflow ? this.$t('editor:click-to-save') : ''}` }}
+          <span
+            v-if="processingSave"
+            class="saving mx-2"
+          >
+            Saving
+          </span>
+          <span
+            v-else
+          >
+            {{ $t('editor:detected-changes') + `${canUpdateWorkflow ? this.$t('editor:click-to-save') : ''}` }}
+          </span>
         </b-button>
       </div>
 
@@ -206,7 +217,7 @@
     <!--
       no-enforce-focus flag doesn't set focus to sidebar when it is opened.
       Bad for Accesability, since keyboard only users can't use sidebar.
-     -->
+    -->
     <b-sidebar
       v-model="sidebar.show"
       shadow
@@ -513,6 +524,11 @@ export default {
     },
 
     canCreate: {
+      type: Boolean,
+      default: false,
+    },
+
+    processingSave: {
       type: Boolean,
       default: false,
     },
@@ -2421,6 +2437,21 @@ export default {
 
 .component-fade-enter, .component-fade-leave-to {
   opacity: 0;
+}
+
+// https://stackoverflow.com/a/40991531/17926309
+.saving::after {
+  display: inline-block;
+  animation: saving steps(1, end) 1s infinite;
+  content: '';
+}
+
+@keyframes saving {
+  0% { content: ''; }
+  25% { content: '.'; }
+  50% { content: '..'; }
+  75% { content: '...'; }
+  100% { content: ''; }
 }
 </style>
 

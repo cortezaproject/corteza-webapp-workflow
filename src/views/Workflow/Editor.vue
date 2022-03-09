@@ -5,6 +5,7 @@
     :workflow-triggers="triggers"
     :change-detected="changeDetected"
     :can-create="canCreate"
+    :processing-save="processingSave"
     class="overflow-hidden"
     @save="saveWorkflow"
     @delete="deleteWorkflow"
@@ -27,6 +28,8 @@ export default {
   data () {
     return {
       processing: true,
+      processingSave: false,
+
       workflow: {},
       triggers: [],
 
@@ -118,6 +121,8 @@ export default {
 
     saveWorkflow: throttle(async function (wf) {
       try {
+        this.processingSave = true
+
         const isNew = wf.workflowID === '0'
 
         const { steps = [], paths = [], triggers = [] } = wf
@@ -175,6 +180,8 @@ export default {
       } catch (e) {
         this.defaultErrorHandler(this.$t('notification:failed-save'))(e)
       }
+
+      this.processingSave = false
     }, 500),
 
     deleteWorkflow () {
