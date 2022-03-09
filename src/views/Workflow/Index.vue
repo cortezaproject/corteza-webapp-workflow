@@ -63,6 +63,7 @@
                       v-model.trim="query"
                       class="h-100 mw-100"
                       type="search"
+                      debounce="300"
                       :placeholder="$t('general:search-workflows')"
                     />
                     <b-input-group-append>
@@ -83,7 +84,6 @@
                 :items="workflows"
                 :filter="query"
                 :filter-included-fields="['handle']"
-                filter-debounce="300"
                 :sort-by.sync="sortBy"
                 :sort-desc="sortDesc"
                 head-variant="light"
