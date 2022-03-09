@@ -733,7 +733,10 @@ export default {
   },
 
   beforeDestroy () {
+    // Destroy mxgraph singletons
+    this.graph.destroy()
     this.keyHandler.destroy()
+    this.toolbar.destroy()
     document.removeEventListener('keydown', this.keybinds)
   },
 
