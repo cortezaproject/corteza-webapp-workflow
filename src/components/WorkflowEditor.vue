@@ -3,7 +3,6 @@
     id="editor"
     ref="editor"
     class="d-flex w-100 h-100"
-    @keydown="keybinds"
   >
     <portal to="topbar-title">
       {{ workflow.meta.name || workflow.handle }}
@@ -735,6 +734,7 @@ export default {
 
   beforeDestroy () {
     this.keyHandler.destroy()
+    document.removeEventListener('keydown', this.keybinds)
   },
 
   methods: {
@@ -1327,6 +1327,9 @@ export default {
 
     // Only works when canvas is focused
     keys () {
+      // Register general keydown event if we need it (we destroy it in beforeDestroy)
+      document.addEventListener('keydown', this.keybinds)
+
       // Register control and meta key if Mac
       this.keyHandler.getFunction = (evt) => {
         if (evt != null) {
