@@ -213,6 +213,12 @@
           <c-input-date-time
             v-if="item.triggers.eventType === 'onTimestamp'"
             v-model="item.triggers.constraints[0].values[0]"
+            :labels="{
+              clear: $t('general:clear'),
+              none: $t('general:none'),
+              now: $t('general:now'),
+              today: $t('general:today'),
+            }"
             @input="$root.$emit('change-detected')"
           />
 
