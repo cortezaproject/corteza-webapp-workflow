@@ -779,7 +779,7 @@ export default {
         this.redrawLabel(item.node.mxObjectId)
       } else {
         // If item already opened in sidebar, keep open
-        if (this.sidebar.item && item.config.stepID === this.sidebar.item.config.stepID) {
+        if (this.sidebar.item && item.node.id === this.sidebar.item.node.id) {
           return
         }
 
@@ -1965,7 +1965,10 @@ export default {
 
     setValue (value, defaultName = false) {
       this.graph.model.setValue(this.sidebar.item.node, value)
-      this.vertices[this.sidebar.item.node.id].config.defaultName = defaultName
+
+      if (this.sidebar.itemType !== 'edge') {
+        this.vertices[this.sidebar.item.node.id].config.defaultName = defaultName
+      }
     },
 
     zoom (up = true) {
