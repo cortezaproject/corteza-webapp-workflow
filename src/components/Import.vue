@@ -22,7 +22,7 @@
       >
         <b-form-file
           :placeholder="$t('general:import.upload-files')"
-          @input="fileUpload"
+          @change="fileUpload"
         />
       </b-form-group>
 
@@ -69,19 +69,22 @@ export default {
   },
 
   methods: {
-    fileUpload (file = '') {
-      if (file) {
+    fileUpload (e = {}) {
+      const { files = [] } = (e.type === 'drop' ? e.dataTransfer : e.target) || {}
+
+      if (files[0]) {
         this.processing = true
         const reader = new FileReader()
 
-        reader.readAsText(file)
+        reader.readAsText(files[0])
 
         reader.onload = (evt) => {
           try {
             const { workflows = [] } = JSON.parse(evt.target.result)
             this.workflows = workflows
           } catch (err) {
-            this.defaultErrorHandler(this.$t('notification:failed-load-file'))(err.message)
+            err.message = this.$t('notification:failed-load-file')
+            this.defaultErrorHandler(this.$t('notification:general.warning'))(err)
           } finally {
             this.processing = false
           }
