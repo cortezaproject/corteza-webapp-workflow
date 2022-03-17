@@ -69,8 +69,6 @@
 </template>
 
 <script>
-import icon from '../themes/corteza-base/img/icon.png'
-import logo from '../themes/corteza-base/img/logo.png'
 import { components } from '@cortezaproject/corteza-vue'
 const { CPermissionsModal, CTopbar, CSidebar } = components
 
@@ -96,11 +94,11 @@ export default {
     },
 
     icon () {
-      return this.$Settings.attachment('ui.iconLogo', icon)
+      return this.$Settings.attachment('ui.iconLogo')
     },
 
     logo () {
-      return this.$Settings.attachment('ui.mainLogo', logo)
+      return this.$Settings.attachment('ui.mainLogo')
     },
   },
 
