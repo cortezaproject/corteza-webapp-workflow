@@ -885,7 +885,9 @@ export default {
 
             let values = []
 
-            if (kind === 'gateway' && cell.edges) {
+            console.log(cell)
+
+            if (kind === 'gateway' && cell.edges && cell.style !== 'gatewayParallel') {
               values = cell.edges
                 .filter(({ source }) => cell.id === source.id)
                 .map(({ id }) => this.edges[id])
