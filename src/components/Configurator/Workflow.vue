@@ -5,6 +5,7 @@
     >
       <b-form-input
         v-model="workflow.meta.name"
+        data-test-id="input-label"
         @input="$root.$emit('change-detected')"
       />
     </b-form-group>
@@ -14,11 +15,15 @@
     >
       <b-form-input
         v-model="workflow.handle"
+        data-test-id="input-handle"
         :state="handleState"
         :placeholder="$t('workflow.placeholder-handle')"
         @input="$root.$emit('change-detected')"
       />
-      <b-form-invalid-feedback :state="handleState">
+      <b-form-invalid-feedback
+        data-test-id="input-handle-invalid-state"
+        :state="handleState"
+      >
         {{ $t('workflow.invalid-handle-characters') }}
       </b-form-invalid-feedback>
     </b-form-group>
@@ -28,6 +33,7 @@
     >
       <b-form-textarea
         v-model="workflow.meta.description"
+        data-test-id="input-description"
         @input="$root.$emit('change-detected')"
       />
     </b-form-group>
@@ -38,6 +44,7 @@
     >
       <vue-select
         :options="user.options"
+        data-test-id="select-run-as"
         :get-option-label="getOptionLabel"
         :value="user.value"
         @search="search"
@@ -48,6 +55,7 @@
     <b-form-group>
       <b-form-checkbox
         v-model="workflow.enabled"
+        data-test-id="checkbox-enable-workflow"
         @change="$root.$emit('change-detected')"
       >
         {{ $t('general:enabled') }}

@@ -25,6 +25,7 @@
                   >
                     <b-button
                       v-if="canCreate"
+                      data-test-id="button-create-workflow"
                       variant="primary"
                       size="lg"
                       class="float-left mr-1"

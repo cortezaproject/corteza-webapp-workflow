@@ -11,6 +11,7 @@
     <portal to="topbar-tools">
       <b-button
         v-b-modal.workflow
+        data-test-id="button-configure-workflow"
         variant="primary"
         size="sm"
         class="d-flex align-items-center"
@@ -351,6 +352,7 @@
 
           <b-button
             variant="primary"
+            data-test-id="button-save-workflow"
             class="ml-auto"
             @click="saveWorkflow()"
           >
