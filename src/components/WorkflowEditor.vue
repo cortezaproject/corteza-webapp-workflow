@@ -309,11 +309,13 @@
         class="d-flex mb-3"
       >
         <import
+          data-test-id="button-import-workflow"
           :disabled="importProcessing"
           @import="importJSON"
         />
 
         <export
+          data-test-id="button-export-workflow"
           :workflows="[workflow.workflowID]"
           :file-name="workflow.handle"
           class="ml-1"
