@@ -57,24 +57,10 @@
                 </div>
 
                 <div class="flex-grow-1">
-                  <b-input-group
-                    class="h-100 mw-100"
-                  >
-                    <b-input
-                      v-model.trim="query"
-                      class="h-100 mw-100 text-truncate"
-                      type="search"
-                      debounce="300"
-                      :placeholder="$t('general:search-workflows')"
-                    />
-                    <b-input-group-append>
-                      <b-input-group-text class="text-primary bg-white">
-                        <font-awesome-icon
-                          :icon="['fas', 'search']"
-                        />
-                      </b-input-group-text>
-                    </b-input-group-append>
-                  </b-input-group>
+                  <c-input-search
+                    v-model.trim="query"
+                    :placeholder="$t('general:search-workflows')"
+                  />
                 </div>
               </b-row>
             </b-card-header>
@@ -124,6 +110,8 @@
 import Import from '../../components/Import'
 import Export from '../../components/Export'
 import { mapGetters } from 'vuex'
+import { components } from '@cortezaproject/corteza-vue'
+const { CInputSearch } = components
 
 export default {
   name: 'WorkflowList',
@@ -131,6 +119,7 @@ export default {
   components: {
     Import,
     Export,
+    CInputSearch,
   },
 
   data () {
