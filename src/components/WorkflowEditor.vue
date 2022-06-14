@@ -898,8 +898,6 @@ export default {
 
             let values = []
 
-            console.log(cell)
-
             if (kind === 'gateway' && cell.edges && cell.style !== 'gatewayParallel') {
               values = cell.edges
                 .filter(({ source }) => cell.id === source.id)
@@ -993,8 +991,8 @@ export default {
                 : ''
             }
 
-            // Add play button to triggers
-            if (this.workflow.canExecuteWorkflow && vertex.triggers && vertex.triggers.triggerID) {
+            // Add play button to triggers that are connected
+            if (this.workflow.canExecuteWorkflow && vertex.triggers && (cell.edges || []).length) {
               if (!this.dryRun.processing) {
                 play = `<img id="testWorkflow" src="${playIcon}" class="mr-1 hide pointer" style="width: 20px;"/>`
               } else {
