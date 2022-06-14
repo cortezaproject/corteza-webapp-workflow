@@ -354,6 +354,7 @@
             variant="primary"
             data-test-id="button-save-workflow"
             class="ml-auto"
+            :disabled="!canSave"
             @click="saveWorkflow()"
           >
             {{ $t('editor:save') }}
@@ -632,6 +633,16 @@ export default {
 
     canUpdateWorkflow () {
       return this.workflow.workflowID === '0' ? this.canCreate : this.workflow.canUpdateWorkflow
+    },
+
+    canSave () {
+      const { handle } = this.workflow
+
+      if (!handle || handle.length === 0) {
+        return false
+      }
+
+      return /^[A-Za-z][0-9A-Za-z_\-.]*[A-Za-z0-9]$/.test(handle)
     },
 
     isDeleted () {

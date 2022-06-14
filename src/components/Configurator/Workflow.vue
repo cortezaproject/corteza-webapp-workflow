@@ -100,11 +100,12 @@ export default {
   computed: {
     handleState () {
       const { handle } = this.workflow
+
       if (!handle || handle.length === 0) {
-        return null
+        return false
       }
 
-      return /^[A-Za-z][0-9A-Za-z_\-.]*[A-Za-z0-9]$/.test(handle)
+      return /^[A-Za-z][0-9A-Za-z_\-.]*[A-Za-z0-9]$/.test(handle) ? null : false
     },
   },
 
