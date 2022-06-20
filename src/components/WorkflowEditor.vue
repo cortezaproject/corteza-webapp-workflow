@@ -1386,11 +1386,13 @@ export default {
       // Ctrl + Z
       this.keyHandler.controlKeys[90] = () => {
         this.undoManager.undo()
+        this.checkExistingTriggerPaths()
       }
 
       // Ctrl + Shift + Z
       this.keyHandler.controlShiftKeys[90] = () => {
         this.undoManager.redo()
+        this.checkExistingTriggerPaths()
       }
 
       // Backspace
@@ -1463,25 +1465,25 @@ export default {
       })
     },
 
-    events () {
-      const checkExistingTriggerPaths = () => {
-        // If trigger was reconnected, check if all triggers are still connected to the previous stepID
-        this.triggersPathsChanged = [...this.triggers].some(({ stepID = '0', meta = {} }) => {
-          if (stepID !== NoID) {
-            let [triggerEdge] = this.vertices[meta.visual.id].node.edges || []
+    checkExistingTriggerPaths () {
+      // If trigger was reconnected, check if all triggers are still connected to the previous stepID
+      this.triggersPathsChanged = [...this.triggers].some(({ stepID = '0', meta = {} }) => {
+        if (stepID !== NoID) {
+          let [triggerEdge] = this.vertices[meta.visual.id].node.edges || []
 
-            if (triggerEdge) {
-              triggerEdge = this.graph.model.getCell(triggerEdge.id)
-              return triggerEdge.target && triggerEdge.target.id !== stepID
-            } else {
-              return true
-            }
+          if (triggerEdge) {
+            triggerEdge = this.graph.model.getCell(triggerEdge.id)
+            return triggerEdge.target && triggerEdge.target.id !== stepID
+          } else {
+            return true
           }
+        }
 
-          return false
-        })
-      }
+        return false
+      })
+    },
 
+    events () {
       // Edge connect event
       this.graph.connectionHandler.addListener(mxEvent.CONNECT, (sender, evt) => {
         const node = evt.getProperty('cell')
@@ -1530,7 +1532,7 @@ export default {
           const edge = evt.getProperty('edge')
           const source = this.vertices[edge.source.id]
           if (source.config.kind === 'trigger') {
-            checkExistingTriggerPaths()
+            this.checkExistingTriggerPaths()
           }
         }
       })
@@ -1578,7 +1580,7 @@ export default {
               // This needs to be done to preserve edge order
               this.graph.removeCells(source.node.edges.filter(e => e.source.id === source.node.id && e.id > cell.id))
             } else if (source.config.kind === 'trigger') {
-              checkExistingTriggerPaths()
+              this.checkExistingTriggerPaths()
             }
 
             if (target.config.kind === 'gateway') {
