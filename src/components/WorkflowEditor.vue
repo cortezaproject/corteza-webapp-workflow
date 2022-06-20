@@ -1336,8 +1336,11 @@ export default {
     keybinds (event) {
       // Ctrl + S
       if ((event.ctrlKey || event.metaKey) && event.key === 's') {
-        this.saveWorkflow()
         event.preventDefault()
+        // Prevent the workflow from being saved if expressions editor is open
+        if (!document.getElementById('expression-editor')) {
+          this.saveWorkflow()
+        }
       }
     },
 
