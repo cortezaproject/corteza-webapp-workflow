@@ -1001,7 +1001,7 @@ export default {
 
             if (this.workflow.canExecuteWorkflow && vertex.triggers && (cell.edges || []).length) {
               if (!this.dryRun.processing) {
-                test = `<img id="testWorkflow" src="${playIcon}" class="hide pointer" style="width: 20px;"/>`
+                test = `<img id="testWorkflow" title="${this.$t('configurator:tooltip.run-workflow')}" src="${playIcon}" class="hide pointer" style="width: 20px;"/>`
               } else if (this.dryRun.cellID === cell.id) {
                 // If this is the trigger that is currently running
                 test = `<span class="spinner-border text-success" data-toggle="tooltip" data-placement="top" style="width: 20px; height: 20px; cursor: default;" title="Testing in progress. If your workflow includes Prompt or Delay steps, it may be waiting for them to complete">
@@ -1022,7 +1022,7 @@ export default {
                           `<img src="${icon}" class="mr-2"/>${type}` +
                           '<div class="d-flex h-100 ml-auto align-items-center">' +
                             test +
-                            `<img id="openSidebar" src="${cog}" class="hide pointer ml-2" style="width: 20px;"/>` +
+                            `<img id="openSidebar" title="${this.$t('steps:tooltip.configure-step')}" src="${cog}" class="hide pointer ml-2" style="width: 20px;"/>` +
                             id +
                             issues +
                           '</div>' +
