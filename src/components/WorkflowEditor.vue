@@ -994,7 +994,7 @@ export default {
             // Add play button to triggers that are connected
             if (this.workflow.canExecuteWorkflow && vertex.triggers && (cell.edges || []).length) {
               if (!this.dryRun.processing) {
-                play = `<img id="testWorkflow" src="${playIcon}" class="mr-1 hide pointer" style="width: 20px;"/>`
+                play = `<img id="testWorkflow" title="${this.$t('configurator:tooltip.run-workflow')}" src="${playIcon}" class="mr-1 hide pointer" style="width: 20px;"/>`
               } else {
                 play = `<span role="status" class="spinner-border text-success mr-1 data-toggle="tooltip" data-placement="top" style="width: 20px; height: 20px; cursor: default;" title="Testing in progress. If your workflow includes Prompt or Delay steps, it may be waiting for them to complete">
                           <span class="sr-only">
@@ -1009,7 +1009,7 @@ export default {
                         `<img src="${icon}" class="mr-2"/>${type}` +
                         '<div class="d-flex h-100 ml-auto align-items-center">' +
                           play +
-                          `<img id="openSidebar" src="${cog}" class="hide pointer" style="width: 20px;"/>` +
+                          `<img id="openSidebar" title="${this.$t('steps:tooltip.configure-step')}" src="${cog}" class="hide pointer" style="width: 20px;"/>` +
                           id +
                           issues +
                         '</div>' +
