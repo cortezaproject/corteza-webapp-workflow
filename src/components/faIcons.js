@@ -17,6 +17,7 @@ import {
   faGripHorizontal,
   faSearch,
   faExpandAlt,
+  faPlus,
 } from '@fortawesome/free-solid-svg-icons'
 
 import {
@@ -48,4 +49,5 @@ library.add(
   faSearch,
   faGripHorizontal,
   faExpandAlt,
+  faPlus,
 )
