@@ -91,7 +91,7 @@
                 <template v-slot:cell(actions)="{ item: w }">
                   <c-permissions-button
                     v-if="w.canGrant"
-                    :tooltip="$t('general:tooltip.permissions')"
+                    :tooltip="$t('permissions:resource.automation.workflow.tooltip')"
                     :title="w.meta.name || w.handle"
                     :target="w.meta.name || w.handle"
                     :resource="`corteza::automation:workflow/${w.workflowID}`"
