@@ -589,6 +589,7 @@ export default {
         initialScope: {},
         input: {},
         inputEdited: {},
+        sessionID: undefined,
       },
 
       importProcessing: false,
@@ -887,9 +888,10 @@ export default {
             const cog = 'icons/cog.svg'
             const issue = 'icons/issue.svg'
             const playIcon = 'icons/play.svg'
+            const stopIcon = 'icons/stop.svg'
             const opacity = kind === 'trigger' && !vertex.triggers.enabled ? 'opacity: 0.7;' : ''
 
-            let play = ''
+            let test = ''
             let issues = ''
             let id = ''
             if (this.issues[cell.id]) {
@@ -993,16 +995,20 @@ export default {
                 : ''
             }
 
-            // Add play button to triggers that are connected
             if (this.workflow.canExecuteWorkflow && vertex.triggers && (cell.edges || []).length) {
               if (!this.dryRun.processing) {
-                play = `<img id="testWorkflow" src="${playIcon}" class="mr-1 hide pointer" style="width: 20px;"/>`
-              } else {
-                play = `<span role="status" class="spinner-border text-success mr-1 data-toggle="tooltip" data-placement="top" style="width: 20px; height: 20px; cursor: default;" title="Testing in progress. If your workflow includes Prompt or Delay steps, it may be waiting for them to complete">
+                test = `<img id="testWorkflow" src="${playIcon}" class="hide pointer" style="width: 20px;"/>`
+              } else if (this.dryRun.cellID === cell.id) {
+                // If this is the trigger that is currently running
+                test = `<span class="spinner-border text-success" data-toggle="tooltip" data-placement="top" style="width: 20px; height: 20px; cursor: default;" title="Testing in progress. If your workflow includes Prompt or Delay steps, it may be waiting for them to complete">
                           <span class="sr-only">
                             Spinning
                           </span>
-                        </span>`
+                        </span>
+                      `
+                if (this.dryRun.sessionID) {
+                  test = test + `<img id="cancelWorkflow" src="${stopIcon}" class="ml-2 hide pointer" style="width: 20px; height: 20px;"/>`
+                }
               }
             }
 
@@ -1010,8 +1016,8 @@ export default {
                       '<div class="d-flex flex-row align-items-center text-primary px-2 my-1 h6 mb-0" style="height: 35px;">' +
                         `<img src="${icon}" class="mr-2"/>${type}` +
                         '<div class="d-flex h-100 ml-auto align-items-center">' +
-                          play +
-                          `<img id="openSidebar" src="${cog}" class="hide pointer" style="width: 20px;"/>` +
+                          test +
+                          `<img id="openSidebar" src="${cog}" class="hide pointer ml-2" style="width: 20px;"/>` +
                           id +
                           issues +
                         '</div>' +
@@ -1674,6 +1680,8 @@ export default {
               } else if (event.target.id === 'testWorkflow') {
                 this.dryRun.cellID = cell.id
                 this.loadTestScope()
+              } else if (event.target.id === 'cancelWorkflow') {
+                this.cancelWorkflow()
               }
             } else if (!event.defaultPrevented) {
               // If click is on background and is not multiple selection, deselect all selected cells
@@ -2132,124 +2140,69 @@ export default {
         workflowID: this.workflow.workflowID,
         stepID: this.vertices[this.dryRun.cellID].triggers.stepID,
         trace: this.workflow.canManageWorkflowSessions || false,
-        wait: true,
+        wait: false,
         async: true,
         input,
       }
 
-      const cells = {}
-
       this.raiseInfoAlert(this.$t('notification:started-test'), this.$t('notification:test-in-progress'))
+
       await this.$AutomationAPI.workflowExec(testParams)
-        .then(({ error = false, trace }) => {
-          if (trace) {
-            // Build cells object for easier drawing of overlay
-            trace.forEach(({ stepID, parentID, stepTime, error = false }, index) => {
-              const cell = {
-                index,
-                stepID,
-                parentID,
-                stepTime,
-                error,
-              }
+        .then(({ sessionID }) => {
+          this.dryRun.sessionID = sessionID
+          this.redrawLabel(this.graph.model.getCell(this.dryRun.cellID).mxObjectId)
 
-              if (cells[stepID]) {
-                cells[stepID].push(cell)
-              } else {
-                cells[stepID] = [cell]
-              }
-            })
+          // Check if session is completed/failed every second
+          const sessionReader = () => {
+            this.$AutomationAPI.sessionRead({ sessionID })
+              .then(({ completedAt, status, stacktrace, error = false }) => {
+                if (completedAt) {
+                  // If stacktrace exists, render it
+                  if (stacktrace) {
+                    this.renderTrace(testParams.stepID, stacktrace)
 
-            this.highlights = []
-
-            // Handle first cell & edge
-            this.highlights[this.highlights.push(new mxCellHighlight(this.graph, '#719430', 3)) - 1].highlight(this.graph.view.getState(this.graph.model.getCell(this.dryRun.cellID)))
-            const firstEdge = this.graph.model.getEdgesBetween(this.graph.model.getCell(this.dryRun.cellID), this.graph.model.getCell(testParams.stepID), true)[0]
-            if (firstEdge) {
-              this.highlights[this.highlights.push(new mxCellHighlight(this.graph, '#719430', 3)) - 1].highlight(this.graph.view.getState(firstEdge))
-            }
-
-            // Handle others
-            Object.entries(cells).forEach(([stepID, frames]) => {
-              if (stepID !== '0') {
-                let error = frames[0].error
-                let log = `#${frames[0].index + 1} - ${frames[0].stepTime}ms${error ? this.$t('notification:error') + error : ''}`
-                if (frames.length < 2) {
-                  const [cell] = frames
-                  // If first cell, dont paint parent edge
-                  if (cell && cell.index !== 0) {
-                    this.graph.model.getEdgesBetween(this.graph.model.getCell(cell.parentID), this.graph.model.getCell(stepID), true)
-                      .forEach(edge => {
-                        this.highlights[this.highlights.push(new mxCellHighlight(this.graph, '#719430', 3)) - 1].highlight(this.graph.view.getState(edge))
-                      })
-                  }
-                } else {
-                  // If step is visited multiple times, keep track of execution info
-                  const time = {
-                    min: frames[0].stepTime,
-                    max: frames[0].stepTime,
-                    avg: 0,
-                    sum: 0.0,
-                  }
-
-                  error = ''
-
-                  frames.forEach(({ index, parentID, stepTime, error }, i) => {
-                    if (i !== 0) {
-                      if (stepTime < time.min) {
-                        time.min = stepTime
-                      }
-
-                      if (stepTime > time.max) {
-                        time.max = stepTime
-                      }
-
-                      log = `${log}<br>#${index + 1} - ${stepTime}ms${error ? this.$t('notification:error') + error : ''}`
+                    if (status === 'completed') {
+                      this.raiseSuccessAlert(this.$t('notification:workflow-test-completed'), this.$t('notification:test-completed'))
                     }
+                  }
 
-                    time.sum += stepTime
-                    this.graph.model.getEdgesBetween(this.graph.model.getCell(parentID), this.graph.model.getCell(stepID), true)
-                      .forEach(edge => {
-                        this.highlights[this.highlights.push(new mxCellHighlight(this.graph, '#719430', 3)) - 1].highlight(this.graph.view.getState(edge))
-                      })
-                  })
+                  // Reset state and refresh the trigger label so spinner disappears
+                  this.dryRun.lookup = true
+                  this.dryRun.processing = false
+                  this.dryRun.sessionID = undefined
+                  this.redrawLabel(this.graph.model.getCell(this.dryRun.cellID).mxObjectId)
 
-                  time.avg = time.sum ? (time.sum / frames.length).toFixed(2) : time.sum
-                  log = `${log}<br><br>MIN: ${time.min}<br>MAX: ${time.max}<br>AVG: ${time.avg}<br>SUM: ${time.sum}`
-                }
-
-                // Set info overlay
-                const time = new mxCellOverlay(new mxImage(`${mxClient.imageBasePath}/clock-${error ? 'danger' : 'success'}.svg`, 16, 16), `<span>${log}</span>`)
-                this.graph.addCellOverlay(this.graph.model.getCell(stepID), time)
-
-                // Highlight cell based on error
-                if (error) {
-                  this.highlights[this.highlights.push(new mxCellHighlight(this.graph, '#E54122', 3)) - 1].highlight(this.graph.view.getState(this.graph.model.getCell(stepID)))
+                  // If error or no stacktrace, raise an error/warning
+                  if (error) {
+                    throw new Error(error)
+                  } else if (!stacktrace) {
+                    this.raiseWarningAlert(this.$t('notification:trace-unavailable'), this.$t('notification:test-completed'))
+                  }
                 } else {
-                  this.highlights[this.highlights.push(new mxCellHighlight(this.graph, '#719430', 3)) - 1].highlight(this.graph.view.getState(this.graph.model.getCell(stepID)))
+                  setTimeout(sessionReader, 1000)
                 }
-              }
-            })
-
-            // Check for trace error
-            if (error) {
-              throw new Error(error)
-            } else {
-              this.raiseSuccessAlert(this.$t('notification:workflow-test-completed'), this.$t('notification:test-completed'))
-            }
-          } else if (error) {
-            throw new Error(error)
-          } else {
-            this.raiseWarningAlert(this.$t('notification:trace-unavailable'), this.$t('notification:test-completed'))
+              }).catch(this.defaultErrorHandler(this.$t('notification:failed-test')))
           }
 
-          this.dryRun.lookup = true
-        })
-        .catch(this.defaultErrorHandler(this.$t('notification:failed-test')))
-        .finally(() => {
-          this.dryRun.processing = false
-          this.redrawLabel(this.graph.model.getCell(this.dryRun.cellID).mxObjectId)
-        })
+          setTimeout(sessionReader, 1000)
+        }).catch(this.defaultErrorHandler(this.$t('notification:failed-test')))
+    },
+
+    cancelWorkflow () {
+      const { sessionID, processing } = this.dryRun
+      if (processing && sessionID) {
+        this.dryRun.sessionID = undefined
+        this.redrawLabel(this.graph.model.getCell(this.dryRun.cellID).mxObjectId)
+
+        this.$AutomationAPI.sessionCancel({ sessionID })
+          .then(() => {
+            this.raiseInfoAlert('Workflow test canceled', 'Stopping test')
+          })
+          .catch(e => {
+            this.dryRun.sessionID = sessionID
+            this.defaultErrorHandler('Test cancel failed')(e)
+          })
+      }
     },
 
     render (workflow, initial = false) {
@@ -2387,6 +2340,98 @@ export default {
 
         this.rendering = false
       }
+    },
+
+    renderTrace (firstStepID, trace = []) {
+      const cells = {}
+
+      // Build cells object for easier drawing of overlay
+      trace.filter(t => t).forEach(({ stepID, parentID, stepTime, error = false }, index) => {
+        const cell = {
+          index,
+          stepID,
+          parentID,
+          stepTime,
+          error,
+        }
+
+        if (cells[stepID]) {
+          cells[stepID].push(cell)
+        } else {
+          cells[stepID] = [cell]
+        }
+      })
+
+      this.highlights = []
+
+      // Handle first cell & edge
+      this.highlights[this.highlights.push(new mxCellHighlight(this.graph, '#719430', 3)) - 1].highlight(this.graph.view.getState(this.graph.model.getCell(this.dryRun.cellID)))
+      const firstEdge = this.graph.model.getEdgesBetween(this.graph.model.getCell(this.dryRun.cellID), this.graph.model.getCell(firstStepID), true)[0]
+      if (firstEdge) {
+        this.highlights[this.highlights.push(new mxCellHighlight(this.graph, '#719430', 3)) - 1].highlight(this.graph.view.getState(firstEdge))
+      }
+
+      // Handle others
+      Object.entries(cells).forEach(([stepID, frames]) => {
+        if (stepID !== '0') {
+          let error = frames[0].error
+          let log = `#${frames[0].index + 1} - ${frames[0].stepTime}ms${error ? this.$t('notification:error') + error : ''}`
+          if (frames.length < 2) {
+            const [cell] = frames
+            // If first cell, dont paint parent edge
+            if (cell && cell.index !== 0) {
+              this.graph.model.getEdgesBetween(this.graph.model.getCell(cell.parentID), this.graph.model.getCell(stepID), true)
+                .forEach(edge => {
+                  this.highlights[this.highlights.push(new mxCellHighlight(this.graph, '#719430', 3)) - 1].highlight(this.graph.view.getState(edge))
+                })
+            }
+          } else {
+            // If step is visited multiple times, keep track of execution info
+            const time = {
+              min: frames[0].stepTime,
+              max: frames[0].stepTime,
+              avg: 0,
+              sum: 0.0,
+            }
+
+            error = ''
+
+            frames.forEach(({ index, parentID, stepTime, error }, i) => {
+              if (i !== 0) {
+                if (stepTime < time.min) {
+                  time.min = stepTime
+                }
+
+                if (stepTime > time.max) {
+                  time.max = stepTime
+                }
+
+                log = `${log}<br>#${index + 1} - ${stepTime}ms${error ? this.$t('notification:error') + error : ''}`
+              }
+
+              time.sum += stepTime
+              this.graph.model.getEdgesBetween(this.graph.model.getCell(parentID), this.graph.model.getCell(stepID), true)
+                .forEach(edge => {
+                  this.highlights[this.highlights.push(new mxCellHighlight(this.graph, '#719430', 3)) - 1].highlight(this.graph.view.getState(edge))
+                })
+            })
+
+            time.avg = time.sum ? (time.sum / frames.length).toFixed(2) : time.sum
+            log = `${log}<br><br>MIN: ${time.min}<br>MAX: ${time.max}<br>AVG: ${time.avg}<br>SUM: ${time.sum}`
+          }
+
+          // Set info overlay
+          const time = new mxCellOverlay(new mxImage(`${mxClient.imageBasePath}/clock-${error ? 'danger' : 'success'}.svg`, 16, 16), `<span>${log}</span>`)
+          this.graph.addCellOverlay(this.graph.model.getCell(stepID), time)
+
+          // Highlight cell based on error
+          if (error) {
+            this.highlights[this.highlights.push(new mxCellHighlight(this.graph, '#E54122', 3)) - 1].highlight(this.graph.view.getState(this.graph.model.getCell(stepID)))
+          } else {
+            this.highlights[this.highlights.push(new mxCellHighlight(this.graph, '#719430', 3)) - 1].highlight(this.graph.view.getState(this.graph.model.getCell(stepID)))
+          }
+        }
+      })
     },
 
     getJsonModel () {
