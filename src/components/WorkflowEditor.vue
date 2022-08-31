@@ -884,7 +884,9 @@ export default {
           if (vertex && kind !== 'visual') {
             const icon = getStyleFromKind(vertex.config).icon
             const type = kind.charAt(0).toUpperCase() + kind.slice(1)
-            const shadow = ((this.getSelectedItem || {}).node || {}).id === cell.id ? 'shadow-lg' : 'shadow'
+            const isSelected = ((this.getSelectedItem || {}).node || {}).id === cell.id
+            const border = isSelected ? 'selected-border' : 'border-light'
+            const shadow = isSelected ? 'shadow-lg' : 'shadow'
             const cog = 'icons/cog.svg'
             const issue = 'icons/issue.svg'
             const playIcon = 'icons/play.svg'
@@ -916,7 +918,7 @@ export default {
               const functionLabel = meta.short
 
               if (functionLabel) {
-                values.push(`<tr><td><b class="text-primary">${functionLabel}</b></td></tr>`)
+                values.push(`<tr><td><b class="text-primary">${functionLabel}</b></td><td/></tr>`)
               }
 
               if (args.length && kind !== 'expressions') {
@@ -987,11 +989,11 @@ export default {
 
             if (values) {
               values = values
-                ? '<div class="step-values hide-label">' +
-                  '<table class="table bg-white shadow mb-0">' +
-                    values +
-                  '</table>' +
-                '</div>'
+                ? '<div class="step-values rounded hide-label">' +
+                    '<table class="table bg-white shadow mb-0">' +
+                      values +
+                    '</table>' +
+                  '</div>'
                 : ''
             }
 
@@ -1012,22 +1014,22 @@ export default {
               }
             }
 
-            label = `<div class="d-flex flex-column position-relative bg-white rounded step ${shadow}" style="width: 200px; height: 80px; border-radius: 5px;${opacity}">` +
-                      '<div class="d-flex flex-row align-items-center text-primary px-2 my-1 h6 mb-0" style="height: 35px;">' +
-                        `<img src="${icon}" class="mr-2"/>${type}` +
-                        '<div class="d-flex h-100 ml-auto align-items-center">' +
-                          test +
-                          `<img id="openSidebar" src="${cog}" class="hide pointer ml-2" style="width: 20px;"/>` +
-                          id +
-                          issues +
+            label = `<div class="d-flex flex-column bg-white border rounded step position-relative ${shadow} ${border}" style="min-width: 200px; border-radius: 5px;${opacity}">` +
+                      '<div class=label-container">' +
+                        '<div class="d-flex flex-row align-items-center text-primary px-2 my-1 h6 mb-0" style="width: 200px; height: 36px;">' +
+                          `<img src="${icon}" class="mr-2"/>${type}` +
+                          '<div class="d-flex h-100 ml-auto align-items-center">' +
+                            test +
+                            `<img id="openSidebar" src="${cog}" class="hide pointer ml-2" style="width: 20px;"/>` +
+                            id +
+                            issues +
+                          '</div>' +
+                        '</div>' +
+                        `<div class="label d-flex flex-grow-1 align-items-stretch bg-white border-top ${values ? 'wide-label' : ''}" style="max-width: 200px; min-height: 36px;">` +
+                          `<span class="d-inline-block hover-untruncate p-2 bg-white">${encodeHTML(cell.value || '/')}</span>` +
                         '</div>' +
                       '</div>' +
-                      `<div class="label d-flex flex-column flex-grow-1 bg-white border-top ${values ? 'wide-label' : ''}">` +
-                        '<div class="d-flex flex-grow-1 align-items-start">' +
-                          `<span class="d-inline-block hover-untruncate bg-white p-2 h-100 align-middle">${encodeHTML(cell.value || '/')}</span>` +
-                        '</div>' +
-                        values +
-                      '</div>' +
+                      values +
                     '</div>'
           } else {
             label = `<div id="openSidebar" class="d-flex"><span class="d-inline-block mb-0 text-truncate">${encodeHTML(cell.value || '')}</span></div>`
@@ -1707,8 +1709,7 @@ export default {
 
     styling () {
       // General
-      mxConstants.VERTEX_SELECTION_COLOR = '#A7D0E3'
-      mxConstants.VERTEX_SELECTION_STROKEWIDTH = 2
+      mxConstants.VERTEX_SELECTION_COLOR = 'none'
       mxConstants.EDGE_SELECTION_COLOR = '#A7D0E3'
       mxConstants.EDGE_SELECTION_STROKEWIDTH = 2
       mxConstants.DEFAULT_FONTFAMILY = 'Poppins-Regular'
@@ -2365,10 +2366,10 @@ export default {
       this.highlights = []
 
       // Handle first cell & edge
-      this.highlights[this.highlights.push(new mxCellHighlight(this.graph, '#719430', 3)) - 1].highlight(this.graph.view.getState(this.graph.model.getCell(this.dryRun.cellID)))
+      this.highlights[this.highlights.push(new mxCellHighlight(this.graph, '#719430', 2)) - 1].highlight(this.graph.view.getState(this.graph.model.getCell(this.dryRun.cellID)))
       const firstEdge = this.graph.model.getEdgesBetween(this.graph.model.getCell(this.dryRun.cellID), this.graph.model.getCell(firstStepID), true)[0]
       if (firstEdge) {
-        this.highlights[this.highlights.push(new mxCellHighlight(this.graph, '#719430', 3)) - 1].highlight(this.graph.view.getState(firstEdge))
+        this.highlights[this.highlights.push(new mxCellHighlight(this.graph, '#719430', 2)) - 1].highlight(this.graph.view.getState(firstEdge))
       }
 
       // Handle others
@@ -2382,7 +2383,7 @@ export default {
             if (cell && cell.index !== 0) {
               this.graph.model.getEdgesBetween(this.graph.model.getCell(cell.parentID), this.graph.model.getCell(stepID), true)
                 .forEach(edge => {
-                  this.highlights[this.highlights.push(new mxCellHighlight(this.graph, '#719430', 3)) - 1].highlight(this.graph.view.getState(edge))
+                  this.highlights[this.highlights.push(new mxCellHighlight(this.graph, '#719430', 2)) - 1].highlight(this.graph.view.getState(edge))
                 })
             }
           } else {
@@ -2412,7 +2413,7 @@ export default {
               time.sum += stepTime
               this.graph.model.getEdgesBetween(this.graph.model.getCell(parentID), this.graph.model.getCell(stepID), true)
                 .forEach(edge => {
-                  this.highlights[this.highlights.push(new mxCellHighlight(this.graph, '#719430', 3)) - 1].highlight(this.graph.view.getState(edge))
+                  this.highlights[this.highlights.push(new mxCellHighlight(this.graph, '#719430', 2)) - 1].highlight(this.graph.view.getState(edge))
                 })
             })
 
@@ -2426,9 +2427,9 @@ export default {
 
           // Highlight cell based on error
           if (error) {
-            this.highlights[this.highlights.push(new mxCellHighlight(this.graph, '#E54122', 3)) - 1].highlight(this.graph.view.getState(this.graph.model.getCell(stepID)))
+            this.highlights[this.highlights.push(new mxCellHighlight(this.graph, '#E54122', 2)) - 1].highlight(this.graph.view.getState(this.graph.model.getCell(stepID)))
           } else {
-            this.highlights[this.highlights.push(new mxCellHighlight(this.graph, '#719430', 3)) - 1].highlight(this.graph.view.getState(this.graph.model.getCell(stepID)))
+            this.highlights[this.highlights.push(new mxCellHighlight(this.graph, '#719430', 2)) - 1].highlight(this.graph.view.getState(this.graph.model.getCell(stepID)))
           }
         }
       })
@@ -2572,8 +2573,21 @@ export default {
 
 .step:hover .hover-untruncate {
   overflow: visible;
-  text-overflow: initial;
-  white-space: initial;
+}
+
+.label-container {
+  overflow: hidden;
+}
+
+.step:hover .label-container {
+  overflow-x: visible;
+}
+
+.step-values {
+  position: absolute;
+  min-width: 200px;
+  top: 80px;
+  border-top: 0;
 }
 
 .step-values td, th {
@@ -2588,6 +2602,10 @@ export default {
 
 .step-values tr.title th {
   border-top: none;
+}
+
+.selected-border {
+  border: 2px dashed #A7D0E3 !important;
 }
 
 #toolbar > hr {
