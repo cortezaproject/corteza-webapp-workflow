@@ -592,6 +592,8 @@ export default {
         sessionID: undefined,
       },
 
+      selection: [],
+
       importProcessing: false,
 
       zoomLevel: 1,
@@ -758,7 +760,7 @@ export default {
 
   methods: {
     deleteSelectedCells () {
-      if (this.sidebar.item && this.graph.getSelectionModel().isSelected(this.sidebar.item.node)) {
+      if (this.sidebar.item && this.graph.get().isSelected(this.sidebar.item.node)) {
         this.sidebarClose()
       }
       this.graph.removeCells()
@@ -884,7 +886,7 @@ export default {
           if (vertex && kind !== 'visual') {
             const icon = getStyleFromKind(vertex.config).icon
             const type = kind.charAt(0).toUpperCase() + kind.slice(1)
-            const isSelected = ((this.getSelectedItem || {}).node || {}).id === cell.id
+            const isSelected = this.selection.includes(cell.mxObjectId)
             const border = isSelected ? 'selected-border' : 'border-light'
             const shadow = isSelected ? 'shadow-lg' : 'shadow'
             const cog = 'icons/cog.svg'
@@ -1494,6 +1496,15 @@ export default {
     },
 
     events () {
+      // Redraw selected border of cells that have been newly added/removed
+      this.graph.getSelectionModel().addListener(mxEvent.CHANGE, (sender, evt) => {
+        const cells = [...(evt.getProperty('added') || []), ...(evt.getProperty('removed') || [])]
+        this.selection = this.graph.getSelectionCells().map(({ mxObjectId }) => mxObjectId)
+        cells.forEach(({ mxObjectId }) => {
+          this.redrawLabel(mxObjectId)
+        })
+      })
+
       // Edge connect event
       this.graph.connectionHandler.addListener(mxEvent.CONNECT, (sender, evt) => {
         const node = evt.getProperty('cell')
