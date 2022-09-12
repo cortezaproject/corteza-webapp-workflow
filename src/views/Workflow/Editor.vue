@@ -1,6 +1,7 @@
 <template>
   <workflow-editor
     v-if="!processing"
+    id="workflow-editor"
     :workflow-object="workflow"
     :workflow-triggers="triggers"
     :change-detected="changeDetected"
@@ -200,3 +201,27 @@ export default {
   },
 }
 </script>
+
+<style lang="scss">
+#workflow-editor {
+  tr.b-table-details > td {
+    padding-top: 0;
+  }
+
+  .trash {
+    right: 0;
+    left: 1;
+    top: 0;
+    bottom: 0;
+  }
+
+  .arrow-up {
+    width: 0;
+    height: 0;
+    margin: 0 auto;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-bottom: 10px solid $light;
+  }
+}
+</style>

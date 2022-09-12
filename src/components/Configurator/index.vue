@@ -64,6 +64,11 @@ export default {
 
     kind () {
       const { kind } = this.item.config
+
+      if (kind === 'exec-workflow') {
+        return 'ExecWorkflow'
+      }
+
       if (kind) {
         return kind.charAt(0).toUpperCase() + kind.slice(1)
       }

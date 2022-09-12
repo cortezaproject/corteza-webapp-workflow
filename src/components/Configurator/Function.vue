@@ -3,6 +3,7 @@
     v-if="!processing"
   >
     <b-card
+      v-if="showFunctionList"
       class="flex-grow-1 border-bottom border-light rounded-0"
     >
       <b-card-header
@@ -16,6 +17,7 @@
         </h5>
       </b-card-header>
       <b-card-body
+        v-if="functionTypes.length"
         class="p-0"
       >
         <b-form-group
@@ -24,7 +26,7 @@
           class="mb-0"
         >
           <vue-select
-            v-model="item.config.ref"
+            v-model="functionRef"
             :options="functionTypes"
             label="text"
             :selectable="f => !f.disabled"
@@ -97,12 +99,12 @@
               body-class="px-4 pb-3"
             >
               <b-form-group
-                v-if="(paramTypes[item.config.ref][a.target] || []).length > 1"
+                v-if="(paramTypes[functionRef][a.target] || []).length > 1"
                 label-class="text-primary"
               >
                 <vue-select
                   v-model="a.type"
-                  :options="(paramTypes[item.config.ref][a.target] || [])"
+                  :options="(paramTypes[functionRef][a.target] || [])"
                   :filter="argTypeFilter"
                   :clearable="false"
                   @input="$root.$emit('change-detected')"
@@ -117,7 +119,21 @@
                   v-if="a.valueType === 'value'"
                 >
                   <vue-select
-                    v-if="a.input.type === 'select'"
+                    v-if="a.target === 'workflow'"
+                    key="workflowID"
+                    v-model="a.value"
+                    :options="workflowOptions"
+                    :get-option-label="getWorkflowLabel"
+                    :reduce="wf => a.type === 'ID' ? wf.workflowID : wf.handle"
+                    clearable
+                    placeholder="Search for a workflow"
+                    class="bg-white rounded"
+                    @input="$root.$emit('change-detected')"
+                    @search="searchWorkflows"
+                  />
+
+                  <vue-select
+                    v-else-if="a.input.type === 'select'"
                     v-model="a.value"
                     :options="a.input.properties.options"
                     label="text"
@@ -189,7 +205,6 @@
     </b-card>
 
     <b-card
-      v-if="results.length"
       class="flex-grow-1 border-bottom border-light rounded-0"
       body-class="p-0"
     >
@@ -205,9 +220,11 @@
       </b-card-header>
 
       <b-card-body
+        v-if="results.length"
         class="p-0"
       >
         <b-table
+          v-if="!expressionResults"
           id="results"
           fixed
           borderless
@@ -247,8 +264,28 @@
             </b-card>
           </template>
         </b-table>
+
+        <expression-table
+          value-field="expr"
+          :items="results"
+          :fields="resultFields"
+          :types="fieldTypes"
+          @remove="removeResult"
+          @open-editor="openInEditor"
+        />
       </b-card-body>
     </b-card>
+
+    <portal to="sidebar-footer">
+      <b-button
+        v-if="expressionResults"
+        variant="primary"
+        class="align-top border-0 ml-auto"
+        @click="addResult()"
+      >
+        {{ $t('steps:function.configurator.add-result') }}
+      </b-button>
+    </portal>
 
     <b-modal
       id="expression-editor"
@@ -278,12 +315,14 @@
 import base from './base'
 import { VueSelect } from 'vue-select'
 import ExpressionEditor from '../ExpressionEditor.vue'
+import ExpressionTable from '../ExpressionTable.vue'
 import { objectSearchMaker, stringSearchMaker } from '../../lib/filter'
 
 export default {
   components: {
-    ExpressionEditor,
     VueSelect,
+    ExpressionEditor,
+    ExpressionTable,
   },
 
   extends: base,
@@ -292,9 +331,15 @@ export default {
     return {
       processing: true,
 
+      showFunctionList: true,
+      expressionResults: false,
+      functionRef: undefined,
+
       functions: [],
       args: [],
       results: [],
+
+      fieldTypes: [],
 
       paramTypes: {},
       resultTypes: {},
@@ -336,11 +381,6 @@ export default {
           thClass: 'pl-3 py-2',
           tdClass: 'text-truncate pointer',
         },
-        // {
-        //   key: 'type',
-        //   thClass: "py-2",
-        //   tdClass: 'text-truncate pointer'
-        // },
         {
           key: 'value',
           thClass: 'pr-3 py-2',
@@ -365,7 +405,7 @@ export default {
           key: 'expr',
           label: this.$t('steps:function.configurator.result'),
           thClass: 'pr-3 py-2',
-          tdClass: 'text-truncate pointer',
+          tdClass: 'position-relative pointer',
         },
       ]
     },
@@ -382,12 +422,12 @@ export default {
     },
 
     functionDescription () {
-      return (this.functions.find(({ ref }) => ref === this.item.config.ref) || { meta: {} }).meta.description
+      return (this.functions.find(({ ref }) => ref === this.functionRef) || { meta: {} }).meta.description
     },
 
     isWhileIterator () {
       if (this.item.config) {
-        return this.item.config.kind === 'iterator' && this.item.config.ref === 'loopDo'
+        return this.item.config.kind === 'iterator' && this.functionRef === 'loopDo'
       }
       return false
     },
@@ -411,7 +451,9 @@ export default {
         await this.getFunctionTypes()
         await this.getTypes()
 
-        this.setParams(this.item.config.ref, true)
+        this.functionRef = this.item.config.ref || this.functionRef
+
+        this.setParams(this.functionRef, true)
 
         this.processing = false
       },
@@ -437,7 +479,7 @@ export default {
     results: {
       deep: true,
       handler (res) {
-        this.item.config.results = res.filter(({ target }) => target).map(({ target, expr }) => ({ target, expr }))
+        this.item.config.results = res.filter(({ target }) => target).map(({ target, expr, type }) => ({ target, type, expr }))
       },
     },
   },
@@ -482,23 +524,34 @@ export default {
         }) || []
 
         // Set results
-        if (!this.resultTypes[func.ref] && func.results) {
-          this.resultTypes[func.ref] = {}
-          func.results.forEach(({ name, types }) => {
-            this.resultTypes[func.ref][name] = types || []
-          })
-        }
-
-        this.results = func.results?.map(result => {
-          const res = this.item.config.results.find(({ expr }) => expr === result.name) || {}
-          return {
-            name: result.name,
-            valueType: 'expr',
-            target: res.target || undefined,
-            type: this.resultTypes[func.ref][result.name][0],
-            expr: res.expr || result.name,
+        if (!this.expressionResults) {
+          if (!this.resultTypes[func.ref] && func.results) {
+            this.resultTypes[func.ref] = {}
+            func.results.forEach(({ name, types }) => {
+              this.resultTypes[func.ref][name] = types || []
+            })
           }
-        }) || []
+
+          this.results = func.results?.map(result => {
+            const res = this.item.config.results.find(({ expr }) => expr === result.name) || {}
+            return {
+              name: result.name,
+              valueType: 'expr',
+              target: res.target || undefined,
+              type: this.resultTypes[func.ref][result.name][0],
+              expr: res.expr || result.name,
+            }
+          }) || []
+        } else {
+          this.results = this.item.config.results.map(({ target, type, expr }) => {
+            return {
+              valueType: 'expr',
+              target,
+              type,
+              expr,
+            }
+          }) || []
+        }
       }
     },
 
@@ -541,12 +594,14 @@ export default {
     async getTypes () {
       return this.$AutomationAPI.typeList()
         .then(({ set }) => {
-          this.types = set
+          this.fieldTypes = set
         })
         .catch(this.defaultErrorHandler(this.$t('notification:fetch-types-failed')))
     },
 
     functionChanged (functionRef) {
+      this.item.config.ref = functionRef
+
       this.setParams(functionRef)
 
       this.$emit('update-default-value', {
@@ -577,42 +632,30 @@ export default {
     rowClass (item, type) {
       return item._showDetails && type === 'row' ? 'border-thick' : 'border-thick-transparent'
     },
+
+    addResult () {
+      this.results.push({
+        target: '',
+        expr: '',
+        type: 'Any',
+        _showDetails: true,
+      })
+      this.$root.$emit('change-detected')
+    },
+
+    removeResult (index) {
+      this.results.splice(index, 1)
+      this.$root.$emit('change-detected')
+    },
+
+    getTypeDescription (type) {
+      // This will be moved to backend field type information
+      const typeDescriptions = {
+        ID: 'Make sure to provide the ID in double quotes if you\'re using a literal value. Example "123"',
+      }
+
+      return typeDescriptions[type]
+    },
   },
 }
 </script>
-
-<style lang="scss">
-tr.b-table-details > td {
-  padding-top: 0;
-}
-
-.border-thick {
-  border-left: 4px solid #A7D0E3;
-}
-
-.border-thick-transparent {
-  border-left: none;
-}
-
-.border-thick-transparent td:first-child {
-  padding-left: calc(0.75rem + 2px);
-}
-</style>
-
-<style lang="scss" scoped>
-.trash {
-  right: 0;
-  left: 1;
-  top: 0;
-  bottom: 0;
-}
-
-.arrow-up {
-  width: 0;
-  height: 0;
-  margin: 0 auto;
-  border-left: 10px solid transparent;
-  border-right: 10px solid transparent;
-  border-bottom: 10px solid $light;
-}
-</style>

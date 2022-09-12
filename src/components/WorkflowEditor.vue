@@ -883,9 +883,10 @@ export default {
         } else if (this.vertices[cell.id]) {
           const vertex = this.vertices[cell.id]
           const { kind } = vertex.config
+          const { style } = vertex.node
           if (vertex && kind !== 'visual') {
             const icon = getStyleFromKind(vertex.config).icon
-            const type = kind.charAt(0).toUpperCase() + kind.slice(1)
+            const type = this.$t(`steps:${style}.short`)
             const isSelected = this.selection.includes(cell.mxObjectId)
             const border = isSelected ? 'selected-border' : 'border-light'
             const shadow = isSelected ? 'shadow-lg' : 'shadow'
@@ -912,7 +913,7 @@ export default {
                 .map(({ id }) => this.edges[id])
                 .map(({ node, config }) => `<tr><td><var>${encodeHTML(node.value)}</var></td><td><code>${encodeHTML(config.expr || '')}</code></td></tr>`)
                 .join('')
-            } else if (['expressions', 'function', 'prompt', 'iterator'].includes(kind)) {
+            } else if (['expressions', 'function', 'prompt', 'iterator', 'exec-workflow'].includes(kind)) {
               let { arguments: args = [], results = [], ref } = vertex.config || {}
 
               const { meta = {}, results: functionResults = [] } = this.functionTypes.find(f => f.ref === ref) || {}
