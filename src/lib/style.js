@@ -38,6 +38,13 @@ const kindToStyle = {
     style: 'iterator',
   },
 
+  'exec-workflow': {
+    width: 200,
+    height: 80,
+    icon: 'icons/exec-workflow.svg',
+    style: 'exec-workflow',
+  },
+
   break: {
     width: 200,
     height: 80,

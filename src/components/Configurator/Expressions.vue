@@ -38,91 +38,14 @@
         v-if="hasArguments"
         class="p-0"
       >
-        <b-table
-          id="arguments"
-          fixed
-          borderless
-          hover
-          head-row-variant="secondary"
-          details-td-class="bg-white"
+        <expression-table
+          value-field="value"
           :items="item.config.arguments"
           :fields="argumentFields"
-          :tbody-tr-class="rowClass"
-          @row-clicked="item=>$set(item, '_showDetails', !item._showDetails)"
-        >
-          <template #cell(target)="{ item: a }">
-            <var>{{ a.target }}</var>
-            <samp> ({{ a.type }})</samp>
-          </template>
-
-          <template #cell(type)="{ item: a }">
-            <var>{{ a.type }}</var>
-          </template>
-
-          <template #cell(value)="{ item: a, index }">
-            <div
-              class="text-truncate"
-              :class="{ 'w-75': a._showDetails}"
-            >
-              <samp>{{ a.expr }}</samp>
-            </div>
-
-            <b-button
-              v-if="a._showDetails"
-              variant="outline-danger"
-              class="position-absolute trash border-0"
-              @click="removeArgument(index)"
-            >
-              <font-awesome-icon
-                :icon="['far', 'trash-alt']"
-              />
-            </b-button>
-          </template>
-
-          <template #row-details="{ item: a, index }">
-            <div class="arrow-up" />
-
-            <b-card
-              class="bg-light"
-              body-class="px-4 pb-3"
-            >
-              <b-form-group
-                label-class="text-primary"
-              >
-                <b-form-input
-                  v-model="a.target"
-                  :placeholder="$t('configurator:target')"
-                  @input="$root.$emit('change-detected')"
-                />
-              </b-form-group>
-
-              <b-form-group
-                label-class="text-primary"
-                :description="getTypeDescription(a.type)"
-              >
-                <vue-select
-                  v-model="a.type"
-                  :options="fieldTypes"
-                  :clearable="false"
-                  :filter="varFilter"
-                  @input="$root.$emit('change-detected')"
-                />
-              </b-form-group>
-
-              <b-form-group
-                class="mb-0"
-              >
-                <expression-editor
-                  :value.sync="a.expr"
-                  lang="javascript"
-                  show-line-numbers
-                  @open="openInEditor(index)"
-                  @input="$root.$emit('change-detected')"
-                />
-              </b-form-group>
-            </b-card>
-          </template>
-        </b-table>
+          :types="fieldTypes"
+          @remove="removeArgument"
+          @open-editor="openInEditor"
+        />
       </b-card-body>
     </b-card>
 
@@ -152,14 +75,13 @@
 
 <script>
 import base from './base'
-import { VueSelect } from 'vue-select'
 import ExpressionEditor from '../ExpressionEditor.vue'
-import { stringSearchMaker } from '../../lib/filter'
+import ExpressionTable from '../ExpressionTable.vue'
 
 export default {
   components: {
     ExpressionEditor,
-    VueSelect,
+    ExpressionTable,
   },
 
   extends: base,
@@ -194,6 +116,10 @@ export default {
           key: 'target',
           thClass: 'pl-3 py-2',
           tdClass: 'text-truncate pointer',
+          formatter: (value, key, item) => {
+            return `${item.target}(${item.type})`
+          },
+
         },
         {
           key: 'value',
@@ -230,8 +156,6 @@ export default {
   },
 
   methods: {
-    varFilter: stringSearchMaker(),
-
     addArgument () {
       this.item.config.arguments.push({
         target: '',
@@ -280,14 +204,6 @@ export default {
         .catch(this.defaultErrorHandler(this.$t('notification:fetch-types-failed')))
     },
 
-    rowClass (item, type) {
-      if (type === 'row') {
-        return item._showDetails ? 'border-thick' : 'border-thick-transparent'
-      } else if (type === 'row-details') {
-        return ''
-      }
-    },
-
     getTypeDescription (type) {
       // This will be moved to backend field type information
       const typeDescriptions = {
@@ -299,39 +215,3 @@ export default {
   },
 }
 </script>
-
-<style lang="scss">
-tr.b-table-details > td {
-  padding-top: 0;
-}
-
-.border-thick {
-  border-left: 4px solid #A7D0E3;
-}
-
-.border-thick-transparent {
-  border-left: none;
-}
-
-.border-thick-transparent td:first-child {
-  padding-left: calc(0.75rem + 2px);
-}
-</style>
-
-<style lang="scss" scoped>
-.trash {
-  right: 0;
-  left: 1;
-  top: 0;
-  bottom: 0;
-}
-
-.arrow-up {
-  width: 0;
-  height: 0;
-  margin: 0 auto;
-  border-left: 10px solid transparent;
-  border-right: 10px solid transparent;
-  border-bottom: 10px solid $light;
-}
-</style>

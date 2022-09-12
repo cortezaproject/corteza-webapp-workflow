@@ -23,6 +23,9 @@ export default [
     kind: 'function',
   },
   {
+    kind: 'exec-workflow',
+  },
+  {
     kind: 'hr',
   },
   {

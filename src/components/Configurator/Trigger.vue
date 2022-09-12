@@ -467,42 +467,8 @@ export default {
 }
 </script>
 
-<style lang="scss">
-tr.b-table-details > td {
-  padding-top: 0;
-}
-
-.border-thick {
-  border-left: 4px solid #A7D0E3;
-}
-
-.border-thick-transparent {
-  border-left: none;
-}
-
-.border-thick-transparent td:first-child {
-  padding-left: calc(0.75rem + 2px);
-}
-
+<style lang="scss" scoped>
 .operator {
   width: 100px;
-}
-</style>
-
-<style lang="scss" scoped>
-.trash {
-  right: 0;
-  left: 1;
-  top: 0;
-  bottom: 0;
-}
-
-.arrow-up {
-  width: 0;
-  height: 0;
-  margin: 0 auto;
-  border-left: 10px solid transparent;
-  border-right: 10px solid transparent;
-  border-bottom: 10px solid $light;
 }
 </style>
