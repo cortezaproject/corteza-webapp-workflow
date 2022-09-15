@@ -1,6 +1,6 @@
 {
   "name": "corteza-workflow",
-  "version": "2022.3.5-rc.1",
+  "version": "2022.3.5-rc.2",
   "scripts": {
     "serve": "vue-cli-service serve",
     "dev-env": "vue-cli-service serve src/dev-env.js",
