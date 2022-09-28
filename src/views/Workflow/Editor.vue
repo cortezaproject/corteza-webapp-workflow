@@ -10,6 +10,7 @@
     class="overflow-hidden"
     @save="saveWorkflow"
     @delete="deleteWorkflow"
+    @undelete="undeleteWorkflow"
   />
 </template>
 
@@ -109,7 +110,7 @@ export default {
         .then(wf => {
           this.workflow = wf
         })
-        .catch(this.defaultErrorHandler(this.$t('notification:failed-fetch-workflow')))
+        .catch(this.toastErrorHandler(this.$t('notification:failed-fetch-workflow')))
     },
 
     async fetchTriggers (workflowID = this.workflowID) {
@@ -117,7 +118,7 @@ export default {
         .then(({ set = [] }) => {
           this.triggers = set
         })
-        .catch(this.defaultErrorHandler(this.$t('notification:failed-fetch-triggers')))
+        .catch(this.toastErrorHandler(this.$t('notification:failed-fetch-triggers')))
     },
 
     saveWorkflow: throttle(async function (wf) {
@@ -172,14 +173,14 @@ export default {
         window.onbeforeunload = null
 
         this.workflow = wf
-        this.raiseSuccessAlert(this.$t('notification:updated-workflow'))
+        this.toastSuccess(this.$t('notification:updated-workflow'))
 
         if (isNew) {
           // Redirect to edit route if new
           this.$router.push({ name: 'workflow.edit', params: { workflowID: this.workflow.workflowID } })
         }
       } catch (e) {
-        this.defaultErrorHandler(this.$t('notification:failed-save'))(e)
+        this.toastErrorHandler(this.$t('notification:failed-save'))(e)
       }
 
       this.processingSave = false
@@ -193,9 +194,22 @@ export default {
             this.workflow = {}
             this.$router.push({ name: 'workflow.list' })
 
-            this.raiseSuccessAlert(this.$t('notification:deleted-workflow'))
+            this.toastSuccess(this.$t('notification:deleted-workflow'))
           })
-          .catch(this.defaultErrorHandler(this.$t('notification:delete-failed')))
+          .catch(this.toastErrorHandler(this.$t('notification:delete-failed')))
+      }
+    },
+
+    undeleteWorkflow () {
+      if (this.workflow.workflowID) {
+        this.$AutomationAPI.workflowUndelete(this.workflow)
+          .then(() => {
+            this.workflow.deletedAt = undefined
+            this.workflow.deletedBy = undefined
+
+            this.toastSuccess(this.$t('notification:undelete-workflow'))
+          })
+          .catch(this.toastErrorHandler(this.$t('notification:undelete-failed')))
       }
     },
   },

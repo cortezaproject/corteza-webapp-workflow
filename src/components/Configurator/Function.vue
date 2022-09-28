@@ -588,7 +588,7 @@ export default {
         .then(({ set }) => {
           this.functions = set.filter(({ kind = '' }) => kind !== 'iterator').sort((a, b) => a.meta.short.localeCompare(b.meta.short))
         })
-        .catch(this.defaultErrorHandler(this.$t('notification:failed-fetch-functions')))
+        .catch(this.toastErrorHandler(this.$t('notification:failed-fetch-functions')))
     },
 
     async getTypes () {
@@ -596,7 +596,7 @@ export default {
         .then(({ set }) => {
           this.fieldTypes = set
         })
-        .catch(this.defaultErrorHandler(this.$t('notification:fetch-types-failed')))
+        .catch(this.toastErrorHandler(this.$t('notification:fetch-types-failed')))
     },
 
     functionChanged (functionRef) {

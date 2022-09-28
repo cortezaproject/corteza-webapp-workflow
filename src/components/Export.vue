@@ -1,7 +1,7 @@
 <template>
   <b-button
-    v-if="workflows.length > 0"
     variant="light"
+    :disabled="workflows.length === 0"
     size="lg"
     @click="jsonExport(workflows)"
   >
@@ -48,7 +48,7 @@ export default {
             })
           })
         })
-        .catch(this.defaultErrorHandler(this.$t('notification:failed-fetch-triggers')))
+        .catch(this.toastErrorHandler(this.$t('notification:failed-fetch-triggers')))
 
       // Get workflows, add related triggers
       await this.$AutomationAPI.workflowList({ workflowID: workflowIDs, disabled: 1 })
@@ -65,7 +65,7 @@ export default {
             }
           })
         })
-        .catch(this.defaultErrorHandler(this.$t('notification:failed-fetch-workflows')))
+        .catch(this.toastErrorHandler(this.$t('notification:failed-fetch-workflows')))
 
       // Save file
       const blob = new Blob([JSON.stringify({ workflows }, null, 2)], { type: 'application/json' })

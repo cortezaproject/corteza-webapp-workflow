@@ -141,22 +141,6 @@ export default {
       },
     },
   },
-
-  created () {
-    this.$root.$on('alert', this.displayToast)
-  },
-
-  methods: {
-    displayToast ({ title, message, variant, countdown }) {
-      this.$root.$bvToast.toast(message, {
-        title,
-        variant,
-        solid: true,
-        autoHideDelay: countdown,
-        toaster: 'b-toaster-bottom-right',
-      })
-    },
-  },
 }
 </script>
 

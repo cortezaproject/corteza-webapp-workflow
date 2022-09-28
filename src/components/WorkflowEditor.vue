@@ -120,6 +120,17 @@
           </h5>
 
           <h5
+            v-if="workflow.meta.subWorkflow"
+            class="mb-0 mr-1"
+          >
+            <b-badge
+              variant="info"
+            >
+              {{ $t('general:subworkflow') }}
+            </b-badge>
+          </h5>
+
+          <h5
             v-if="deffered"
             class="mb-0 mr-1"
           >
@@ -262,6 +273,7 @@
           :item.sync="sidebar.item"
           :edges.sync="edges"
           :out-edges="sidebar.outEdges"
+          :is-subworkflow="!!workflow.meta.subWorkflow"
           @update-value="setValue($event)"
           @update-default-value="setValue($event, true)"
         />
@@ -350,6 +362,16 @@
             @confirmed="$emit('delete')"
           >
             {{ $t('editor:delete') }}
+          </c-input-confirm>
+
+          <c-input-confirm
+            v-else-if="isDeleted"
+            size="md"
+            size-confirm="md"
+            :borderless="false"
+            @confirmed="$emit('undelete')"
+          >
+            {{ $t('editor:undelete') }}
           </c-input-confirm>
 
           <b-button
@@ -1088,7 +1110,7 @@ export default {
         let value = tooltip
 
         if (['break', 'continue'].includes(style)) {
-          value = style === 'break' ? 'Stop iterator exectution' : 'Skip current iteration'
+          value = style === 'break' ? 'Stop iterator execution' : 'Skip current iteration'
         } else if (style.includes('gateway')) {
           value = style.split('gateway')[1]
         } else if (style === 'expressions') {
@@ -2048,13 +2070,13 @@ export default {
     async loadTestScope () {
       // Can only test saved workflow
       if (this.changeDetected) {
-        this.raiseWarningAlert(this.$t('notification:save-workflow'), this.$t('notification:failed-test'))
+        this.toastWarning(this.$t('notification:save-workflow'), this.$t('notification:failed-test'))
         return
       }
 
       // Can only test valid workflow
       if (this.hasIssues) {
-        this.raiseWarningAlert(this.$t('notification:resolve-issues'), this.$t('notification:failed-test'))
+        this.toastWarning(this.$t('notification:resolve-issues'), this.$t('notification:failed-test'))
         return
       }
 
@@ -2113,14 +2135,14 @@ export default {
               this.dryRun.lookup = lookup
               this.dryRun.show = true
             })
-            .catch(this.defaultErrorHandler(this.$t('notification:initial-scope-load-failed')))
+            .catch(this.toastErrorHandler(this.$t('notification:initial-scope-load-failed')))
         } else {
           // If no constraints, just run
           this.dryRun.initialScope = {}
           this.testWorkflow()
         }
       } else {
-        this.raiseWarningAlert(this.$t('notification:event-type-not-found'), this.$t('notification:failed-test'))
+        this.toastWarning(this.$t('notification:event-type-not-found'), this.$t('notification:failed-test'))
       }
     },
 
@@ -2134,7 +2156,7 @@ export default {
             this.dryRun.inputEdited = input
             this.dryRun.lookup = false
           })
-          .catch(this.defaultErrorHandler(this.$t('notification:initial-scope-load-failed')))
+          .catch(this.toastErrorHandler(this.$t('notification:initial-scope-load-failed')))
       } else {
         this.testWorkflow(this.dryRun.inputEdited)
       }
@@ -2158,7 +2180,7 @@ export default {
         input,
       }
 
-      this.raiseInfoAlert(this.$t('notification:started-test'), this.$t('notification:test-in-progress'))
+      this.toastInfo(this.$t('notification:started-test'), this.$t('notification:test-in-progress'))
 
       await this.$AutomationAPI.workflowExec(testParams)
         .then(({ sessionID }) => {
@@ -2175,7 +2197,7 @@ export default {
                     this.renderTrace(testParams.stepID, stacktrace)
 
                     if (status === 'completed') {
-                      this.raiseSuccessAlert(this.$t('notification:workflow-test-completed'), this.$t('notification:test-completed'))
+                      this.toastSuccess(this.$t('notification:workflow-test-completed'), this.$t('notification:test-completed'))
                     }
                   }
 
@@ -2189,16 +2211,16 @@ export default {
                   if (error) {
                     throw new Error(error)
                   } else if (!stacktrace) {
-                    this.raiseWarningAlert(this.$t('notification:trace-unavailable'), this.$t('notification:test-completed'))
+                    this.toastWarning(this.$t('notification:trace-unavailable'), this.$t('notification:test-completed'))
                   }
                 } else {
                   setTimeout(sessionReader, 1000)
                 }
-              }).catch(this.defaultErrorHandler(this.$t('notification:failed-test')))
+              }).catch(this.toastErrorHandler(this.$t('notification:failed-test')))
           }
 
           setTimeout(sessionReader, 1000)
-        }).catch(this.defaultErrorHandler(this.$t('notification:failed-test')))
+        }).catch(this.toastErrorHandler(this.$t('notification:failed-test')))
     },
 
     cancelWorkflow () {
@@ -2209,11 +2231,11 @@ export default {
 
         this.$AutomationAPI.sessionCancel({ sessionID })
           .then(() => {
-            this.raiseInfoAlert('Workflow test canceled', 'Stopping test')
+            this.toastInfo('Workflow test canceled', 'Stopping test')
           })
           .catch(e => {
             this.dryRun.sessionID = sessionID
-            this.defaultErrorHandler('Test cancel failed')(e)
+            this.toastErrorHandler('Test cancel failed')(e)
           })
       }
     },
@@ -2473,9 +2495,9 @@ export default {
 
         this.importProcessing = false
         this.$root.$emit('change-detected')
-        this.raiseSuccessAlert(this.$t('notification:imported-workflow'))
+        this.toastSuccess(this.$t('notification:imported-workflow'))
       } catch (e) {
-        this.defaultErrorHandler(this.$t('notification:import-failed'))(e)
+        this.toastErrorHandler(this.$t('notification:import-failed'))(e)
       }
     },
 
@@ -2489,7 +2511,7 @@ export default {
         .then(({ set }) => {
           this.functionTypes = set
         })
-        .catch(this.defaultErrorHandler(this.$t('notification:failed-fetch-functions')))
+        .catch(this.toastErrorHandler(this.$t('notification:failed-fetch-functions')))
     },
 
     async getEventTypes () {
@@ -2497,7 +2519,7 @@ export default {
         .then(({ set }) => {
           this.eventTypes = set
         })
-        .catch(this.defaultErrorHandler(this.$t('notification:event-type-fetch-failed')))
+        .catch(this.toastErrorHandler(this.$t('notification:event-type-fetch-failed')))
     },
   },
 }
