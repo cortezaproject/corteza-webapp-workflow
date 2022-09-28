@@ -84,14 +84,14 @@ export default {
             this.workflows = workflows
           } catch (err) {
             err.message = this.$t('notification:failed-load-file')
-            this.defaultErrorHandler(this.$t('notification:general.warning'))(err)
+            this.toastErrorHandler(this.$t('notification:general.warning'))(err)
           } finally {
             this.processing = false
           }
         }
 
         reader.onerror = () => {
-          this.defaultErrorHandler(this.$t('notification:failed-load-file'))
+          this.toastErrorHandler(this.$t('notification:failed-load-file'))
           this.processing = false
         }
       }

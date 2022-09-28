@@ -19,6 +19,9 @@ import {
   faExpandAlt,
   faPlus,
   faQuestion,
+  faAngleDoubleLeft,
+  faAngleRight,
+  faAngleLeft,
 } from '@fortawesome/free-solid-svg-icons'
 
 import {
@@ -52,4 +55,7 @@ library.add(
   faExpandAlt,
   faPlus,
   faQuestion,
+  faAngleDoubleLeft,
+  faAngleRight,
+  faAngleLeft,
 )

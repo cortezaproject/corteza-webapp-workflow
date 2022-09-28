@@ -39,8 +39,8 @@
     </b-form-group>
 
     <b-form-group
-      :label="$t('configurator:workflow.run-as')"
-      :description="$t('configurator:workflow.not-setup-properly')"
+      :label="$t('workflow.run-as')"
+      :description="$t('workflow.not-setup-properly')"
     >
       <vue-select
         :options="user.options"
@@ -59,6 +59,18 @@
         @change="$root.$emit('change-detected')"
       >
         {{ $t('general:enabled') }}
+      </b-form-checkbox>
+    </b-form-group>
+
+    <b-form-group
+      :description="$t('workflow.sub-workflow.description')"
+    >
+      <b-form-checkbox
+        v-model="workflow.meta.subWorkflow"
+        data-test-id="checkbox-sub-workflow"
+        @change="$root.$emit('change-detected')"
+      >
+        {{ $t('workflow.sub-workflow.label') }}
       </b-form-checkbox>
     </b-form-group>
   </div>

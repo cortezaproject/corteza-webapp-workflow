@@ -228,17 +228,6 @@ fieldset.required {
   }
 }
 
-.alert-holder {
-  position: absolute;
-  top: 0;
-  width: 100%;
-
-  .alert {
-    z-index: 1040;
-    box-shadow: 0 0 2px 0 rgba($secondary, 0.75);
-  }
-}
-
 // Over-ride Bootstrap clear search input icon
 input[type="search"]::-webkit-search-cancel-button {
   -webkit-appearance: none;

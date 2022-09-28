@@ -52,6 +52,7 @@
         >
           <b-form-checkbox
             v-model="item.triggers.enabled"
+            :disabled="isSubworkflow && !item.triggers.enabled"
             class="text-primary"
             @change="enabledChanged()"
           >
@@ -407,7 +408,7 @@ export default {
             }
           })
         })
-        .catch(this.defaultErrorHandler(this.$t('steps:trigger.configurator.failed-fetch-event-types')))
+        .catch(this.toastErrorHandler(this.$t('steps:trigger.configurator.failed-fetch-event-types')))
     },
 
     addConstraint () {

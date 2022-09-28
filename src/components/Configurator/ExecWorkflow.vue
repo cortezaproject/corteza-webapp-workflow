@@ -54,7 +54,7 @@ export default {
     searchWorkflows (query = '', loading) {
       loading(true)
 
-      this.$AutomationAPI.workflowList({ query })
+      this.$AutomationAPI.workflowList({ query, subWorkflow: 2 })
         .then(({ set }) => {
           this.workflowOptions = set.map(m => Object.freeze(m))
         })

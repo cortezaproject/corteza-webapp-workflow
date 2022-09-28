@@ -7,6 +7,14 @@ import 'bootstrap-vue/dist/bootstrap-vue.css'
 
 import { plugins } from '@cortezaproject/corteza-vue'
 
+Vue.use(BootstrapVue, {
+  BToast: {
+    // see https://bootstrap-vue.org/docs/components/toast#comp-ref-b-toast-props
+    autoHideDelay: 7000,
+    toaster: 'b-toaster-bottom-right',
+  },
+})
+
 Vue.use(Router)
 
 Vue.use(BootstrapVue)

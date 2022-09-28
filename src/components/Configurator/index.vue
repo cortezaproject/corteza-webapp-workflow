@@ -31,6 +31,7 @@
       :item.sync="item"
       :edges.sync="edges"
       :out-edges="outEdges"
+      :is-subworkflow="isSubworkflow"
       @update-default-value="updateDefaultName"
     />
   </div>

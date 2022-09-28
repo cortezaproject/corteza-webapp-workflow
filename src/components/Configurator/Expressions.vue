@@ -201,7 +201,7 @@ export default {
         .then(({ set }) => {
           this.fieldTypes = set
         })
-        .catch(this.defaultErrorHandler(this.$t('notification:fetch-types-failed')))
+        .catch(this.toastErrorHandler(this.$t('notification:fetch-types-failed')))
     },
 
     getTypeDescription (type) {

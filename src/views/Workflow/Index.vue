@@ -64,6 +64,57 @@
                   />
                 </div>
               </b-row>
+
+              <b-row class="mt-3">
+                <b-col>
+                  <b-form-radio-group
+                    v-model="filter.subWorkflow"
+                    :options="[
+                      { value: 0, text: $t('general:without') },
+                      { value: 1, text: $t('general:including') },
+                      { value: 2, text: $t('general:only') }
+                    ]"
+                    buttons
+                    button-variant="outline-primary"
+                    size="sm"
+                    name="radio-btn-outline"
+                    @change="fetchWorkflows"
+                  />
+                  {{ $t('general:subworkflows') }}
+                </b-col>
+                <b-col>
+                  <b-form-radio-group
+                    v-model="filter.disabled"
+                    :options="[
+                      { value: 0, text: $t('general:without') },
+                      { value: 1, text: $t('general:including') },
+                      { value: 2, text: $t('general:only') }
+                    ]"
+                    buttons
+                    button-variant="outline-primary"
+                    size="sm"
+                    name="radio-btn-outline"
+                    @change="fetchWorkflows"
+                  />
+                  {{ $t('general:disabled') }}
+                </b-col>
+                <b-col>
+                  <b-form-radio-group
+                    v-model="filter.deleted"
+                    :options="[
+                      { value: 0, text: $t('general:without') },
+                      { value: 1, text: $t('general:including') },
+                      { value: 2, text: $t('general:only') }
+                    ]"
+                    buttons
+                    button-variant="outline-primary"
+                    size="sm"
+                    name="radio-btn-outline"
+                    @change="fetchWorkflows"
+                  />
+                  {{ $t('general:deleted') }}
+                </b-col>
+              </b-row>
             </b-card-header>
 
             <b-card-body class="p-0">
@@ -82,6 +133,14 @@
               >
                 <template v-slot:cell(handle)="{ item: w }">
                   {{ w.meta.name || w.handle }}
+                  <h5 class="d-inline-block ml-2">
+                    <b-badge
+                      v-if="w.meta.subWorkflow"
+                      variant="info"
+                    >
+                      {{ $t('general:subworkflow') }}
+                    </b-badge>
+                  </h5>
                 </template>
                 <template v-slot:cell(enabled)="{ item: w }">
                   <font-awesome-icon
@@ -130,6 +189,12 @@ export default {
 
       query: '',
 
+      filter: {
+        deleted: 0,
+        subWorkflow: 1,
+        disabled: 0,
+      },
+
       sortBy: 'handle',
       sortDesc: false,
 
@@ -158,7 +223,7 @@ export default {
           key: 'handle',
           label: this.$t('general:name'),
           sortable: true,
-          tdClass: 'align-middle text-nowrap',
+          tdClass: 'text-nowrap',
           class: 'pl-4',
         },
         {
@@ -213,11 +278,11 @@ export default {
 
   methods: {
     fetchWorkflows () {
-      this.$AutomationAPI.workflowList({ disabled: 1 })
+      this.$AutomationAPI.workflowList({ ...this.filter })
         .then(({ set = [] }) => {
           this.workflows = set
         })
-        .catch(this.defaultErrorHandler(this.$t('notification:failed-fetch-workflows')))
+        .catch(this.toastErrorHandler(this.$t('notification:failed-fetch-workflows')))
     },
 
     async importJSON (workflows = []) {
@@ -248,12 +313,12 @@ export default {
       }))
         .then(() => {
           if (skippedWorkflows.length) {
-            this.raiseInfoAlert(`${skippedWorkflows.join(' ')}`, this.$t('notification:import.skipped-workflows'))
+            this.toastInfo(`${skippedWorkflows.join(' ')}`, this.$t('notification:import.skipped-workflows'))
           } else {
-            this.raiseSuccessAlert(this.$t('notification:import.imported-workflows'))
+            this.toastSuccess(this.$t('notification:import.imported-workflows'))
           }
         })
-        .catch(this.defaultErrorHandler(this.$t('notification:import.failed-import')))
+        .catch(this.toastErrorHandler(this.$t('notification:import.failed-import')))
 
       await this.fetchWorkflows()
 
