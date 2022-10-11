@@ -223,8 +223,18 @@
         v-if="results.length"
         class="p-0"
       >
+        <expression-table
+          v-if="expressionResults"
+          value-field="expr"
+          :items="results"
+          :fields="resultFields"
+          :types="fieldTypes"
+          @remove="removeResult"
+          @open-editor="openInEditor"
+        />
+
         <b-table
-          v-if="!expressionResults"
+          v-else
           id="results"
           fixed
           borderless
@@ -264,15 +274,6 @@
             </b-card>
           </template>
         </b-table>
-
-        <expression-table
-          value-field="expr"
-          :items="results"
-          :fields="resultFields"
-          :types="fieldTypes"
-          @remove="removeResult"
-          @open-editor="openInEditor"
-        />
       </b-card-body>
     </b-card>
 
