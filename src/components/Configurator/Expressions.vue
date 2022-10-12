@@ -39,7 +39,7 @@
         class="p-0"
       >
         <expression-table
-          value-field="value"
+          value-field="expr"
           :items="item.config.arguments"
           :fields="argumentFields"
           :types="fieldTypes"
@@ -122,7 +122,7 @@ export default {
 
         },
         {
-          key: 'value',
+          key: 'expr',
           label: this.$t('steps:expressions.configurator.expression'),
           thClass: 'py-2 pr-3',
           tdClass: 'position-relative pointer',
