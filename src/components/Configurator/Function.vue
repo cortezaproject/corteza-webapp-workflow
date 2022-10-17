@@ -205,6 +205,7 @@
     </b-card>
 
     <b-card
+      v-if="expressionResults || results.length"
       class="flex-grow-1 border-bottom border-light rounded-0"
       body-class="p-0"
     >
