@@ -169,6 +169,7 @@ export default {
 
         // Lastly update all of the bits
         await this.fetchTriggers(wf.workflowID)
+
         this.changeDetected = false
         window.onbeforeunload = null
 
