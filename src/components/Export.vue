@@ -1,7 +1,6 @@
 <template>
   <b-button
     variant="light"
-    :disabled="workflows.length === 0"
     size="lg"
     @click="jsonExport(workflows)"
   >
@@ -16,7 +15,7 @@ export default {
   props: {
     workflows: {
       type: Array,
-      required: true,
+      default: () => ([]),
     },
 
     fileName: {
@@ -26,12 +25,12 @@ export default {
   },
 
   methods: {
-    async jsonExport (workflowIDs) {
+    async jsonExport (workflowID = []) {
       const triggers = {}
       let workflows = []
 
       // Get workflow triggers
-      await this.$AutomationAPI.triggerList({ workflowID: workflowIDs, disabled: 1 })
+      await this.$AutomationAPI.triggerList({ workflowID, disabled: 1 })
         .then(({ set = [] }) => {
           set.forEach(({ workflowID, resourceType, eventType, constraints, enabled, stepID, meta }) => {
             if (!triggers[workflowID]) {
@@ -51,7 +50,7 @@ export default {
         .catch(this.toastErrorHandler(this.$t('notification:failed-fetch-triggers')))
 
       // Get workflows, add related triggers
-      await this.$AutomationAPI.workflowList({ workflowID: workflowIDs, disabled: 1 })
+      await this.$AutomationAPI.workflowList({ workflowID, disabled: 1 })
         .then(({ set = [] }) => {
           workflows = set.map(({ workflowID, handle, enabled, keepSessions, steps, paths, meta }) => {
             return {

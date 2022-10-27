@@ -7,160 +7,145 @@
     <b-container fluid="xl">
       <b-row no-gutters>
         <b-col>
-          <b-card
-            no-body
-            class="shadow-sm"
+          <c-resource-list
+            :primary-key="primaryKey"
+            :filter="filter"
+            :sorting="sorting"
+            :pagination="pagination"
+            :fields="tableFields"
+            :items="workflowList"
+            :translations="{
+              searchPlaceholder: $t('general:searchPlaceholder'),
+              notFound: $t('general:resourceList.notFound'),
+              noItems: $t('general:resourceList.noItems'),
+              loading: $t('general:loading'),
+              showingPagination: 'general:resourceList.pagination.showing',
+              singlePluralPagination: 'general:resourceList.pagination.single_plural',
+              prevPagination: $t('general:resourceList.pagination.prev'),
+              nextPagination: $t('general:resourceList.pagination.next'),
+            }"
+            clickable
+            class="h-100"
+            @search="filterList"
+            @row-clicked="handleRowClicked"
           >
-            <b-card-header
-              header-bg-variant="white"
-              class="py-3"
-            >
-              <b-row
-                class="justify-content-between wrap-with-vertical-gutters"
-                no-gutters
+            <template #header>
+              <b-button
+                v-if="canCreate"
+                data-test-id="button-create-workflow"
+                variant="primary"
+                size="lg"
+                class="float-left mr-1"
+                :to="{ name: 'workflow.create' }"
               >
-                <div class="flex-grow-1">
-                  <div
-                    class="wrap-with-vertical-gutters"
-                  >
-                    <b-button
-                      v-if="canCreate"
-                      data-test-id="button-create-workflow"
-                      variant="primary"
-                      size="lg"
-                      class="float-left mr-1"
-                      :to="{ name: 'workflow.create' }"
-                    >
-                      {{ $t('general:new-workflow') }}
-                    </b-button>
+                {{ $t('general:new-workflow') }}
+              </b-button>
 
-                    <import
-                      v-if="canCreate"
-                      :disabled="importProcessing"
-                      class="float-left mr-1"
-                      @import="importJSON"
-                    />
+              <import
+                v-if="canCreate"
+                :disabled="importProcessing"
+                class="float-left mr-1"
+                @import="importJSON"
+              />
 
-                    <export
-                      :workflows="workflowIDs"
-                      class="float-left mr-1"
-                    />
+              <export
+                class="float-left mr-1"
+              />
 
-                    <c-permissions-button
-                      v-if="canGrant"
-                      resource="corteza::automation:workflow/*"
-                      :button-label="$t('general:permissions')"
-                      button-variant="light"
-                      class="float-left btn-lg"
-                    />
-                  </div>
-                </div>
+              <c-permissions-button
+                v-if="canGrant"
+                resource="corteza::automation:workflow/*"
+                :button-label="$t('general:permissions')"
+                button-variant="light"
+                class="float-left btn-lg"
+              />
+            </template>
 
-                <div class="flex-grow-1">
-                  <c-input-search
-                    v-model.trim="query"
-                    :placeholder="$t('general:search-workflows')"
-                    :debounce="300"
-                  />
-                </div>
-              </b-row>
+            <template #toolbar>
+              <b-col>
+                <b-form-radio-group
+                  v-model="filter.subWorkflow"
+                  :options="[
+                    { value: 0, text: $t('general:without') },
+                    { value: 1, text: $t('general:including') },
+                    { value: 2, text: $t('general:only') }
+                  ]"
+                  buttons
+                  button-variant="outline-primary"
+                  size="sm"
+                  name="radio-btn-outline"
+                  @change="filterList"
+                />
+                {{ $t('general:subworkflows') }}
+              </b-col>
+              <b-col>
+                <b-form-radio-group
+                  v-model="filter.disabled"
+                  :options="[
+                    { value: 0, text: $t('general:without') },
+                    { value: 1, text: $t('general:including') },
+                    { value: 2, text: $t('general:only') }
+                  ]"
+                  buttons
+                  button-variant="outline-primary"
+                  size="sm"
+                  name="radio-btn-outline"
+                  @change="filterList"
+                />
+                {{ $t('general:disabled') }}
+              </b-col>
+              <b-col>
+                <b-form-radio-group
+                  v-model="filter.deleted"
+                  :options="[
+                    { value: 0, text: $t('general:without') },
+                    { value: 1, text: $t('general:including') },
+                    { value: 2, text: $t('general:only') }
+                  ]"
+                  buttons
+                  button-variant="outline-primary"
+                  size="sm"
+                  name="radio-btn-outline"
+                  @change="filterList"
+                />
+                {{ $t('general:deleted') }}
+              </b-col>
+            </template>
 
-              <b-row class="mt-3">
-                <b-col>
-                  <b-form-radio-group
-                    v-model="filter.subWorkflow"
-                    :options="[
-                      { value: 0, text: $t('general:without') },
-                      { value: 1, text: $t('general:including') },
-                      { value: 2, text: $t('general:only') }
-                    ]"
-                    buttons
-                    button-variant="outline-primary"
-                    size="sm"
-                    name="radio-btn-outline"
-                    @change="fetchWorkflows"
-                  />
-                  {{ $t('general:subworkflows') }}
-                </b-col>
-                <b-col>
-                  <b-form-radio-group
-                    v-model="filter.disabled"
-                    :options="[
-                      { value: 0, text: $t('general:without') },
-                      { value: 1, text: $t('general:including') },
-                      { value: 2, text: $t('general:only') }
-                    ]"
-                    buttons
-                    button-variant="outline-primary"
-                    size="sm"
-                    name="radio-btn-outline"
-                    @change="fetchWorkflows"
-                  />
-                  {{ $t('general:disabled') }}
-                </b-col>
-                <b-col>
-                  <b-form-radio-group
-                    v-model="filter.deleted"
-                    :options="[
-                      { value: 0, text: $t('general:without') },
-                      { value: 1, text: $t('general:including') },
-                      { value: 2, text: $t('general:only') }
-                    ]"
-                    buttons
-                    button-variant="outline-primary"
-                    size="sm"
-                    name="radio-btn-outline"
-                    @change="fetchWorkflows"
-                  />
-                  {{ $t('general:deleted') }}
-                </b-col>
-              </b-row>
-            </b-card-header>
+            <template #handle="{ item: w }">
+              {{ w.meta.name || w.handle }}
+              <h5 class="d-inline-block ml-2">
+                <b-badge
+                  v-if="w.meta.subWorkflow"
+                  variant="info"
+                >
+                  {{ $t('general:subworkflow') }}
+                </b-badge>
+              </h5>
+            </template>
 
-            <b-card-body class="p-0">
-              <b-table
-                :fields="tableFields"
-                :items="workflows"
-                :filter="query"
-                :filter-included-fields="['handle']"
-                :sort-by.sync="sortBy"
-                :sort-desc="sortDesc"
-                head-variant="light"
-                tbody-tr-class="pointer"
-                responsive
-                hover
-                @row-clicked="handleRowClicked"
-              >
-                <template v-slot:cell(handle)="{ item: w }">
-                  {{ w.meta.name || w.handle }}
-                  <h5 class="d-inline-block ml-2">
-                    <b-badge
-                      v-if="w.meta.subWorkflow"
-                      variant="info"
-                    >
-                      {{ $t('general:subworkflow') }}
-                    </b-badge>
-                  </h5>
-                </template>
-                <template v-slot:cell(enabled)="{ item: w }">
-                  <font-awesome-icon
-                    :icon="['fas', w.enabled ? 'check' : 'times']"
-                  />
-                </template>
-                <template v-slot:cell(actions)="{ item: w }">
-                  <c-permissions-button
-                    v-if="w.canGrant"
-                    :tooltip="$t('permissions:resources.automation.workflow.tooltip')"
-                    :title="w.meta.name || w.handle"
-                    :target="w.meta.name || w.handle"
-                    :resource="`corteza::automation:workflow/${w.workflowID}`"
-                    link
-                    class="btn px-2"
-                  />
-                </template>
-              </b-table>
-            </b-card-body>
-          </b-card>
+            <template #enabled="{ item: w }">
+              <font-awesome-icon
+                :icon="['fas', w.enabled ? 'check' : 'times']"
+              />
+            </template>
+
+            <template #updatedAt="{ item }">
+              {{ (item.updatedAt || item.createdAt) | locFullDateTime }}
+            </template>
+
+            <template #actions="{ item: w }">
+              <c-permissions-button
+                v-if="w.canGrant"
+                :tooltip="$t('permissions:resources.automation.workflow.tooltip')"
+                :title="w.meta.name || w.handle"
+                :target="w.meta.name || w.handle"
+                :resource="`corteza::automation:workflow/${w.workflowID}`"
+                link
+                class="btn px-2"
+              />
+            </template>
+          </c-resource-list>
         </b-col>
       </b-row>
     </b-container>
@@ -168,11 +153,12 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
 import Import from '../../components/Import'
 import Export from '../../components/Export'
-import { mapGetters } from 'vuex'
+import listHelpers from '../../mixins/listHelpers'
 import { components } from '@cortezaproject/corteza-vue'
-const { CInputSearch } = components
+const { CResourceList } = components
 
 export default {
   name: 'WorkflowList',
@@ -180,23 +166,28 @@ export default {
   components: {
     Import,
     Export,
-    CInputSearch,
+    CResourceList,
   },
+
+  mixins: [
+    listHelpers,
+  ],
 
   data () {
     return {
-      workflows: [],
-
-      query: '',
+      primaryKey: 'reportID',
 
       filter: {
+        query: '',
         deleted: 0,
         subWorkflow: 1,
         disabled: 0,
       },
 
-      sortBy: 'handle',
-      sortDesc: false,
+      sorting: {
+        sortBy: 'handle',
+        sortDesc: false,
+      },
 
       newWorkflow: {},
 
@@ -224,18 +215,14 @@ export default {
           label: this.$t('general:name'),
           sortable: true,
           tdClass: 'text-nowrap',
-          class: 'pl-4',
         },
         {
           key: 'enabled',
           sortable: true,
-          tdClass: 'align-middle',
           class: 'text-center',
         },
         {
           key: 'steps',
-          sortable: true,
-          sortByFormatted: true,
           tdClass: 'align-middle',
           class: 'text-center',
           formatter: steps => {
@@ -245,12 +232,7 @@ export default {
         {
           key: 'updatedAt',
           sortable: true,
-          sortByFormatted: true,
-          tdClass: 'align-middle',
-          class: 'text-right',
-          formatter: (updatedAt, key, item) => {
-            return new Date(updatedAt || item.createdAt).toLocaleDateString('en-US')
-          },
+          class: 'text-right text-nowrap',
         },
         {
           key: 'actions',
@@ -272,19 +254,7 @@ export default {
     },
   },
 
-  created () {
-    this.fetchWorkflows()
-  },
-
   methods: {
-    fetchWorkflows () {
-      this.$AutomationAPI.workflowList({ ...this.filter })
-        .then(({ set = [] }) => {
-          this.workflows = set
-        })
-        .catch(this.toastErrorHandler(this.$t('notification:failed-fetch-workflows')))
-    },
-
     async importJSON (workflows = []) {
       this.importProcessing = true
 
@@ -320,9 +290,13 @@ export default {
         })
         .catch(this.toastErrorHandler(this.$t('notification:import.failed-import')))
 
-      await this.fetchWorkflows()
+      this.$root.$emit('bv::refresh::table', 'resource-list')
 
       this.importProcessing = false
+    },
+
+    workflowList () {
+      return this.procListResults(this.$AutomationAPI.workflowList(this.encodeListParams()))
     },
 
     handleRowClicked (workflow) {
