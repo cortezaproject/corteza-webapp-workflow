@@ -79,6 +79,7 @@
 <script>
 import { debounce } from 'lodash'
 import { VueSelect } from 'vue-select'
+import { handle } from '@cortezaproject/corteza-vue'
 
 export default {
   i18nOptions: {
@@ -111,13 +112,7 @@ export default {
 
   computed: {
     handleState () {
-      const { handle } = this.workflow
-
-      if (!handle || handle.length === 0) {
-        return false
-      }
-
-      return /^[A-Za-z][0-9A-Za-z_\-.]*[A-Za-z0-9]$/.test(handle) ? null : false
+      return handle.handleState(this.workflow.handle)
     },
   },
 
